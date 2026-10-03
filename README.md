@@ -52,8 +52,18 @@ python experiment.py       # 9. 跑全量实验，结果写到 results/
 | `agh_tools.py` | **工具注册表**：把 8 个能力声明成 AGH 可调用的工具（含参数校验与执行日志） |
 | `mcp_server.py` | **MCP 服务器**（零第三方依赖）：让 AGH 通过官方 MCP 通道接进来 |
 | `toolchain_check.py` | 工具链连通性验证：走一遍完整闭环，含一次故意的单位推断错误 |
+| `trace_summary.py` | 把 AGH 导出的会话流水（JSONL）整理成可提交的轨迹摘要表格 |
 | `experiment.py` | 批量基准评测 + 汇总 + 生成 HTML 报告（**它是回归测试，不是智能体路径**） |
 | `AGH接入说明.md` | 与 AGH 的分层设计、接入步骤、提交证据对照、以及尚未验证的部分 |
+
+跑通之后 `results/` 里会有四份产物：
+
+| 文件 | 是什么 |
+|---|---|
+| `detailed.csv` | 每条结果的原始数字，可逐条核对 |
+| `report.html` | 自动生成的实验报告（含失败案例一节） |
+| `agh-session.html` | **AGH 官方导出的执行记录**（提交要求的原件） |
+| `agh-trace-summary.md` | 上面那份流水整理出的调用链表格 + 人工分析 |
 
 ---
 
