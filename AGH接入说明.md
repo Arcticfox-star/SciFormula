@@ -100,43 +100,106 @@ AGH 只是一个执行了一条命令的外壳。评审看 AGH 轨迹，只会�
 
 ## 三、怎么在 AGH 里挂上
 
-### 3.1 推荐：MCP 方式（stdio）
+### 3.1 推荐：MCP 方式（stdio）—— 本项目已实测跑通
 
 AGH 的 `mcp add` 支持 stdio / HTTP / SSE。官方文档明确提醒：
 **不要把整条 shell 命令当可执行文件传**，也不要用 `--arg -c` 绕过策略。
-我们的做法正是合规的——可执行文件传解释器本体，脚本路径用 `--arg` 单独传：
+我们的做法正是合规的——可执行文件传解释器本体，脚本路径用 `--arg` 单独传。
+
+**实际执行过的命令（2026-10-03，一次通过）：**
 
 ```sh
-# 在 AGH 源码仓库根目录执行（把 <PYTHON> 换成实际解释器路径）
+# 步骤 1：注册。--name 是必需参数，漏了会直接报 usage 错误。
+#         这条命令会打印摘要并问 Continue? [y/N]，需要有人在真终端里输 y。
 node packages/cli/dist/local/agnes.mjs mcp add sciformula \
-  --stdio <PYTHON> \
-  --arg /绝对路径/sciformula/mcp_server.py
+  --name SciFormula \
+  --stdio "D:\projects\SciFormula\.venv\Scripts\python.exe" \
+  --arg "D:\projects\SciFormula\mcp_server.py"
 
-# 之后按官方流程审阅、信任、启用
-node packages/cli/dist/local/agnes.mjs mcp get     sciformula
-node packages/cli/dist/local/agnes.mjs mcp trust   sciformula --expected-revision REVISION
-node packages/cli/dist/local/agnes.mjs mcp enable  sciformula --expected-revision REVISION
-node packages/cli/dist/local/agnes.mjs mcp status  sciformula
-node packages/cli/dist/local/agnes.mjs mcp tools   sciformula     # 应看到 8 个工具
-node packages/cli/dist/local/agnes.mjs mcp test    sciformula --expected-revision REVISION
+# 步骤 2：取 revision（只读，不需要确认）
+node packages/cli/dist/local/agnes.mjs mcp get sciformula
+
+# 步骤 3：信任 + 启用（也会问确认，输 y）
+node packages/cli/dist/local/agnes.mjs mcp trust  sciformula --expected-revision REVISION
+node packages/cli/dist/local/agnes.mjs mcp enable sciformula --expected-revision REVISION
+
+# 步骤 4：验证（只读）
+node packages/cli/dist/local/agnes.mjs mcp status sciformula   # 期望 connection=ready tools=8
+node packages/cli/dist/local/agnes.mjs mcp tools  sciformula   # 期望列出 8 个工具，中文描述完整
 ```
 
-启用后，在 Web 的 **Settings → MCP** 里能看到服务状态与工具目录。
+**实测输出（2026-10-03 13:41）：**
 
-**`<PYTHON>` 该填什么？** 建议给项目建一个独立虚拟环境，别指向任何临时路径：
+```
+mcp list   → sciformula revision=58e274c7... trust=trusted desired=enabled actual=ready transport=stdio
+mcp status → sciformula connection=ready revision=58e274c7... catalog=1f3eb8bd... tools=8
+```
+
+三个词各管一件事，别混：`trust=trusted`（人审过了，不是自动信任）、
+`desired=enabled / actual=ready`（配置要它开且真连上了）、`catalog=<指纹>`（AGH 实际抓到的工具目录）。
+**只有 `tools=8` 且描述可读，才算「能力调用」这一环真正打通。**
+
+> ⚠️ **`--name <显示名>` 不能省。** 只给 `--stdio` 会报
+> `usage: agh mcp add <serverId> --name <displayName> (--stdio ...)`，白跑一轮。
+>
+> ⚠️ **所有写操作都要交互确认，且没有跳过开关。** AGH 源码里的判定是
+> `if (io.stdin.isTTY !== true || io.stdout.isTTY !== true) return false;`，
+> 然后才问 `Continue? [y/N]`。用脚本、管道或让助手代跑都会静默失败并报
+> `operation cancelled`。这是「built for trust」的刻意设计。
+> **只读命令（`get` / `list` / `status` / `tools`）不受影响。**
+>
+> ⚠️ **`REVISION` 是占位符，填真实值时要替换掉，不要把尖括号抄进终端**——
+> shell 会把 `<` 当成输入重定向运算符而报错。实测 `trust` / `enable` 之间 revision 不变，
+> 取一次即可连用；若中途有别的配置变更，旧值会被拒绝，届时重新 `mcp get` 一次。
+
+**解释器要指向项目内的 `.venv`，不要指向全局 Python：**
 
 ```sh
-cd sciformula
+cd D:\projects\SciFormula
 python -m venv .venv
-.venv/Scripts/pip install -r requirements.txt     # Windows
-# 之后 <PYTHON> 就是这个 .venv/Scripts/python.exe 的绝对路径
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+# 之后 --stdio 就填这个 .venv\Scripts\python.exe 的绝对路径
 ```
 
-> ⚠️ 官方文档提到「**Deployment policy also controls allowed executables**」——
-> 部署策略可能会限制允许启动的可执行文件。如果 `mcp add` 之后状态一直是
-> 连不上 / 被策略拒绝，先看 `mcp status` 返回的错误码和原因，
-> 再去确认该解释器路径是否在允许列表内。这是**接入环节最可能卡住的地方**，
-> 建议 10/3 优先验证。
+用 `.venv` 而不是全局 Python，是为了让「换台机器 `pip install -r requirements.txt` 就能复现」成立；
+指向全局解释器的话，"你这台机器上恰好装了什么"会变成隐藏依赖。
+
+### 3.1.1 工具在模型眼里的名字带前缀
+
+接入之后，智能体看到的工具名**不是** `list_problems`，而是：
+
+```
+mcp_sciformula_98791938_list_problems
+mcp_sciformula_98791938_load_problem
+mcp_sciformula_98791938_check_units
+mcp_sciformula_98791938_build_candidate_library
+mcp_sciformula_98791938_fit_sparse
+mcp_sciformula_98791938_verify_formula
+mcp_sciformula_98791938_compare_strategies
+mcp_sciformula_98791938_score_prediction
+```
+
+前缀是 `<mcp>_<serverId>_<数字>`，中间那串数字由 AGH 生成。写提示词时用短名也能被正确理解，
+但**在报告里引用工具调用记录时，要用带前缀的完整名**——那才是轨迹里真实出现的东西。
+
+### 3.1.2 工具调用需要人工批准（这是特性，不是障碍）
+
+实测：在非交互环境里让智能体调用 `list_problems`，返回的是
+
+```
+- tool mcp_sciformula_98791938_list_problems
+该工具调用被拒绝，无法获取结果。
+```
+
+原因是同一套授权机制——批准请求会变成**对话里的一张卡片**，需要有人在键盘前点。
+AGH 源码里的开关是 `if (yolo || approvalMode === "off") needsAsk = false;`，
+而当前 profile 是 `approvals = {"mode": "manual"}`（可选值 `manual` / `smart`）。
+
+**所以第 7 节的运行必须在网页工作台或用户自己的终端里做，不能用脚本代跑。**
+
+**这对本项目是加分项而非负担**：批准卡片留在执行记录里，正好证明
+「这次运行确实受 AGH 管辖、有人工在每个决策点把关」——
+比一条自动跑完、看不出谁在控制的记录更有说服力。提交时可以把批准片段一并截图。
 
 ### 3.2 备选：命令行方式
 
@@ -239,22 +302,32 @@ python experiment.py              # 批量基准（21 题 × 3 噪声档），�
 
 ## 六、如实说明：哪些已验证、哪些还没
 
-**已验证（本地实测）**
+### 已验证（真实环境实测）
 
-- 8 个工具的参数校验、错误反馈、执行日志
-- MCP 协议握手与 `tools/call` 返回结构（`mcp_server.py --selftest` 通过）
-- 工具链闭环，含一次单位推断错误的纠正过程（`toolchain_check.py` 通过）
-- 改造后 `experiment.py` 结果与改造前完全一致（20/21 × 三个噪声档，剪枝 91.6%），
-  说明分层没有改变算法行为
+- **算法侧**：8 个工具的参数校验、错误反馈、执行日志；
+  工具链闭环（含一次单位推断错误的纠正过程，`toolchain_check.py` 通过）；
+  改造后 `experiment.py` 结果与改造前完全一致（20/21 × 三个噪声档，剪枝 91.6%）。
+- **MCP 协议侧**：`initialize` 握手、`tools/list`、`tools/call` 返回结构
+  （`mcp_server.py --selftest` 通过）。
+- **Windows 上的 stdio 编码**：走真实管道检查原始字节，1062 个非 ASCII 字节全部合法 UTF-8。
+  客户端按 UTF-8 解码时中文不乱码。
+- **AGH 真实接入**：`mcp status sciformula` → `connection=ready`、`tools=8`；
+  `mcp tools sciformula` 列出全部 8 个工具、中文描述完整。
+  **这一步同时反向验证了编码修复是有效的**——若 stdin/stdout 还是 GBK，
+  工具描述会在这一步变成乱码、列表根本列不出来。
+- **可执行文件策略**：项目内 `.venv\Scripts\python.exe` 作为 `--stdio` 目标**已被允许启动**，
+  3.1 里那条「部署策略可能限制可执行文件」的担心可以排除。
+- **模型能否看见工具**：实测问智能体「你有哪些工具」，它准确列出 8 个带
+  `mcp_sciformula_98791938_` 前缀的工具名。**接线畅通。**
 
-**尚未验证（10/3 的待办，必须实测）**
+### 尚未验证（下一步）
 
-1. **AGH 实例里的真实接入**：本机没有 AGH（它是 pre-alpha，需 Node 24.10+ / pnpm 10.34.5 自行从源码构建），
-   上面 3.1 的命令来自官方文档原文，**我没有在真实 AGH 上跑过**。
-2. **MCP 协议版本兼容**：我们的服务器在 `initialize` 时**回显客户端提出的协议版本**，
-   这是为了兼容 pre-alpha 阶段不断变化的协议。若 AGH 要求的版本行为有差异，需要按报错调整。
-3. **可执行文件策略**：见 3.1 的警告。
-4. **Agnes 模型是否愿意按预期调用工具**：官方文档自己就提醒过，
-   "Whether a real model selects the tool requires real-model verification"。
-   所以 10/3 接上之后，第一件事是跑一次 P03 看它会不会自己按顺序调工具；
-   如果它跳步，就把第四节那段提示词缩得更硬一些（明确"必须按 1→7 顺序"）。
+1. **Agnes 是否按预期顺序连续调用工具。** 官方文档自己就提醒过
+   「Whether a real model selects the tool requires real-model verification」。
+   已知它能看见工具、也愿意尝试调用（只是被批准机制拦下），
+   但**"会不会按 1→7 顺序走完、会不会在候选归零时自己判断推错了单位"还没有实测**。
+2. **单位推断环节的实际质量**：Agnes 从变量名推断量纲的准确率、失败后能否自主纠正——
+   这是本项目「数学 AI 与形式化推理」的落点，也是最有价值的观察记录。
+
+> 这两项都要在**网页工作台或用户自己的终端**里跑，
+> 因为工具调用需要人工批准（见 3.1.2）。计划见 `AGH环境搭建指引.html` 第 7 节。
