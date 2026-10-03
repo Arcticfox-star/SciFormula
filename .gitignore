@@ -1,0 +1,11 @@
+# 运行期中间产物：每次跑都会重新生成，不需要提交
+.agh_runs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 产物里只提交报告与明细表，其余忽略
+results/*.tmp
