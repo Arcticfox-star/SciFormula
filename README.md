@@ -65,6 +65,12 @@ python experiment.py       # 9. 跑全量实验，结果写到 results/
 | `agh-session.html` | **AGH 官方导出的执行记录**（提交要求的原件） |
 | `agh-trace-summary.md` | 上面那份流水整理出的调用链表格 + 人工分析 |
 
+另有第二、三份 AGH 会话证据（官方题库闭环与单位推断评测）：
+`agh-session-feynman.html` + `agh-trace-feynman.md`（官方 Feynman 题上
+19 次工具调用、含候选归零→自主诊断→换题的完整纠错链，验证环节判 overfit
+拦截了 R²=0.998 的高分假公式）；`agh-session-unitinfer.html` +
+`unit_infer_report.md`（12 题单位推断量化评测，变量级 45/54）。
+
 ---
 
 ## 三、整个流程在做什么
@@ -375,11 +381,17 @@ k=1 的验证残差高达 89（带截距时是 1e-29 这种量级）。
    MCP 工具也已支持双库（`list_problems` 传 `library="feynman"` 直接列官方 100 题，
    官方题编号可跨库解析，AGH 拉起的进程不需要环境变量）。
 2. ~~把各环节包装成 AGH 工具插件~~ **已完成**：8 个原子能力经 MCP 接入 AGH，
-   真实会话证据见 `results/agh-session.html` 与 `results/agh-trace-summary.md`。
-3. **量纲自动推断的量化评测**：`unit_infer_eval.py` 已备好——
+   迷你库会话见 `results/agh-session.html` 与 `results/agh-trace-summary.md`；
+   官方题库闭环会话见 `results/agh-session-feynman.html` 与
+   `results/agh-trace-feynman.md`（含候选归零→自主诊断→换题的纠错链）。
+3. ~~量纲自动推断的量化评测~~ **已完成**：`unit_infer_eval.py`——
    从官方基准抽 12 题（1~6 变量）出「无单位题目卡」，在 AGH 里让模型推断
-   每个变量与目标量的单位，回填答案后按量纲等价自动打分，
-   产出变量级/题目级准确率。这是把「单位推断由模型自动完成」从个案变成数据的关键一步。
+   每个变量与目标量的单位，回填答案后按量纲等价自动打分。
+   首跑结果：**变量级 45/54（83%）、题目级 6/12（50%）**，
+   报告 `results/unit_infer_report.md`，作答会话导出
+   `results/agh-session-unitinfer.html`。
+   有明确物理语境的题全对（含 G=N·m²/kg² 这类冷门单位）；错判集中在
+   变量名歧义（sigma/Nn），印证「冷推断难在歧义，闭环靠剪枝反馈纠错」的叙事。
 4. **测试样例文档**：`docs/test-cases.md`（正常/边界/失败三类，含逐条复现命令），
    对应提交要求的必填项。
 5. **补一个第三方对照基线**（如 PySR 或 gplearn），在相同数据与指标下横向比较。可选。

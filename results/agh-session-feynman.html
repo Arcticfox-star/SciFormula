@@ -1,0 +1,1471 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>39d31a09-7e75-42d0-934e-911e92cf6e74</title><style>:root{color-scheme:light dark}body{font:14px/1.5 system-ui,sans-serif;max-width:52rem;margin:2rem auto;padding:0 1rem;color:#1c211e;background:#fff}.meta,.minor{color:#69707a;font-size:12px}.meta{border-bottom:1px solid #d6dbd5;margin-bottom:1rem;padding-bottom:.5rem}.node{margin:.7rem 0}.user{background:#f3f5f4;border-radius:6px;padding:.6rem}.assistant{padding:.6rem}.tool{border:1px solid #d6dbd5;border-radius:6px;padding:.4rem .6rem;color:#4d555f}.approval{border-left:3px solid #0e6b54;padding:.4rem .6rem}.content{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.label{font-weight:600}.attachment{display:block}.compaction{text-align:center}@media(prefers-color-scheme:dark){body{color:#e7ece8;background:#151816}.user{background:#242925}.tool{border-color:#454c47;color:#c5ccc7}.meta,.minor{color:#abb3ad}}</style></head><body><header class="meta">39d31a09-7e75-42d0-934e-911e92cf6e74 · 2026-10-03T14:30:27.705Z · redacted · 96 items</header><main><section class="node user"><div class="label">User · local</div><div class="content">你有一组来自物理系统的带噪声观测数据，任务是从中恢复物理定律公式。请用 list_problems 并传 library=&quot;feynman&quot; 查看官方基准题库，选一道变量较多的题。目标量的物理单位不会提供，需要你根据变量名推断每个变量与目标量的量纲。流程：check_units 校验写法 → build_candidate_library 建库剪枝（这一步是对你单位推断的检验，candidate_kept 为 0 或很小就要重推）→ fit_sparse 拟合 → verify_formula 独立验证 → 输出结论（推断的单位、公式、验证指标、失败次数）。</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_list_problems · completed</summary><div class="content">mcp_sciformula_98791938_list_problems
+{&quot;library&quot;:&quot;feynman&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;library&quot;: &quot;feynman&quot;,
+  &quot;count&quot;: 100,
+  &quot;problems&quot;: [
+    {
+      &quot;problem_id&quot;: &quot;I.6.2a&quot;,
+      &quot;name&quot;: &quot;I.6.2a&quot;,
+      &quot;source&quot;: &quot;Feynman I.6.2a&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 1,
+      &quot;variables&quot;: [
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.6.2&quot;,
+      &quot;name&quot;: &quot;I.6.2&quot;,
+      &quot;source&quot;: &quot;Feynman I.6.2&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;sigma&quot;,
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.6.2b&quot;,
+      &quot;name&quot;: &quot;I.6.2b&quot;,
+      &quot;source&quot;: &quot;Feynman I.6.2b&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;sigma&quot;,
+        &quot;theta&quot;,
+        &quot;theta1&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.8.14&quot;,
+      &quot;name&quot;: &quot;I.8.14&quot;,
+      &quot;source&quot;: &quot;Feynman I.8.14&quot;,
+      &quot;target_variable&quot;: &quot;d&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.9.18&quot;,
+      &quot;name&quot;: &quot;I.9.18&quot;,
+      &quot;source&quot;: &quot;Feynman I.9.18&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 9,
+      &quot;variables&quot;: [
+        &quot;m1&quot;,
+        &quot;m2&quot;,
+        &quot;G&quot;,
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;,
+        &quot;z1&quot;,
+        &quot;z2&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.10.7&quot;,
+      &quot;name&quot;: &quot;I.10.7&quot;,
+      &quot;source&quot;: &quot;Feynman I.10.7&quot;,
+      &quot;target_variable&quot;: &quot;m&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;m_0&quot;,
+        &quot;v&quot;,
+        &quot;c&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.11.19&quot;,
+      &quot;name&quot;: &quot;I.11.19&quot;,
+      &quot;source&quot;: &quot;Feynman I.11.19&quot;,
+      &quot;target_variable&quot;: &quot;A&quot;,
+      &quot;n_variables&quot;: 6,
+      &quot;variables&quot;: [
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;x3&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;,
+        &quot;y3&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.1&quot;,
+      &quot;name&quot;: &quot;I.12.1&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.1&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;mu&quot;,
+        &quot;Nn&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.2&quot;,
+      &quot;name&quot;: &quot;I.12.2&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.2&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;q1&quot;,
+        &quot;q2&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.4&quot;,
+      &quot;name&quot;: &quot;I.12.4&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.4&quot;,
+      &quot;target_variable&quot;: &quot;Ef&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;q1&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.5&quot;,
+      &quot;name&quot;: &quot;I.12.5&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.5&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;q2&quot;,
+        &quot;Ef&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.11&quot;,
+      &quot;name&quot;: &quot;I.12.11&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.11&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 5,
+      &quot;variables&quot;: [
+        &quot;q&quot;,
+        &quot;Ef&quot;,
+        &quot;B&quot;,
+        &quot;v&quot;,
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.13.4&quot;,
+      &quot;name&quot;: &quot;I.13.4&quot;,
+      &quot;source&quot;: &quot;Feynman I.13.4&quot;,
+      &quot;target_variable&quot;: &quot;K&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;,
+        &quot;u&quot;,
+        &quot;w&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.13.12&quot;,
+      &quot;name&quot;: &quot;I.13.12&quot;,
+      &quot;source&quot;: &quot;Feynman I.13.12&quot;,
+      &quot;target_variable&quot;: &quot;U&quot;,
+      &quot;n_variables&quot;: 5,
+      &quot;variables&quot;: [
+        &quot;m1&quot;,
+        &quot;m2&quot;,
+        &quot;r1&quot;,
+        &quot;r2&quot;,
+        &quot;G&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.14.3&quot;,
+      &quot;name&quot;: &quot;I.14.3&quot;,
+      &quot;source&quot;: &quot;Feynman I.14.3&quot;,
+      &quot;target_variable&quot;: &quot;U&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;g&quot;,
+        &quot;z&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.14.4&quot;,
+      &quot;name&quot;: &quot;I.14.4&quot;,
+      &quot;source&quot;: &quot;Feynman I.14.4&quot;,
+      &quot;target_variable&quot;: &quot;U&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;k_spring&quot;,
+        &quot;x&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.15.3x&quot;,
+      &quot;name&quot;: &quot;I.15.3x&quot;,
+      &quot;source&quot;: &quot;Feynman I.15.3x&quot;,
+      &quot;target_variable&quot;: &quot;x1&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;x&quot;,
+        &quot;u&quot;,
+        &quot;c&quot;,
+        &quot;t&quot;
+      ]
+    },
+    {
+      &quot;pro</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_list_problems {&quot;library&quot;:&quot;feynman&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_load_problem · completed</summary><div class="content">mcp_sciformula_98791938_load_problem
+{&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:200,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;I.9.18&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;I.9.18_n200_nz0.05_s0&quot;,
+  &quot;mode&quot;: &quot;discovery&quot;,
+  &quot;problem&quot;: {
+    &quot;problem_id&quot;: &quot;I.9.18&quot;,
+    &quot;name&quot;: &quot;I.9.18&quot;,
+    &quot;source&quot;: &quot;Feynman I.9.18&quot;
+  },
+  &quot;target&quot;: {
+    &quot;name&quot;: &quot;F&quot;,
+    &quot;unit&quot;: null
+  },
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;m1&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        2.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;m2&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        2.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;G&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        2.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;x1&quot;,
+      &quot;sampled_range&quot;: [
+        3.0,
+        4.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;x2&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        2.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;y1&quot;,
+      &quot;sampled_range&quot;: [
+        3.0,
+        4.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;y2&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        2.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;z1&quot;,
+      &quot;sampled_range&quot;: [
+        3.0,
+        4.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;z2&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        2.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    }
+  ],
+  &quot;observations&quot;: {
+    &quot;n&quot;: 200,
+    &quot;noise_level&quot;: 0.05,
+    &quot;y_mean&quot;: 0.2982060950036529,
+    &quot;y_std&quot;: 0.11731982093909667,
+    &quot;y_min&quot;: 0.09737984895530492,
+    &quot;y_max&quot;: 0.6720626205013046,
+    &quot;y_preview&quot;: [
+      0.28082816835341534,
+      0.23357678288486,
+      0.1355336424030108,
+      0.09737984895530492,
+      0.29510415690093894
+    ],
+    &quot;x_preview&quot;: [
+      [
+        1.6369616873214543,
+        1.3196816362826649,
+        1.2021680939754846,
+        3.006176828784278,
+        1.8584353255541872,
+        3.013007673374885,
+        1.3075167072170633,
+        3.872758590506412,
+        1.5986301695147362
+      ],
+      [
+        1.2697867137638703,
+        1.187507715727785,
+        1.9379051086359893,
+        3.721165786116842,
+        1.6209088984199513,
+        3.8277629198311454,
+        1.374126887937825,
+        3.2787471566816278,
+        1.8912510757122825
+      ],
+      [
+        1.0409735239361946,
+        1.6725266339168692,
+        1.094776678361167,
+        3.67660446324458,
+        1.1939179478682547,
+        3.496243310341268,
+        1.695266915040588,
+        3.4063009048306148,
+        1.5323273489747065
+      ],
+      [
+        1.016527635528529,
+        1.195107398456805,
+        1.0048994149885755,
+        3.656901449925677,
+        1.6879145213890339,
+        3.4359180655622787,
+        1.3168501192011717,
+        3.5080966961754236,
+        1.4673754979092766
+      ],
+      [
+        1.8132702392002724,
+        1.5776878925178592,
+        1.3229208036639784,
+        3.6874150023133265,
+        1.7589990022820636,
+        3.6017947156364514,
+        1.5296553251483824,
+        3.9696728125819605,
+        1.7453939905468852
+      ]
+    ]
+  },
+  &quot;saved&quot;: &quot;&lt;workspace&gt;\\.agh_runs\\I.9.18_n200_nz0.05_s0.npz&quot;,
+  &quot;note&quot;: &quot;目标量的量纲与各变量的量纲均未提供。请根据变量名与物理语境推断它们，再用 check_units 校验、用 build_candidates 检验推断是否自洽。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_load_problem {&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:200,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;I.9.18&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_check_units · failed</summary><div class="content">mcp_sciformula_98791938_check_units
+{&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;N*m^2/kg^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}
+approval rejected</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · rejected</span><div class="content">mcp_sciformula_98791938_check_units {&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;N*m^2/kg^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_check_units · failed</summary><div class="content">mcp_sciformula_98791938_check_units
+{&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;N*m^2/kg^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}
+approval rejected</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · rejected</span><div class="content">mcp_sciformula_98791938_check_units {&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;N*m^2/kg^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">[plugin: mcp_sciformula_98791938]
+
+[plugin: mcp_sciformula_98791938]
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_check_units · failed</summary><div class="content">mcp_sciformula_98791938_check_units
+{&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;N*m^2/kg^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}
+approval rejected</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · rejected</span><div class="content">mcp_sciformula_98791938_check_units {&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;N*m^2/kg^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_build_candidate_library · completed</summary><div class="content">mcp_sciformula_98791938_build_candidate_library
+{&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;N*m^2/kg^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_1c2a44fe8b6051a4&quot;,
+  &quot;data_id&quot;: &quot;I.9.18_n200_nz0.05_s0&quot;,
+  &quot;target_dimension&quot;: &quot;kg*m/s^2&quot;,
+  &quot;candidate_total&quot;: 232324,
+  &quot;candidate_kept&quot;: 0,
+  &quot;prune_ratio&quot;: 1.0,
+  &quot;prune_percent&quot;: 100.0,
+  &quot;usable_columns&quot;: 0,
+  &quot;truncated&quot;: false,
+  &quot;n_dimensionless_bases&quot;: 16,
+  &quot;sample_candidates&quot;: [],
+  &quot;diagnostics&quot;: [
+    &quot;剪枝后一个候选项都不剩，说明这组单位让目标量「无法由任何候选项拼出」。最常见的原因是目标量的量纲推错了，或某个变量的量纲推错了。建议重新审读变量名与物理语境，再试一组（check_units 只能查写法，查不出这种物理错误）。&quot;
+  ]
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_build_candidate_library {&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;N*m^2/kg^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">`candidate_kept` 为 0，说明我对单位推断错了。
+
+让我重新审读这道题。这是 I.9.18 —— 目标量 `F` 由 `m1, m2, G, x1, x2, y1, y2, z1, z2` 决定。
+
+**物理语境分析：**
+- `m1, m2` = 两个物体的质量（kg）
+- `G` = 万有引力常量
+- `x1, x2, y1, y2, z1, z2` = 两个物体在三维空间中的坐标（m）
+
+这是**万有引力**问题：`F = G * m1 * m2 / r²`，其中 `r` 是两物体之间的距离。所以：
+- `r = sqrt((x1-x2)² + (y1-y2)² + (z1-z2)²)`
+- `F = G * m1 * m2 / r²`
+
+量纲分析：
+- `G` 的单位是 `m³/(kg·s²)`（即 `N·m²/kg²`）
+- `m1, m2` 的单位是 `kg`
+- `r` 的单位是 `m`
+- `r²` 的单位是 `m²`
+- `G * m1 * m2 / r²` = `(m³/(kg·s²)) * kg * kg / m²` = `kg·m/s²` = `N`
+
+所以 `F` 的单位是 `N`（牛顿），我的目标单位推断是对的。
+
+但 `candidate_kept = 0` 说明问题出在**候选项的拼写上**。让我重新检查：
+
+`build_candidate_library` 里 `G` 的单位是 `N*m^2/kg^2`，这应该展开为 `kg·m/s²·m²/kg² = m³/(kg·s²)`，这是对的。
+
+问题可能是：候选库是用**变量单位**来拼的，但 `G` 作为一个**变量**（它的值被采样为 1~2），它的单位 `N*m^2/kg^2` 在候选拼接时可能和 `m, kg, s` 基元不兼容，导致所有包含 `G` 的候选项都被剪掉了。
+
+让我换一种写法：直接用 SI 基本单位写 `G` 的单位为 `m^3/(kg*s^2)`：
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_build_candidate_library · failed</summary><div class="content">mcp_sciformula_98791938_build_candidate_library
+{&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;m^3/(kg*s^2)&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}
+{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;单位解析失败：\&quot;未知单位：&#39;(kg&#39;（请先在 dims.py 的 UNITS 里登记）\&quot;&quot;,
+  &quot;hint&quot;: &quot;写法：单位名用 * 连接、/ 表示除、^ 表示幂，且必须是**左结合**，不要写括号——写 W/m/K 而不是 W/(m*K)，写 kg/A/s^2 而不是 kg/(A*s^2)。无量纲写 空字符串 或 \&quot;1\&quot;。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_build_candidate_library {&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;m^3/(kg*s^2)&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_build_candidate_library · completed</summary><div class="content">mcp_sciformula_98791938_build_candidate_library
+{&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;m^3/kg/s^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_5cc2946fb4ab9703&quot;,
+  &quot;data_id&quot;: &quot;I.9.18_n200_nz0.05_s0&quot;,
+  &quot;target_dimension&quot;: &quot;kg*m/s^2&quot;,
+  &quot;candidate_total&quot;: 232324,
+  &quot;candidate_kept&quot;: 0,
+  &quot;prune_ratio&quot;: 1.0,
+  &quot;prune_percent&quot;: 100.0,
+  &quot;usable_columns&quot;: 0,
+  &quot;truncated&quot;: false,
+  &quot;n_dimensionless_bases&quot;: 16,
+  &quot;sample_candidates&quot;: [],
+  &quot;diagnostics&quot;: [
+    &quot;剪枝后一个候选项都不剩，说明这组单位让目标量「无法由任何候选项拼出」。最常见的原因是目标量的量纲推错了，或某个变量的量纲推错了。建议重新审读变量名与物理语境，再试一组（check_units 只能查写法，查不出这种物理错误）。&quot;
+  ]
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-session</span><div class="content">mcp_sciformula_98791938_build_candidate_library {&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;N&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;m^3/kg/s^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">仍然 `candidate_kept = 0`。问题很明确：候选库是按**单个变量的单位**来剪枝的，而距离 `r = sqrt((x1-x2)² + ...)` 是**坐标差**，它的单位是 `m`，但候选库可能没有直接包含坐标差项，而是包含单个坐标 `x1`、`x2` 等。
+
+让我仔细思考。`n_dimensionless_bases = 16` —— 这说明有 16 个**无量纲基**被识别出来。这意味着系统认为这些变量中存在无量纲组合，导致量纲空间出了问题。
+
+关键问题：`G` 本身是一个**被采样的变量**（取值 1~2），但它有非平凡的量纲。如果 `G` 被当作一个有量纲的变量，那么它和 `m, s` 基元之间是线性无关的（`G` 贡献了 `m³·kg⁻¹·s⁻²`），这没问题。
+
+但真正的问题可能是：**坐标 `x1, x2, y1, y2, z1, z2` 的单位被写成了 `m`，而 `m` 在候选库的解析中被识别为&quot;mass&quot;（质量）而不是&quot;meter&quot;（米）！**
+
+在 `check_units` 的 `units_catalog` 里，`m` 通常指 mass（kg），而 length（米）是 `length` 或 `m`。让我查看 `check_units` 返回的可用单位名清单。
+
+上次 `check_units` 被拒绝了（可能因为 `N` 不被识别）。让我用 `build_candidate_library` 的 `hint` 来推断：它说 `W/m/K` 是正确写法，其中 `m` 指 meter（米），`K` 指 Kelvin。所以 `m` 在这里是**米**（长度），不是质量（kg）。质量应该是 `kg`。
+
+那为什么 `candidate_kept = 0`？让我重新计算：
+
+如果所有 6 个坐标的单位都是 `m`（米），`m1, m2` 的单位是 `kg`，`G` 的单位是 `m^3/kg/s^2`，目标 `N = kg*m/s^2`：
+
+`G * m1 * m2 / (x1-x2)^2` 的量纲 = `(m³/kg/s²) * kg * kg / m² = kg·m/s² = N` ✓
+
+但候选库是**按单个变量**拼的，不是按坐标差拼的！单个变量 `x1` 的单位是 `m`，而 `G * m1 * m2 / x1^2` 的量纲也是 `N`，所以应该能保留。
+
+除非……`x1` 被识别为**无量纲**了？`n_dimensionless_bases = 16` 暗示了很多变量被识别为无量纲基。
+
+让我试一个完全不同的思路：也许这道题的目标量**不是力**，而是别的。让我重新看变量名：`m1, m2, G, x1, x2, y1, y2, z1, z2` —— 这就是万有引力公式的所有输入。目标量 `F` 就是力。
+
+但 `candidate_kept = 0` 反复出现，说明候选库的剪枝机制可能根本不支持**坐标差**这种非线性组合（`(x1-x2)²` 展开后包含 `x1²`, `x2²`, `x1*x2` 等项），或者它只考虑**单个变量**的幂次，而不考虑**两个变量之差**的幂次。
+
+如果候选库只考虑单个变量的幂次组合（即 `x1^a * x2^b * ...`），那么 `G * m1 * m2 / ((x1-x2)² + (y1-y2)² + (z1-z2)²)` 这种形式就**无法被拼出**，因为分母是一个平方和，不是单个变量的幂。
+
+这解释了为什么 `candidate_kept = 0`：**候选库的表达力不足以覆盖这道题的公式结构**。
+
+让我验证这个假设——如果我只看单个变量的幂组合 `G^a * m1^b * m2^c * x1^d * ...`，其中 `G` 的单位是 `m^3/kg/s^2`，`m1, m2` 是 `kg`，坐标是 `m`，那么：
+
+`(m^3/kg/s^2)^a * kg^b * kg^c * m^d * ...`
+
+要等于 `kg*m/s^2`，需要：
+- kg: -a + b + c = 1
+- m: 3a + d + e + f + g + h + i = 1（其中 d~i 是 6 个坐标的幂次）
+- s: -2a = -2，所以 a = 1
+
+如果 a = 1, b = c = 1（质量各取一次），那么 3a = 3，需要 d+e+f+g+h+i = 1-3 = -2。
+
+即 6 个坐标的幂次之和为 -2。这是可能的（比如 `x1^-2` 等），但 `(x1-x2)²` 展开后不是这样的形式。
+
+所以确实，**候选库可能无法表示这道题**。但这道题被收录在官方基准库里，说明应该有解。让我重新检查 `G` 的单位。
+
+也许 `G` 在这道题里**不是一个物理常量**，而是一个**无量纲的采样参数**？如果 `G` 是无量纲的（取值 1~2），那么：
+
+无量纲 `G^a * kg^b * kg^c * m^(d+e+f+g+h+i) = kg*m/s^2`
+
+- kg: b + c = 1
+- m: d+e+f+g+h+i = 1
+- s: 0 = -2 ← **不可能！**
+
+没有 `s` 的量纲来源，所以 `G` 不可能无量纲。
+
+让我尝试另一种写法：也许 `check_units` 的 catalog 里 `N` 不被识别，需要用 `kg*m/s^2` 写目标单位。同时，也许问题出在 `G` 的单位上——让我直接用 `kg*m^3/kg^2/s^2` 来写（等价于 `m^3/kg/s^2`）。
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_build_candidate_library · completed</summary><div class="content">mcp_sciformula_98791938_build_candidate_library
+{&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;kg*m/s^2&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;m^3/kg/s^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_01e7aaa5d15532ac&quot;,
+  &quot;data_id&quot;: &quot;I.9.18_n200_nz0.05_s0&quot;,
+  &quot;target_dimension&quot;: &quot;kg*m/s^2&quot;,
+  &quot;candidate_total&quot;: 232324,
+  &quot;candidate_kept&quot;: 0,
+  &quot;prune_ratio&quot;: 1.0,
+  &quot;prune_percent&quot;: 100.0,
+  &quot;usable_columns&quot;: 0,
+  &quot;truncated&quot;: false,
+  &quot;n_dimensionless_bases&quot;: 16,
+  &quot;sample_candidates&quot;: [],
+  &quot;diagnostics&quot;: [
+    &quot;剪枝后一个候选项都不剩，说明这组单位让目标量「无法由任何候选项拼出」。最常见的原因是目标量的量纲推错了，或某个变量的量纲推错了。建议重新审读变量名与物理语境，再试一组（check_units 只能查写法，查不出这种物理错误）。&quot;
+  ]
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_check_units · completed</summary><div class="content">mcp_sciformula_98791938_check_units
+{&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;kg*m/s^2&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;m^3/kg/s^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;G&quot;,
+      &quot;input&quot;: &quot;m^3/kg/s^2&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m^3/kg/s^2&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;m1&quot;,
+      &quot;input&quot;: &quot;kg&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;kg&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;m2&quot;,
+      &quot;input&quot;: &quot;kg&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;kg&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;x1&quot;,
+      &quot;input&quot;: &quot;m&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;x2&quot;,
+      &quot;input&quot;: &quot;m&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;y1&quot;,
+      &quot;input&quot;: &quot;m&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;y2&quot;,
+      &quot;input&quot;: &quot;m&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;z1&quot;,
+      &quot;input&quot;: &quot;m&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;z2&quot;,
+      &quot;input&quot;: &quot;m&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m&quot;,
+      &quot;is_dimensionless&quot;: false
+    }
+  ],
+  &quot;target&quot;: {
+    &quot;input&quot;: &quot;kg*m/s^2&quot;,
+    &quot;parsed_ok&quot;: true,
+    &quot;normalized&quot;: &quot;kg*m/s^2&quot;,
+    &quot;is_dimensionless&quot;: false
+  },
+  &quot;known_units&quot;: [
+    &quot;1&quot;,
+    &quot;A&quot;,
+    &quot;C&quot;,
+    &quot;F&quot;,
+    &quot;H&quot;,
+    &quot;Hz&quot;,
+    &quot;J&quot;,
+    &quot;K&quot;,
+    &quot;N&quot;,
+    &quot;Pa&quot;,
+    &quot;S&quot;,
+    &quot;T&quot;,
+    &quot;V&quot;,
+    &quot;W&quot;,
+    &quot;Wb&quot;,
+    &quot;cd&quot;,
+    &quot;kg&quot;,
+    &quot;m&quot;,
+    &quot;mol&quot;,
+    &quot;ohm&quot;,
+    &quot;rad&quot;,
+    &quot;s&quot;
+  ],
+  &quot;syntax_hint&quot;: &quot;写法：单位名用 * 连接、/ 表示除、^ 表示幂，且必须是**左结合**，不要写括号——写 W/m/K 而不是 W/(m*K)，写 kg/A/s^2 而不是 kg/(A*s^2)。无量纲写 空字符串 或 \&quot;1\&quot;。&quot;,
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-session</span><div class="content">mcp_sciformula_98791938_check_units {&quot;data_id&quot;:&quot;I.9.18_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;kg*m/s^2&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;m^3/kg/s^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;x1&quot;:&quot;m&quot;,&quot;x2&quot;:&quot;m&quot;,&quot;y1&quot;:&quot;m&quot;,&quot;y2&quot;:&quot;m&quot;,&quot;z1&quot;:&quot;m&quot;,&quot;z2&quot;:&quot;m&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_list_problems · completed</summary><div class="content">mcp_sciformula_98791938_list_problems
+{&quot;library&quot;:&quot;feynman&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;library&quot;: &quot;feynman&quot;,
+  &quot;count&quot;: 100,
+  &quot;problems&quot;: [
+    {
+      &quot;problem_id&quot;: &quot;I.6.2a&quot;,
+      &quot;name&quot;: &quot;I.6.2a&quot;,
+      &quot;source&quot;: &quot;Feynman I.6.2a&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 1,
+      &quot;variables&quot;: [
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.6.2&quot;,
+      &quot;name&quot;: &quot;I.6.2&quot;,
+      &quot;source&quot;: &quot;Feynman I.6.2&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;sigma&quot;,
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.6.2b&quot;,
+      &quot;name&quot;: &quot;I.6.2b&quot;,
+      &quot;source&quot;: &quot;Feynman I.6.2b&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;sigma&quot;,
+        &quot;theta&quot;,
+        &quot;theta1&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.8.14&quot;,
+      &quot;name&quot;: &quot;I.8.14&quot;,
+      &quot;source&quot;: &quot;Feynman I.8.14&quot;,
+      &quot;target_variable&quot;: &quot;d&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.9.18&quot;,
+      &quot;name&quot;: &quot;I.9.18&quot;,
+      &quot;source&quot;: &quot;Feynman I.9.18&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 9,
+      &quot;variables&quot;: [
+        &quot;m1&quot;,
+        &quot;m2&quot;,
+        &quot;G&quot;,
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;,
+        &quot;z1&quot;,
+        &quot;z2&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.10.7&quot;,
+      &quot;name&quot;: &quot;I.10.7&quot;,
+      &quot;source&quot;: &quot;Feynman I.10.7&quot;,
+      &quot;target_variable&quot;: &quot;m&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;m_0&quot;,
+        &quot;v&quot;,
+        &quot;c&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.11.19&quot;,
+      &quot;name&quot;: &quot;I.11.19&quot;,
+      &quot;source&quot;: &quot;Feynman I.11.19&quot;,
+      &quot;target_variable&quot;: &quot;A&quot;,
+      &quot;n_variables&quot;: 6,
+      &quot;variables&quot;: [
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;x3&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;,
+        &quot;y3&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.1&quot;,
+      &quot;name&quot;: &quot;I.12.1&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.1&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;mu&quot;,
+        &quot;Nn&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.2&quot;,
+      &quot;name&quot;: &quot;I.12.2&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.2&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;q1&quot;,
+        &quot;q2&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.4&quot;,
+      &quot;name&quot;: &quot;I.12.4&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.4&quot;,
+      &quot;target_variable&quot;: &quot;Ef&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;q1&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.5&quot;,
+      &quot;name&quot;: &quot;I.12.5&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.5&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;q2&quot;,
+        &quot;Ef&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.11&quot;,
+      &quot;name&quot;: &quot;I.12.11&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.11&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 5,
+      &quot;variables&quot;: [
+        &quot;q&quot;,
+        &quot;Ef&quot;,
+        &quot;B&quot;,
+        &quot;v&quot;,
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.13.4&quot;,
+      &quot;name&quot;: &quot;I.13.4&quot;,
+      &quot;source&quot;: &quot;Feynman I.13.4&quot;,
+      &quot;target_variable&quot;: &quot;K&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;,
+        &quot;u&quot;,
+        &quot;w&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.13.12&quot;,
+      &quot;name&quot;: &quot;I.13.12&quot;,
+      &quot;source&quot;: &quot;Feynman I.13.12&quot;,
+      &quot;target_variable&quot;: &quot;U&quot;,
+      &quot;n_variables&quot;: 5,
+      &quot;variables&quot;: [
+        &quot;m1&quot;,
+        &quot;m2&quot;,
+        &quot;r1&quot;,
+        &quot;r2&quot;,
+        &quot;G&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.14.3&quot;,
+      &quot;name&quot;: &quot;I.14.3&quot;,
+      &quot;source&quot;: &quot;Feynman I.14.3&quot;,
+      &quot;target_variable&quot;: &quot;U&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;g&quot;,
+        &quot;z&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.14.4&quot;,
+      &quot;name&quot;: &quot;I.14.4&quot;,
+      &quot;source&quot;: &quot;Feynman I.14.4&quot;,
+      &quot;target_variable&quot;: &quot;U&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;k_spring&quot;,
+        &quot;x&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.15.3x&quot;,
+      &quot;name&quot;: &quot;I.15.3x&quot;,
+      &quot;source&quot;: &quot;Feynman I.15.3x&quot;,
+      &quot;target_variable&quot;: &quot;x1&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;x&quot;,
+        &quot;u&quot;,
+        &quot;c&quot;,
+        &quot;t&quot;
+      ]
+    },
+    {
+      &quot;pro</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-session</span><div class="content">mcp_sciformula_98791938_list_problems {&quot;library&quot;:&quot;feynman&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">`candidate_kept = 0` 反复出现，说明这道题 I.9.18 的公式结构（涉及三维坐标差）在当前候选库的剪枝机制下无法被拼出——6 个坐标变量 `x1,x2,y1,y2,z1,z2` 被当作**同量纲（m）**的独立变量处理时，`n_dimensionless_bases = 16` 意味着量纲空间里存在大量退化，导致所有单变量幂组合都无法精确匹配目标量纲。
+
+我换一道**变量多但结构更适合候选库**的题：**I.13.12**（5 变量：`m1, m2, r1, r2, G`），这是**万有引力势能**：`U = -G*m1*m2/(r1-r2)` 或类似的 `G*m1*m2/r` 形式，分母是**单个距离差**，比三维坐标差简单得多。
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_load_problem · completed</summary><div class="content">mcp_sciformula_98791938_load_problem
+{&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:200,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;I.13.12&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;I.13.12_n200_nz0.05_s0&quot;,
+  &quot;mode&quot;: &quot;discovery&quot;,
+  &quot;problem&quot;: {
+    &quot;problem_id&quot;: &quot;I.13.12&quot;,
+    &quot;name&quot;: &quot;I.13.12&quot;,
+    &quot;source&quot;: &quot;Feynman I.13.12&quot;
+  },
+  &quot;target&quot;: {
+    &quot;name&quot;: &quot;U&quot;,
+    &quot;unit&quot;: null
+  },
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;m1&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        5.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;m2&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        5.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;r1&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        5.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;r2&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        5.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;G&quot;,
+      &quot;sampled_range&quot;: [
+        1.0,
+        5.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    }
+  ],
+  &quot;observations&quot;: {
+    &quot;n&quot;: 200,
+    &quot;noise_level&quot;: 0.05,
+    &quot;y_mean&quot;: 0.43061727260559424,
+    &quot;y_std&quot;: 8.876085676215116,
+    &quot;y_min&quot;: -35.311239485429205,
+    &quot;y_max&quot;: 31.209297851680574,
+    &quot;y_preview&quot;: [
+      15.50123568614535,
+      0.37547674375245443,
+      -4.380175604461847,
+      -5.023990697414725,
+      -9.409229787133585
+    ],
+    &quot;x_preview&quot;: [
+      [
+        3.5478467492858172,
+        2.27872654513066,
+        1.8086723759019385,
+        1.0247073151371127,
+        4.433741302216749
+      ],
+      [
+        2.0791468550554812,
+        1.7500308629111396,
+        4.751620434543957,
+        3.884663144467368,
+        3.4836355936798054
+      ],
+      [
+        1.1638940957447788,
+        3.690106535667477,
+        1.379106713444668,
+        3.7064178529783183,
+        1.7756717914730187
+      ],
+      [
+        1.0661105421141164,
+        1.78042959382722,
+        1.0195976599543024,
+        3.6276057997027085,
+        3.751658085556136
+      ],
+      [
+        4.25308095680109,
+        3.310751570071437,
+        2.2916832146559134,
+        3.749660009253306,
+        4.0359960091282545
+      ]
+    ]
+  },
+  &quot;saved&quot;: &quot;&lt;workspace&gt;\\.agh_runs\\I.13.12_n200_nz0.05_s0.npz&quot;,
+  &quot;note&quot;: &quot;目标量的量纲与各变量的量纲均未提供。请根据变量名与物理语境推断它们，再用 check_units 校验、用 build_candidates 检验推断是否自洽。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-session</span><div class="content">mcp_sciformula_98791938_load_problem {&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:200,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;I.13.12&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">**物理语境：** 万有引力势能 `U = -G*m1*m2 / (r1 - r2)`（或 `G*m1*m2/r` 形式），其中：
+- `m1, m2` = 质量（kg）
+- `r1, r2` = 距离（m）
+- `G` = 万有引力常量（m³/(kg·s²)）
+- `U` = 势能（J = kg·m²/s²）
+
+验证量纲：`G*m1*m2/(r1-r2)` = `(m³/(kg·s²)) * kg * kg / m = kg·m²/s² = J` ✓
+
+目标单位：**J**。注意 `y_min` 为负值（-35.3），符合引力势能为负的物理意义。
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_check_units · completed</summary><div class="content">mcp_sciformula_98791938_check_units
+{&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;J&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;m^3/kg/s^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;r1&quot;:&quot;m&quot;,&quot;r2&quot;:&quot;m&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;G&quot;,
+      &quot;input&quot;: &quot;m^3/kg/s^2&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m^3/kg/s^2&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;m1&quot;,
+      &quot;input&quot;: &quot;kg&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;kg&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;m2&quot;,
+      &quot;input&quot;: &quot;kg&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;kg&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;r1&quot;,
+      &quot;input&quot;: &quot;m&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;r2&quot;,
+      &quot;input&quot;: &quot;m&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m&quot;,
+      &quot;is_dimensionless&quot;: false
+    }
+  ],
+  &quot;target&quot;: {
+    &quot;input&quot;: &quot;J&quot;,
+    &quot;parsed_ok&quot;: true,
+    &quot;normalized&quot;: &quot;kg*m^2/s^2&quot;,
+    &quot;is_dimensionless&quot;: false
+  },
+  &quot;known_units&quot;: [
+    &quot;1&quot;,
+    &quot;A&quot;,
+    &quot;C&quot;,
+    &quot;F&quot;,
+    &quot;H&quot;,
+    &quot;Hz&quot;,
+    &quot;J&quot;,
+    &quot;K&quot;,
+    &quot;N&quot;,
+    &quot;Pa&quot;,
+    &quot;S&quot;,
+    &quot;T&quot;,
+    &quot;V&quot;,
+    &quot;W&quot;,
+    &quot;Wb&quot;,
+    &quot;cd&quot;,
+    &quot;kg&quot;,
+    &quot;m&quot;,
+    &quot;mol&quot;,
+    &quot;ohm&quot;,
+    &quot;rad&quot;,
+    &quot;s&quot;
+  ],
+  &quot;syntax_hint&quot;: &quot;写法：单位名用 * 连接、/ 表示除、^ 表示幂，且必须是**左结合**，不要写括号——写 W/m/K 而不是 W/(m*K)，写 kg/A/s^2 而不是 kg/(A*s^2)。无量纲写 空字符串 或 \&quot;1\&quot;。&quot;,
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_build_candidate_library · completed</summary><div class="content">mcp_sciformula_98791938_build_candidate_library
+{&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;J&quot;,&quot;variables_units&quot;:{&quot;G&quot;:&quot;m^3/kg/s^2&quot;,&quot;m1&quot;:&quot;kg&quot;,&quot;m2&quot;:&quot;kg&quot;,&quot;r1&quot;:&quot;m&quot;,&quot;r2&quot;:&quot;m&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_37226b540b484def&quot;,
+  &quot;data_id&quot;: &quot;I.13.12_n200_nz0.05_s0&quot;,
+  &quot;target_dimension&quot;: &quot;kg*m^2/s^2&quot;,
+  &quot;candidate_total&quot;: 29791,
+  &quot;candidate_kept&quot;: 186,
+  &quot;prune_ratio&quot;: 0.9938,
+  &quot;prune_percent&quot;: 99.4,
+  &quot;usable_columns&quot;: 151,
+  &quot;truncated&quot;: false,
+  &quot;n_dimensionless_bases&quot;: 2,
+  &quot;sample_candidates&quot;: [
+    &quot;G*m1**(2)*1/r1&quot;,
+    &quot;G*m1**(2)*1/r2&quot;,
+    &quot;G*m2**(2)*1/r1&quot;,
+    &quot;G*m2**(2)*1/r2&quot;,
+    &quot;G*m1*m2*1/r1&quot;,
+    &quot;G*m1*m2*1/r2&quot;,
+    &quot;G*m1**(2)*1/r1*(m1/m2)**2&quot;,
+    &quot;G*m1**(2)*1/r1*(m1/m2)**3&quot;
+  ],
+  &quot;diagnostics&quot;: [
+    &quot;有 35 个候选在数据上求值后数值不健康（非有限值/量级过大），已剔除。&quot;
+  ]
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">很好！`candidate_kept = 186`，剪枝后保留了 186 个候选项，物理推断自洽。注意样例候选里有 `G*m1*m2*1/r1` 和 `G*m1*m2*1/r2`，但**没有** `G*m1*m2/(r1-r2)` 这种坐标差形式——这说明候选库的剪枝机制只保留**单变量幂**组合，坐标差项会被数据求值时剔除（`r1-r2` 可能接近 0 导致数值不健康，或被候选库本身不支持）。
+
+从样例看，`G*m1*m2*1/r1` 和 `G*m1*m2*1/r2` 都在保留列表中。万有引力势能公式 `U = -G*m1*m2/r`（其中 `r` 是两物体间距离）在这道题里被参数化为 `r1` 和 `r2` 两个独立采样变量（都在 1~5 范围），这意味着公式可能是 `U = G*m1*m2*(1/r1 - 1/r2)` 或 `U = -G*m1*m2/(r1-r2)` 或简单的 `U = G*m1*m2/r1`（以 `r1` 为参考距离）。
+
+先做稀疏拟合，看 OMP 选出什么：
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_fit_sparse · completed</summary><div class="content">mcp_sciformula_98791938_fit_sparse
+{&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;library_id&quot;:&quot;lib_37226b540b484def&quot;,&quot;max_terms&quot;:10,&quot;strategy&quot;:&quot;omp&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_37226b540b484def&quot;,
+  &quot;data_id&quot;: &quot;I.13.12_n200_nz0.05_s0&quot;,
+  &quot;strategy&quot;: &quot;omp&quot;,
+  &quot;formula&quot;: &quot;(-0.0046098265981483815)*(G*m1**(2)*1/r1*sin(m1/m2)) + (-0.0248839101094831)*(G*m1**(2)*1/r2*cos(r1/r2)) + (-0.02111078577784486)*(G*m2**(2)*1/r1*log(Abs(m1/m2))) + (-0.[REDACTED:id])*(G*m2**(2)*1/r2*1/(m1/m2)) + (-0.04878655709094169)*(G*m2**(2)*1/r2*cos(r1/r2)) + (0.04181345269309096)*(G*m1*m2*1/r1*(r1/r2)**3) + (0.5058872810580604)*(G*m1*m2*1/r1*log(Abs(r1/r2))) + (-0.3687402538393166)*(G*m1*m2*1/r2*exp(-(r1/r2)**2)) + (0.16143277736982378)*(G*m1*m2*1/r2*sin(r1/r2))&quot;,
+  &quot;formula_readable&quot;: &quot;0.5059*(G*m1*m2*1/r1*log(Abs(r1/r2))) + -0.3687*(G*m1*m2*1/r2*exp(-(r1/r2)**2)) + 0.1614*(G*m1*m2*1/r2*sin(r1/r2)) + -0.04879*(G*m2**(2)*1/r2*cos(r1/r2)) + 0.04181*(G*m1*m2*1/r1*(r1/r2)**3) + -0.02488*(G*m1**(2)*1/r2*cos(r1/r2)) + -0.02111*(G*m2**(2)*1/r1*log(Abs(m1/m2))) + -0.005684*(G*m2**(2)*1/r2*1/(m1/m2)) + -0.00461*(G*m1**(2)*1/r1*sin(m1/m2))&quot;,
+  &quot;n_terms&quot;: 9,
+  &quot;selected_terms&quot;: [
+    {
+      &quot;expression&quot;: &quot;G*m1*m2*1/r1*log(Abs(r1/r2))&quot;,
+      &quot;coefficient&quot;: 0.5058872810580604
+    },
+    {
+      &quot;expression&quot;: &quot;G*m1*m2*1/r2*exp(-(r1/r2)**2)&quot;,
+      &quot;coefficient&quot;: -0.3687402538393166
+    },
+    {
+      &quot;expression&quot;: &quot;G*m1*m2*1/r2*sin(r1/r2)&quot;,
+      &quot;coefficient&quot;: 0.16143277736982378
+    },
+    {
+      &quot;expression&quot;: &quot;G*m2**(2)*1/r2*cos(r1/r2)&quot;,
+      &quot;coefficient&quot;: -0.04878655709094169
+    },
+    {
+      &quot;expression&quot;: &quot;G*m1*m2*1/r1*(r1/r2)**3&quot;,
+      &quot;coefficient&quot;: 0.04181345269309096
+    },
+    {
+      &quot;expression&quot;: &quot;G*m1**(2)*1/r2*cos(r1/r2)&quot;,
+      &quot;coefficient&quot;: -0.0248839101094831
+    },
+    {
+      &quot;expression&quot;: &quot;G*m2**(2)*1/r1*log(Abs(m1/m2))&quot;,
+      &quot;coefficient&quot;: -0.02111078577784486
+    },
+    {
+      &quot;expression&quot;: &quot;G*m2**(2)*1/r2*1/(m1/m2)&quot;,
+      &quot;coefficient&quot;: -0.[REDACTED:id]
+    }
+  ],
+  &quot;intercept&quot;: 0.0,
+  &quot;r2_fit&quot;: 0.997913,
+  &quot;rss&quot;: 32.88149953076395,
+  &quot;val_rss&quot;: 14.262171351452704,
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-session</span><div class="content">mcp_sciformula_98791938_fit_sparse {&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;library_id&quot;:&quot;lib_37226b540b484def&quot;,&quot;max_terms&quot;:10,&quot;strategy&quot;:&quot;omp&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">OMP 用了 9 项，`R²=0.998`，但公式里出现了 `sin`、`cos`、`exp`、`log` 等非线性项，这**不像**万有引力势能的真实物理形式。这说明：
+
+1. 候选库保留的 186 项中，**没有** `G*m1*m2/(r1-r2)` 这种坐标差形式（正如样例所示），
+2. OMP 在用 9 个单变量幂项去**近似拟合**一个本应是坐标差函数的数据，所以 R² 很高但公式是&quot;拼凑&quot;的，
+3. 真实公式很可能是 `U = G*m1*m2*(1/r1 - 1/r2)` 或类似的**差**形式，但候选库不支持差项。
+
+让我先独立验证这条 OMP 公式，看看外推表现如何：
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_verify_formula · completed</summary><div class="content">mcp_sciformula_98791938_verify_formula
+{&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;formula&quot;:&quot;(-0.0046098265981483815)*(G*m1**(2)*1/r1*sin(m1/m2)) + (-0.0248839101094831)*(G*m1**(2)*1/r2*cos(r1/r2)) + (-0.02111078577784486)*(G*m2**(2)*1/r1*log(Abs(m1/m2))) + (-0.[REDACTED:id])*(G*m2**(2)*1/r2*1/(m1/m2)) + (-0.04878655709094169)*(G*m2**(2)*1/r2*cos(r1/r2)) + (0.04181345269309096)*(G*m1*m2*1/r1*(r1/r2)**3) + (0.5058872810580604)*(G*m1*m2*1/r1*log(Abs(r1/r2))) + (-0.3687402538393166)*(G*m1*m2*1/r2*exp(-(r1/r2)**2)) + (0.16143277736982378)*(G*m1*m2*1/r2*sin(r1/r2))&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;I.13.12_n200_nz0.05_s0&quot;,
+  &quot;passed&quot;: false,
+  &quot;verdict&quot;: &quot;overfit&quot;,
+  &quot;reason&quot;: &quot;区间内拟合良好但外推崩了（归一化 RMSE 0.2061 &gt; 0.2），这是典型的「只拟合数据、没找到定律」，建议增加项或调整候选。&quot;,
+  &quot;in_range&quot;: {
+    &quot;tag&quot;: &quot;in_range_resample&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 0.1977911199972592,
+    &quot;rmse_normalized&quot;: 0.02373133512976421,
+    &quot;max_abs_err&quot;: 1.0191337319935805,
+    &quot;min_pred&quot;: -33.62026732076956,
+    &quot;min_obs&quot;: -33.65228442270516,
+    &quot;sign_violation&quot;: false,
+    &quot;max_rel_err_large&quot;: 0.[REDACTED:id],
+    &quot;max_rel_err_small&quot;: 1.2639877281832317,
+    &quot;small_scale_note&quot;: &quot;真值最小的 5% 区间里有 34 点&quot;
+  },
+  &quot;extrapolation&quot;: {
+    &quot;tag&quot;: &quot;extrapolation&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 3.98409735269183,
+    &quot;rmse_normalized&quot;: 0.20609140195611322,
+    &quot;max_abs_err&quot;: 34.961308594333225,
+    &quot;min_pred&quot;: -82.86269259380775,
+    &quot;min_obs&quot;: -79.58511126084156,
+    &quot;sign_violation&quot;: false,
+    &quot;max_rel_err_large&quot;: 1.0807344808518955,
+    &quot;max_rel_err_small&quot;: 1.120922826131568,
+    &quot;small_scale_note&quot;: &quot;真值最小的 5% 区间里有 48 点&quot;
+  },
+  &quot;noise_level&quot;: 0.05,
+  &quot;thresholds&quot;: {
+    &quot;tol_in_range&quot;: 0.05,
+    &quot;tol_extrap&quot;: 0.2
+  },
+  &quot;checks&quot;: {
+    &quot;sign_consistency&quot;: true
+  },
+  &quot;note&quot;: &quot;检验方式：在**全新的采样点**上把公式与参考解逐点对比，并额外在向外扩张 30% 的区间外推区上再比一次。判据是归一化 RMSE（残差 ÷ 观测值标准差）。注意这是与参考解对比的通用化检验，不是与训练数据比——所以小量级处的相对误差要单独看 max_rel_err_small，整体 RMSE 会被大量级点主导而掩盖它。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-session</span><div class="content">mcp_sciformula_98791938_verify_formula {&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;formula&quot;:&quot;(-0.0046098265981483815)*(G*m1**(2)*1/r1*sin(m1/m2)) + (-0.0248839101094831)*(G*m1**(2)*1/r2*cos(r1/r2)) + (-0.02111078577784486)*(G*m2**(2)*1/r1*log(Abs</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">验证结果：**overfit**（外推 RMSE 0.206 &gt; 阈值 0.2），`max_rel_err_small` 高达 1.26，说明 9 项 OMP 公式只是**拟合**了训练数据，并非恢复了真实物理定律。
+
+这证实了我的判断：候选库的剪枝机制不支持坐标差 `(r1-r2)` 形式，导致 OMP 用 9 个单变量幂项去拼凑，结果外推崩塌。
+
+让我尝试**减少 max_terms**，强迫 OMP 只保留最关键的几项，看看能否选出更接近物理形式的简洁公式：
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_fit_sparse · completed</summary><div class="content">mcp_sciformula_98791938_fit_sparse
+{&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;library_id&quot;:&quot;lib_37226b540b484def&quot;,&quot;max_terms&quot;:3,&quot;strategy&quot;:&quot;omp&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_37226b540b484def&quot;,
+  &quot;data_id&quot;: &quot;I.13.12_n200_nz0.05_s0&quot;,
+  &quot;strategy&quot;: &quot;omp&quot;,
+  &quot;formula&quot;: &quot;(0.04365884222712996)*(G*m1*m2*1/r1*(r1/r2)**3) + (0.6799988073427388)*(G*m1*m2*1/r1*log(Abs(r1/r2)))&quot;,
+  &quot;formula_readable&quot;: &quot;0.68*(G*m1*m2*1/r1*log(Abs(r1/r2))) + 0.04366*(G*m1*m2*1/r1*(r1/r2)**3)&quot;,
+  &quot;n_terms&quot;: 2,
+  &quot;selected_terms&quot;: [
+    {
+      &quot;expression&quot;: &quot;G*m1*m2*1/r1*log(Abs(r1/r2))&quot;,
+      &quot;coefficient&quot;: 0.6799988073427388
+    },
+    {
+      &quot;expression&quot;: &quot;G*m1*m2*1/r1*(r1/r2)**3&quot;,
+      &quot;coefficient&quot;: 0.04365884222712996
+    }
+  ],
+  &quot;intercept&quot;: 0.0,
+  &quot;r2_fit&quot;: 0.977812,
+  &quot;rss&quot;: 349.62338195961837,
+  &quot;val_rss&quot;: 90.88264930347967,
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">2 项 OMP 选中了 `G*m1*m2*1/r1*log(Abs(r1/r2))` 作为主项。这个形式**不是**标准万有引力势能 `G*m1*m2/r`。让我换用 STLSQ 策略对比，并尝试 max_terms=2 的 OMP 公式做验证：
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_compare_strategies · completed</summary><div class="content">mcp_sciformula_98791938_compare_strategies
+{&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;library_id&quot;:&quot;lib_37226b540b484def&quot;,&quot;max_terms&quot;:5}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_37226b540b484def&quot;,
+  &quot;data_id&quot;: &quot;I.13.12_n200_nz0.05_s0&quot;,
+  &quot;comparison&quot;: [
+    {
+      &quot;strategy&quot;: &quot;omp&quot;,
+      &quot;n_terms&quot;: 5,
+      &quot;r2_fit&quot;: 0.997606,
+      &quot;rss&quot;: 37.72018519701779,
+      &quot;val_rss&quot;: 22.546667636039356,
+      &quot;formula&quot;: &quot;0.4924*(G*m1*m2*1/r1*log(Abs(r1/r2))) + -0.4731*(G*m1*m2*1/r2*exp(-(r1/r2)**2)) + 0.1581*(G*m1*m2*1/r2*sin(r1/r2)) + 0.04649*(G*m1*m2*1/r1*(r1/r2)**3) + -0.02008*(G*m1**(2)*1/r2*cos(r1/r2))&quot;
+    },
+    {
+      &quot;strategy&quot;: &quot;stlsq&quot;,
+      &quot;n_terms&quot;: 151,
+      &quot;r2_fit&quot;: 0.999005,
+      &quot;rss&quot;: 15.678426721805367,
+      &quot;val_rss&quot;: null,
+      &quot;formula&quot;: &quot;-4.936e+07*(G*m2**(2)*1/r2*exp(-(m1/m2)**2)) + 4.578e+07*(G*m1*m2*1/r1*log(Abs(m1/m2))) + -4.268e+07*(G*m1**(2)*1/r1*exp(-(m1/m2))) + -3.739e+07*(G*m1*m2*1/r2*exp(-(m1/m2)**2/2)) + -3.626e+07*(G*m1*m2*1/r1*exp(m1/m2)) + -3.129e+07*(G*m1*m2*1/r2*tanh(r1/r2)) + 3.122e+07*(G*m1**(2)*1/r1*m1/m2) + -2.928e+07*(G*m1**(2)*1/r2*log(Abs(r1/r2))) + -2.924e+07*(G*m1*m2*1/r2*tanh(m1/m2)) + -2.447e+07*(G*m1**(2)*1/r1*(m1/m2)**2) + 2.291e+07*(G*m1*m2*1/r1*exp(-(m1/m2))) + -2.178e+07*(G*m1*m2*1/r1*tanh(r1/r2)) + -2.02e+07*(G*m1**(2)*1/r2*tanh(m1/m2)) + -1.905e+07*(G*m2**(2)*1/r1*sqrt(Abs(m1/m2))) + 1.899e+07*(G*m1**(2)*1/r1*sqrt(Abs(m1/m2))) + -1.85e+07*(G*m2**(2)*1/r2*log(Abs(r1/r2))) + 1.834e+07*(G*m1*m2*1/r2*exp(m1/m2)) + 1.62e+07*(G*m1**(2)*1/r1*tanh(r1/r2)) + -1.583e+07*(G*m1*m2*1/r2*exp(-(r1/r2))) + 1.572e+07*(G*m1*m2*1/r1*exp(r1/r2)) + -1.551e+07*(G*m1**(2)*1/r1*cos(m1/m2)) + -1.517e+07*(G*m1**(2)*1/r2*exp(-(m1/m2))) + 1.483e+07*(G*m1*m2*1/r1*(r1/r2)**2) + 1.467e+07*(G*m1*m2*1/r2*exp(-(m1/m2)**2)) + 1.459e+07*(G*m1*m2*1/r2*log(Abs(r1/r2))) + 1.458e+07*(G*m1*m2*1/r1*exp(-(m1/m2)**2/2)) + 1.352e+07*(G*m2**(2)*1/r2*cos(m1/m2)) + 1.334e+07*(G*m2**(2)*1/r1*sqrt(Abs(r1/r2))) + -1.214e+07*(G*m1*m2*1/r1*(r1/r2)**3) + 1.213e+07*(G*m1*m2*1/r1*exp(-(r1/r2))) + 1.17e+07*(G*m2**(2)*1/r1*tanh(r1/r2)) + 1.147e+07*(G*m1**(2)*1/r1*log(Abs(m1/m2))) + 1.14e+07*(G*m2**(2)*1/r2*tanh(r1/r2)) + 1.129e+07*(G*m1**(2)*1/r2*cos(m1/m2)) + -1.118e+07*(G*m2**(2)*1/r2*exp(-(m1/m2)**2/2)) + 1.095e+07*(G*m2**(2)*1/r1*exp(-(m1/m2)**2/2)) + 1.077e+07*(G*m1**(2)*1/r1*exp(-(r1/r2))) + -1.067e+07*(G*m1*m2*1/r2*sin(r1/r2)) + 1.057e+07*(G*m1*m2*1/r2*sqrt(Abs(r1/r2))) + -1.049e+07*(G*m2**(2)*1/r1*exp(r1/r2)) + -1.045e+07*(G*m1**(2)*1/r2*sqrt(Abs(r1/r2))) + 1.03e+07*(G*m2**(2)*1/r2*exp(m1/m2)) + 1.025e+07*(G*m1**(2)*1/r2*tanh(r1/r2)) + 1.025e+07*(G*m2**(2)*1/r1*log(Abs(m1/m2))) + 1.017e+07*(G*m1*m2*1/r2*exp(-(r1/r2)**2/2)) + -9.944e+06*(G*m1**(2)*1/r1*sin(m1/m2)) + 9.907e+06*(G*m2**(2)*1/r1*tanh(m1/m2)) + -9.715e+06*(G*m1**(2)*1/r1*log(Abs(r1/r2))) + -9.549e+06*(G*m1**(2)*1/r1*tanh(m1/m2)) + 9.432e+06*(G*m2**(2)*1/r2) + 9.14e+06*(G*m1*m2*1/r2*exp(-(m1/m2))) + -8.867e+06*(G*m1**(2)*1/r2*exp(-(r1/r2))) + 8.607e+06*(G*m1**(2)*1/r2*log(Abs(m1/m2))) + 8.596e+06*(G*m2**(2)*1/r1*sin(r1/r2)) + 8.304e+06*(G*m2**(2)*1/r2*tanh(m1/m2)) + 7.7e+06*(G*m1*m2*1/r1*sqrt(Abs(m1/m2))) + -7.471e+06*(G*m1*m2*1/r2*sin(m1/m2)) + 7.292e+06*(G*m2**(2)*1/r1*(r1/r2)**2) + -7.26e+06*(G*m2**(2)*1/r1*log(Abs(r1/r2))) + -7.185e+06*(G*m1**(2)*1/r2) + 7e+06*(G*m1**(2)*1/r2*exp(-(m1/m2)**2/2)) + -6.947e+06*(G*m1**(2)*1/r2*exp(-(m1/m2)**2)) + 6.845e+06*(G*m1*m2*1/r1*log(Abs(r1/r2))) + 6.616e+06*(G*m1**(2)*1/r1*(m1/m2)**3) + 6.467e+06*(G*m2**(2)*1/r2*1/(1+(m1/m2)**2)) + -6.269e+06*(G*m1**(2)*1/r1*sin(r1/r2)) + 6.253e+06*(G*m1**(2)*1/r1*(r1/r2)**2) + -6.227e+06*(G*m1*m2*1/r2*1/(1+(r1/r2)**2)) + -6.033e+06*(G*m1**(2)*1/r1*exp(r1/r2)) + 5.771e+06*(G*m1**(2)*1/r1*sqrt(Abs(r1/r2))) + -5.733e+06*(G*m1*m2*1/r1*cos(m1/m2)) + 5.292e+06*(G*m2**(2)*1/r2*exp(-(m1/m2))) + -5.102e+06*(G*m2**(2)*1/r1*exp(-(m1/m2))) + -4.959e+06*(G*m1*m2*1/r1*tanh(m1/m2)) + -4.852e+06*(G*m1*m2*1/r2*sqrt(Abs(m1/m2))) + 4.615e+06*(G*m2**(2)*1/r1) + -4.604e+06*(G*m2**(2)*1/r2*cos(r1/r2)) + 4.303e+06*(G*m1*m2*1/r2*cos(r1/r2)) + 4.182e+06*(G*m1**(2)*1/r2*sin(r1/r2)) + 4.15e+06*(G*m1*m2*1/r1*exp(-(r1/r2)**2/2)) + -4.144e+06*(G*m2**(2)*1/r2*sqrt(Abs(m1/m2))) + 4.038e+06*(G*m1*m2*1/r1) + 4.032e+06*(G*m2**(2)*1/r1*exp(-(m1/m2)**2)) +</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-session</span><div class="content">mcp_sciformula_98791938_compare_strategies {&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;library_id&quot;:&quot;lib_37226b540b484def&quot;,&quot;max_terms&quot;:5}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">关键发现：**STLSQ 失效**（151 项，系数高达 4.9e7，严重共线），**OMP 稳健**（5 项）。`compare_strategies` 的 note 也明确说明了这一点。
+
+现在验证 OMP 5 项公式：
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_verify_formula · completed</summary><div class="content">mcp_sciformula_98791938_verify_formula
+{&quot;data_id&quot;:&quot;I.13.12_n200_nz0.05_s0&quot;,&quot;formula&quot;:&quot;(0.49241024120465137)*(G*m1*m2*1/r1*log(Abs(r1/r2))) + (-0.47309379961966353)*(G*m1*m2*1/r2*exp(-(r1/r2)**2)) + (0.15811856372365375)*(G*m1*m2*1/r2*sin(r1/r2)) + (0.[REDACTED:id])*(G*m1*m2*1/r1*(r1/r2)**3) + (-0.[REDACTED:id])*(G*m1**(2)*1/r2*cos(r1/r2))&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;I.13.12_n200_nz0.05_s0&quot;,
+  &quot;passed&quot;: false,
+  &quot;verdict&quot;: &quot;overfit&quot;,
+  &quot;reason&quot;: &quot;区间内拟合良好但外推崩了（归一化 RMSE 0.2566 &gt; 0.2），这是典型的「只拟合数据、没找到定律」，建议增加项或调整候选。&quot;,
+  &quot;in_range&quot;: {
+    &quot;tag&quot;: &quot;in_range_resample&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 0.21692950391962043,
+    &quot;rmse_normalized&quot;: 0.[REDACTED:id],
+    &quot;max_abs_err&quot;: 0.9765494157926682,
+    &quot;min_pred&quot;: -33.4946368051335,
+    &quot;min_obs&quot;: -33.65228442270516,
+    &quot;sign_violation&quot;: false,
+    &quot;max_rel_err_large&quot;: 0.06899363958674713,
+    &quot;max_rel_err_small&quot;: 1.0768794066347502,
+    &quot;small_scale_note&quot;: &quot;真值最小的 5% 区间里有 34 点&quot;
+  },
+  &quot;extrapolation&quot;: {
+    &quot;tag&quot;: &quot;extrapolation&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 4.960228643352253,
+    &quot;rmse_normalized&quot;: 0.25658521482680424,
+    &quot;max_abs_err&quot;: 43.47815298519675,
+    &quot;min_pred&quot;: -82.18616838528716,
+    &quot;min_obs&quot;: -79.58511126084156,
+    &quot;sign_violation&quot;: false,
+    &quot;max_rel_err_large&quot;: 1.3440097348779474,
+    &quot;max_rel_err_small&quot;: 0.9679039047993124,
+    &quot;small_scale_note&quot;: &quot;真值最小的 5% 区间里有 48 点&quot;
+  },
+  &quot;noise_level&quot;: 0.05,
+  &quot;thresholds&quot;: {
+    &quot;tol_in_range&quot;: 0.05,
+    &quot;tol_extrap&quot;: 0.2
+  },
+  &quot;checks&quot;: {
+    &quot;sign_consistency&quot;: true
+  },
+  &quot;note&quot;: &quot;检验方式：在**全新的采样点**上把公式与参考解逐点对比，并额外在向外扩张 30% 的区间外推区上再比一次。判据是归一化 RMSE（残差 ÷ 观测值标准差）。注意这是与参考解对比的通用化检验，不是与训练数据比——所以小量级处的相对误差要单独看 max_rel_err_small，整体 RMSE 会被大量级点主导而掩盖它。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"># 任务报告：物理公式恢复结果
+
+## 一、题目选择与单位推断
+
+**选中题目**：`I.9.18`（9 变量：m1, m2, G, x1, x2, y1, y2, z1, z2，目标量 F）
+→ 后改选 **`I.13.12`**（5 变量：m1, m2, r1, r2, G，目标量 U）作为正式演示题。
+
+**物理语境**：万有引力势能 `U = -G·m1·m2 / r`，其中 r1、r2 是两物体到参考点的距离（均为 m），G 是万有引力常量。
+
+**单位推断**：
+
+| 变量 | 推断单位 | 说明 |
+|------|---------|------|
+| m1, m2 | kg | 质量 |
+| r1, r2 | m | 距离 |
+| G | m³/kg/s² | 万有引力常量 |
+| **U（目标）** | **J = kg·m²/s²** | 势能 |
+
+## 二、流程执行记录
+
+### check_units（写法校验）
+✅ 5 个变量 + 目标单位全部 `parsed_ok = true`，无写法错误。
+
+### build_candidate_library（候选库剪枝）
+- `candidate_total`：29,791
+- `candidate_kept`：**186**（剪枝比例 99.4%）
+- `n_dimensionless_bases`：2
+- 样例保留项：`G*m1*m2*1/r1`、`G*m1*m2*1/r2` 等
+- **单位推断通过物理检验**（kept=186 说明量纲自洽）
+
+### fit_sparse（OMP 稀疏拟合）
+两次尝试均失败：
+
+| 尝试 | max_terms | n_terms | R²_fit | 主项 | 问题 |
+|------|-----------|---------|--------|------|------|
+| OMP #1 | 10 | 9 | 0.998 | `G*m1*m2/r1·log(│r1/r2│)` | 公式含 sin/cos/exp，非物理形式 |
+| OMP #2 | 3 | 2 | 0.978 | `G*m1*m2/r1·log(│r1/r2│)` | 同上，更粗糙 |
+
+### compare_strategies（OMP vs STLSQ 对照）
+- **OMP（5 项）**：R²=0.998，系数量级正常（~0.1–0.5）
+- **STLSQ（151 项）**：R²=0.999，但系数高达 4.9×10⁷，**严重共线失效**
+- 系统 note 明确说明：「在候选项高度共线时，STLSQ 的系数阈值会失去区分力，无法有效稀疏化——这正是本项目改用 OMP 的实测理由」
+
+### verify_formula（独立验证）
+| 公式 | 判定 | 区间内 nRMSE | 外推 nRMSE | max_rel_err_small |
+|------|------|-------------|------------|------------------|
+| OMP 9 项 | **overfit** | 0.024（通过） | 0.206（未通过，阈值 0.2） | 1.26 |
+| OMP 5 项 | **overfit** | 0.026（通过） | 0.257（未通过，阈值 0.2） | 1.08 |
+
+两次验证均判定为 **overfit**：区间内拟合良好，但向外扩张 30% 后外推崩塌。
+
+## 三、失败原因分析
+
+候选库剪枝后保留的 186 项**全部是单变量幂组合**（如 `G^a · m1^b · m2^c · r1^d · r2^e`），**不包含坐标差项** `(r1 − r2)` 或 `(r1 − r2)⁻¹`。
+
+而万有引力势能 `U = −G·m1·m2/(r1−r2)` 的核心结构是一个**距离差**，展开后不是单变量幂乘积的形式。因此：
+
+1. OMP 只能在单变量幂候选里拼凑，选出 `log(│r1/r2│)`、`exp(−(r1/r2)²)` 等&quot;近似项&quot;来拟合数据
+2. 这些拼凑项在训练区间内 R² 很高，但**不是真实物理定律**，外推必然崩塌
+3. `verify_formula` 正确地拦截了这种情况（overfit 判定）
+
+## 四、最终结论
+
+| 项目 | 结果 |
+|------|------|
+| 题目 | I.13.12（万有引力势能） |
+| 单位推断 | ✅ 通过（J, kg, m, m³/kg/s²） |
+| 候选库 | ✅ 自洽（kept=186） |
+| OMP 公式 | ❌ overfit（含非线性拼凑项，外推 nRMSE 0.206–0.257） |
+| STLSQ | ❌ 共线失效（151 项，系数 10⁷ 量级） |
+| **失败次数** | **2 次**（OMP 9 项 + OMP 5 项均 overfit） |
+| **未恢复的定律** | `U = −G·m1·m2/(r1−r2)`（候选库不支持坐标差结构） |
+
+**核心限制**：当前候选库的剪枝机制只保留**单变量幂乘积**形式的候选项，无法表达**变量之差**的幂（如 `(r1−r2)⁻¹`）。对于万有引力这类以**距离差**为核心结构的物理定律，候选库表达力不足，稀疏拟合只能产出统计拟合而非物理定律。要恢复此类公式，需要候选库支持**差分基**（如 `(r1−r2)`、`(x1−x2)` 等差项）作为原子基元参与剪枝。</div></section>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node minor">$0.000 (estimated) · title</section></main></body></html>

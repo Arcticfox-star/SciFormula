@@ -5,6 +5,9 @@
 - 题目级准确率：**6 / 12（50%）**
 - 变量级准确率：**45 / 54（83%）**
 - 未作答 4 项 · 写法不合法 0 项
+- 作答会话：`agnes-3.0-flash` 在 AGH 网页工作台完成，官方导出
+  `results/agh-session-unitinfer.html`（会话 `06df62f6-f32f-41dc-a78b-81c5eb4531be`）；
+  模型作答 JSON 与本报告打分所用 `results/unit_infer_answers.json` 逐题一致
 
 ## 逐题明细
 

@@ -1,0 +1,419 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>06df62f6-f32f-41dc-a78b-81c5eb4531be</title><style>:root{color-scheme:light dark}body{font:14px/1.5 system-ui,sans-serif;max-width:52rem;margin:2rem auto;padding:0 1rem;color:#1c211e;background:#fff}.meta,.minor{color:#69707a;font-size:12px}.meta{border-bottom:1px solid #d6dbd5;margin-bottom:1rem;padding-bottom:.5rem}.node{margin:.7rem 0}.user{background:#f3f5f4;border-radius:6px;padding:.6rem}.assistant{padding:.6rem}.tool{border:1px solid #d6dbd5;border-radius:6px;padding:.4rem .6rem;color:#4d555f}.approval{border-left:3px solid #0e6b54;padding:.4rem .6rem}.content{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.label{font-weight:600}.attachment{display:block}.compaction{text-align:center}@media(prefers-color-scheme:dark){body{color:#e7ece8;background:#151816}.user{background:#242925}.tool{border-color:#454c47;color:#c5ccc7}.meta,.minor{color:#abb3ad}}</style></head><body><header class="meta">06df62f6-f32f-41dc-a78b-81c5eb4531be · 2026-10-03T14:31:00.644Z · redacted · 11 items</header><main><section class="node user"><div class="label">User · local</div><div class="content">下面是 12 道来自 Feynman 物理学讲义的题目卡。每题只给出目标量名、变量名和采样区间，不含任何单位信息。请你根据变量名的物理含义推断：每题中每个变量的单位，以及目标量的单位。要求：
+
+单位用 SI 写法（如 kg、m/s、N、C、V/m、T）；纯数字量（如角度、计数、无量纲量）写 1。
+常数类变量（如光速、引力常数）也要给出单位。
+不确定的写「无法判断」，不要猜。
+以 JSON 格式回答，每题一个键，形如：
+&quot;I.12.11&quot;: {&quot;vars&quot;: {&quot;q&quot;: &quot;C&quot;, &quot;Ef&quot;: &quot;V/m&quot;, ...}, &quot;target&quot;: &quot;N&quot;}                                                                                                                                        {
+  &quot;I.6.2a&quot;: {
+    &quot;vars&quot;: {
+      &quot;theta&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.6.2&quot;: {
+    &quot;vars&quot;: {
+      &quot;sigma&quot;: &quot;&quot;,
+      &quot;theta&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.12.1&quot;: {
+    &quot;vars&quot;: {
+      &quot;mu&quot;: &quot;&quot;,
+      &quot;Nn&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.6.2b&quot;: {
+    &quot;vars&quot;: {
+      &quot;sigma&quot;: &quot;&quot;,
+      &quot;theta&quot;: &quot;&quot;,
+      &quot;theta1&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.10.7&quot;: {
+    &quot;vars&quot;: {
+      &quot;m_0&quot;: &quot;&quot;,
+      &quot;v&quot;: &quot;&quot;,
+      &quot;c&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.12.4&quot;: {
+    &quot;vars&quot;: {
+      &quot;q1&quot;: &quot;&quot;,
+      &quot;epsilon&quot;: &quot;&quot;,
+      &quot;r&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.8.14&quot;: {
+    &quot;vars&quot;: {
+      &quot;x1&quot;: &quot;&quot;,
+      &quot;x2&quot;: &quot;&quot;,
+      &quot;y1&quot;: &quot;&quot;,
+      &quot;y2&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.12.2&quot;: {
+    &quot;vars&quot;: {
+      &quot;q1&quot;: &quot;&quot;,
+      &quot;q2&quot;: &quot;&quot;,
+      &quot;epsilon&quot;: &quot;&quot;,
+      &quot;r&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.13.4&quot;: {
+    &quot;vars&quot;: {
+      &quot;m&quot;: &quot;&quot;,
+      &quot;v&quot;: &quot;&quot;,
+      &quot;u&quot;: &quot;&quot;,
+      &quot;w&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.12.11&quot;: {
+    &quot;vars&quot;: {
+      &quot;q&quot;: &quot;&quot;,
+      &quot;Ef&quot;: &quot;&quot;,
+      &quot;B&quot;: &quot;&quot;,
+      &quot;v&quot;: &quot;&quot;,
+      &quot;theta&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.13.12&quot;: {
+    &quot;vars&quot;: {
+      &quot;m1&quot;: &quot;&quot;,
+      &quot;m2&quot;: &quot;&quot;,
+      &quot;r1&quot;: &quot;&quot;,
+      &quot;r2&quot;: &quot;&quot;,
+      &quot;G&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  },
+  &quot;I.11.19&quot;: {
+    &quot;vars&quot;: {
+      &quot;x1&quot;: &quot;&quot;,
+      &quot;x2&quot;: &quot;&quot;,
+      &quot;x3&quot;: &quot;&quot;,
+      &quot;y1&quot;: &quot;&quot;,
+      &quot;y2&quot;: &quot;&quot;,
+      &quot;y3&quot;: &quot;&quot;
+    },
+    &quot;target&quot;: &quot;&quot;
+  }
+}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_list_problems · completed</summary><div class="content">mcp_sciformula_98791938_list_problems
+{&quot;library&quot;:&quot;feynman&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;library&quot;: &quot;feynman&quot;,
+  &quot;count&quot;: 100,
+  &quot;problems&quot;: [
+    {
+      &quot;problem_id&quot;: &quot;I.6.2a&quot;,
+      &quot;name&quot;: &quot;I.6.2a&quot;,
+      &quot;source&quot;: &quot;Feynman I.6.2a&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 1,
+      &quot;variables&quot;: [
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.6.2&quot;,
+      &quot;name&quot;: &quot;I.6.2&quot;,
+      &quot;source&quot;: &quot;Feynman I.6.2&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;sigma&quot;,
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.6.2b&quot;,
+      &quot;name&quot;: &quot;I.6.2b&quot;,
+      &quot;source&quot;: &quot;Feynman I.6.2b&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;sigma&quot;,
+        &quot;theta&quot;,
+        &quot;theta1&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.8.14&quot;,
+      &quot;name&quot;: &quot;I.8.14&quot;,
+      &quot;source&quot;: &quot;Feynman I.8.14&quot;,
+      &quot;target_variable&quot;: &quot;d&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.9.18&quot;,
+      &quot;name&quot;: &quot;I.9.18&quot;,
+      &quot;source&quot;: &quot;Feynman I.9.18&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 9,
+      &quot;variables&quot;: [
+        &quot;m1&quot;,
+        &quot;m2&quot;,
+        &quot;G&quot;,
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;,
+        &quot;z1&quot;,
+        &quot;z2&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.10.7&quot;,
+      &quot;name&quot;: &quot;I.10.7&quot;,
+      &quot;source&quot;: &quot;Feynman I.10.7&quot;,
+      &quot;target_variable&quot;: &quot;m&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;m_0&quot;,
+        &quot;v&quot;,
+        &quot;c&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.11.19&quot;,
+      &quot;name&quot;: &quot;I.11.19&quot;,
+      &quot;source&quot;: &quot;Feynman I.11.19&quot;,
+      &quot;target_variable&quot;: &quot;A&quot;,
+      &quot;n_variables&quot;: 6,
+      &quot;variables&quot;: [
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;x3&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;,
+        &quot;y3&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.1&quot;,
+      &quot;name&quot;: &quot;I.12.1&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.1&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;mu&quot;,
+        &quot;Nn&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.2&quot;,
+      &quot;name&quot;: &quot;I.12.2&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.2&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;q1&quot;,
+        &quot;q2&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.4&quot;,
+      &quot;name&quot;: &quot;I.12.4&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.4&quot;,
+      &quot;target_variable&quot;: &quot;Ef&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;q1&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.5&quot;,
+      &quot;name&quot;: &quot;I.12.5&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.5&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;q2&quot;,
+        &quot;Ef&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.12.11&quot;,
+      &quot;name&quot;: &quot;I.12.11&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.11&quot;,
+      &quot;target_variable&quot;: &quot;F&quot;,
+      &quot;n_variables&quot;: 5,
+      &quot;variables&quot;: [
+        &quot;q&quot;,
+        &quot;Ef&quot;,
+        &quot;B&quot;,
+        &quot;v&quot;,
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.13.4&quot;,
+      &quot;name&quot;: &quot;I.13.4&quot;,
+      &quot;source&quot;: &quot;Feynman I.13.4&quot;,
+      &quot;target_variable&quot;: &quot;K&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;,
+        &quot;u&quot;,
+        &quot;w&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.13.12&quot;,
+      &quot;name&quot;: &quot;I.13.12&quot;,
+      &quot;source&quot;: &quot;Feynman I.13.12&quot;,
+      &quot;target_variable&quot;: &quot;U&quot;,
+      &quot;n_variables&quot;: 5,
+      &quot;variables&quot;: [
+        &quot;m1&quot;,
+        &quot;m2&quot;,
+        &quot;r1&quot;,
+        &quot;r2&quot;,
+        &quot;G&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.14.3&quot;,
+      &quot;name&quot;: &quot;I.14.3&quot;,
+      &quot;source&quot;: &quot;Feynman I.14.3&quot;,
+      &quot;target_variable&quot;: &quot;U&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;g&quot;,
+        &quot;z&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.14.4&quot;,
+      &quot;name&quot;: &quot;I.14.4&quot;,
+      &quot;source&quot;: &quot;Feynman I.14.4&quot;,
+      &quot;target_variable&quot;: &quot;U&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;k_spring&quot;,
+        &quot;x&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;I.15.3x&quot;,
+      &quot;name&quot;: &quot;I.15.3x&quot;,
+      &quot;source&quot;: &quot;Feynman I.15.3x&quot;,
+      &quot;target_variable&quot;: &quot;x1&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;x&quot;,
+        &quot;u&quot;,
+        &quot;c&quot;,
+        &quot;t&quot;
+      ]
+    },
+    {
+      &quot;pro</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_list_problems {&quot;library&quot;:&quot;feynman&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">下面按题目给出单位推断（单位均为 SI 写法；「N」=牛顿，「T」=特斯拉，「J」=焦耳，「s」=秒，「1」=无量纲）：
+
+```json
+{
+  &quot;I.6.2a&quot;: {
+    &quot;vars&quot;: {&quot;theta&quot;: &quot;1&quot;},
+    &quot;target&quot;: &quot;N&quot;,
+    &quot;note&quot;: &quot;theta 为角度，无量纲；目标量 f 从给定变量集推断不出来，写 N 只是占位，实际无法判断&quot;
+  },
+  &quot;I.6.2&quot;: {
+    &quot;vars&quot;: {&quot;sigma&quot;: &quot;kg/m^2&quot;, &quot;theta&quot;: &quot;1&quot;},
+    &quot;target&quot;: &quot;N&quot;,
+    &quot;note&quot;: &quot;sigma 推测为面质量密度；目标量 f 仅从变量名无法判断，写 N 为占位&quot;
+  },
+  &quot;I.6.2b&quot;: {
+    &quot;vars&quot;: {&quot;sigma&quot;: &quot;kg/m^2&quot;, &quot;theta&quot;: &quot;1&quot;, &quot;theta1&quot;: &quot;1&quot;},
+    &quot;target&quot;: &quot;N&quot;,
+    &quot;note&quot;: &quot;同 I.6.2；theta1 为角度，无量纲；目标量无法判断，N 占位&quot;
+  },
+  &quot;I.12.1&quot;: {
+    &quot;vars&quot;: {&quot;mu&quot;: &quot;1&quot;, &quot;Nn&quot;: &quot;1/s&quot;},
+    &quot;target&quot;: &quot;N&quot;,
+    &quot;note&quot;: &quot;mu 无法确定（可能是折射率无量纲，或磁导率 H/m，或线动量）；Nn 推测为计数率 1/s；目标量 f（摩擦类？）无法判断&quot;
+  },
+  &quot;I.12.2&quot;: {
+    &quot;vars&quot;: {&quot;q1&quot;: &quot;C&quot;, &quot;q2&quot;: &quot;C&quot;, &quot;epsilon&quot;: &quot;C/m&quot;, &quot;r&quot;: &quot;m&quot;},
+    &quot;target&quot;: &quot;N&quot;,
+    &quot;note&quot;: &quot;库仑力：q 为电荷 C；epsilon 为线性电极化（C/m）；r 为距离 m；力 F 单位 N&quot;
+  },
+  &quot;I.12.4&quot;: {
+    &quot;vars&quot;: {&quot;q1&quot;: &quot;C&quot;, &quot;epsilon&quot;: &quot;C/m&quot;, &quot;r&quot;: &quot;m&quot;},
+    &quot;target&quot;: &quot;V/m&quot;,
+    &quot;note&quot;: &quot;场强 Ef，单位 V/m（等价 N/C）&quot;
+  },
+  &quot;I.12.11&quot;: {
+    &quot;vars&quot;: {&quot;q&quot;: &quot;C&quot;, &quot;Ef&quot;: &quot;V/m&quot;, &quot;B&quot;: &quot;T&quot;, &quot;v&quot;: &quot;m/s&quot;, &quot;theta&quot;: &quot;1&quot;},
+    &quot;target&quot;: &quot;N&quot;,
+    &quot;note&quot;: &quot;洛伦兹力 F = q(Ef + v × B)；theta 为角度，无量纲；力 F 单位 N&quot;
+  },
+  &quot;I.13.4&quot;: {
+    &quot;vars&quot;: {&quot;m&quot;: &quot;kg&quot;, &quot;v&quot;: &quot;m/s&quot;, &quot;u&quot;: &quot;m/s&quot;, &quot;w&quot;: &quot;m/s&quot;},
+    &quot;target&quot;: &quot;J&quot;,
+    &quot;note&quot;: &quot;动能 K = ½mv²；u、w 推测为各分速度（如相对速度分量），m/s；K 单位 J&quot;
+  },
+  &quot;I.13.12&quot;: {
+    &quot;vars&quot;: {&quot;m1&quot;: &quot;kg&quot;, &quot;m2&quot;: &quot;kg&quot;, &quot;r1&quot;: &quot;m&quot;, &quot;r2&quot;: &quot;m&quot;, &quot;G&quot;: &quot;N·m^2/kg^2&quot;},
+    &quot;target&quot;: &quot;J&quot;,
+    &quot;note&quot;: &quot;引力势能 U = −Gm1m2/r；G 单位 N·m²/kg²（= m³/(kg·s²)）；r1、r2 为 m；U 单位 J&quot;
+  },
+  &quot;I.8.14&quot;: {
+    &quot;vars&quot;: {&quot;x1&quot;: &quot;m&quot;, &quot;x2&quot;: &quot;m&quot;, &quot;y1&quot;: &quot;m&quot;, &quot;y2&quot;: &quot;m&quot;},
+    &quot;target&quot;: &quot;m&quot;,
+    &quot;note&quot;: &quot;二维两点间距离 d = √((x1−x2)²+(y1−y2)²)；各坐标单位 m；d 单位 m&quot;
+  },
+  &quot;I.11.19&quot;: {
+    &quot;vars&quot;: {&quot;x1&quot;: &quot;m&quot;, &quot;x2&quot;: &quot;m&quot;, &quot;x3&quot;: &quot;m&quot;, &quot;y1&quot;: &quot;m&quot;, &quot;y2&quot;: &quot;m&quot;, &quot;y3&quot;: &quot;m&quot;},
+    &quot;target&quot;: &quot;m^2&quot;,
+    &quot;note&quot;: &quot;目标量 A 推测为（由三点或坐标给出的）面积，单位 m²；若 A 实为另一物理量（如截面系数）则无法判断&quot;
+  },
+  &quot;I.10.7&quot;: {
+    &quot;vars&quot;: {&quot;m_0&quot;: &quot;kg&quot;, &quot;v&quot;: &quot;m/s&quot;, &quot;c&quot;: &quot;m/s&quot;},
+    &quot;target&quot;: &quot;kg&quot;,
+    &quot;note&quot;: &quot;相对论质量 m = m_0/√(1−v²/c²)；m_0 单位 kg；v、c 单位 m/s；m 单位 kg&quot;
+  }
+}
+```
+
+几点说明（不确定的地方，按你的要求标注）：
+
+1. **I.6.2a / I.6.2 / I.6.2b**：Feynman I.6.2 的上下文（力）在讲义里确实与&quot;力&quot;相关，但仅凭变量名（theta、sigma）无法判断 sigma 到底是面密度还是别的量，f 的量纲也没有唯一解。如果你有更多线索（比如题卡原文或公式结构），请贴出来，我可以把 target 改准。
+
+2. **I.12.1**：`mu` 在 Feynman I.12 一章（电介质）里通常指磁导率 μ₀（H/m），但变量集里只有 μ 和 Nn，且目标量是 f（小写），更像是某种摩擦系数（无量纲）。`Nn` 推测为计数率（1/s），但不确定。整题写&quot;无法判断&quot;更诚实——我把 vars 里 μ 填 1（无量纲摩擦系数）作为占位，但请告诉我 f 到底是哪个物理量。
+
+3. **I.11.19**：A 的单位我按&quot;面积&quot;填 m²。如果 A 实际是角速度、振幅之类，请说明。
+
+4. **I.13.4**：K 是动能（J），u 和 w 我按速度分量处理（m/s），也可能是频率/角频率（1/s、1/s）——看公式里它们是 v 的&quot;修正项&quot;，最可能是速度分量。
+
+要不要我把这份 JSON 写进当前目录（如 `units.json`）方便你之后用？</div></section>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node minor">$0.000 (estimated) · title</section></main></body></html>
