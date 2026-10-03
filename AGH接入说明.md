@@ -304,6 +304,7 @@ agh mcp reconnect sciformula --expected-revision REVISION
 | 关键配置 | MCP 服务定义（`mcp get` 的输出）、`mcp tools` 的工具清单 |
 | 专业验证结果 | `results/report.html` + `results/report_feynman.html` + `verify_formula` 的判定输出 |
 | 失败类测试样例 | `docs/test-cases.md` 三类齐全；官方题会话里 `verify_formula` 判 overfit 拦截高分假公式是现场案例 |
+| 证据未被改动 | `results/EVIDENCE.sha256`（sha256 清单）+ `python verify_evidence.py` 一键核对，证明上述文件与官方原件逐字节相同 |
 
 ---
 
@@ -316,7 +317,13 @@ python agh_tools.py schema    # 完整 MCP 工具定义（可直接对照 AGH �
 python mcp_server.py --selftest   # 走一遍 MCP 协议：initialize / tools/list / tools/call / 错误路径
 python toolchain_check.py         # 走完整闭环，产出 episode 记录
 python experiment.py              # 批量基准（21 题 × 3 噪声档），出报告
+python verify_evidence.py         # 核对提交证据与 sha256 清单是否一致
 ```
+
+> ⚠️ `results/agh-session*.html` 是 AGH 官方导出的**原件**，请勿用文档/富文本编辑器
+> 打开后保存——编辑器会注入 `data-page-node-id` 之类的属性（内容肉眼不变，但已不是原件）。
+> 只想看内容就用浏览器打开。万一被改，用 `git checkout -- <文件>` 恢复，
+> 再用 `python verify_evidence.py` 确认。
 
 `--selftest` 会验证三件事：协议能正确应答、**stdout 洁净**（业务代码的 print 不会污染协议流）、
 错误能被包装成 `isError: true` 让智能体读到。
