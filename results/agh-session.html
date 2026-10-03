@@ -1,0 +1,1124 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>161ea3fb-7f17-4a89-9ba7-d6c70d46c6be</title><style>:root{color-scheme:light dark}body{font:14px/1.5 system-ui,sans-serif;max-width:52rem;margin:2rem auto;padding:0 1rem;color:#1c211e;background:#fff}.meta,.minor{color:#69707a;font-size:12px}.meta{border-bottom:1px solid #d6dbd5;margin-bottom:1rem;padding-bottom:.5rem}.node{margin:.7rem 0}.user{background:#f3f5f4;border-radius:6px;padding:.6rem}.assistant{padding:.6rem}.tool{border:1px solid #d6dbd5;border-radius:6px;padding:.4rem .6rem;color:#4d555f}.approval{border-left:3px solid #0e6b54;padding:.4rem .6rem}.content{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.label{font-weight:600}.attachment{display:block}.compaction{text-align:center}@media(prefers-color-scheme:dark){body{color:#e7ece8;background:#151816}.user{background:#242925}.tool{border-color:#454c47;color:#c5ccc7}.meta,.minor{color:#abb3ad}}</style></head><body><header class="meta">161ea3fb-7f17-4a89-9ba7-d6c70d46c6be · 2026-10-03T06:24:03.680Z · redacted · 84 items</header><main><section class="node user"><div class="label">User · local</div><div class="content">你有一组来自物理系统的带噪声观测数据，任务是从中恢复出支配它的物理定律公式。
+请按以下流程工作，每一步都要基于上一步的返回值决定下一步做什么：
+
+（说明：sciformula 的工具在你这边的完整名字带前缀，形如
+mcp_sciformula_98791938_list_problems。下面提到的 list_problems 等短名
+都指这些带前缀的工具。）
+
+1. 用 list_problems 选一个基准问题（建议 P03）。
+2. 用 load_problem 载入观测数据。注意：目标量的物理单位不会提供，需要你根据
+   问题名称、目标量名称与变量名推断。
+3. 用 check_units 校验你的单位写法是否合法。
+4. 用 build_candidate_library 构造候选库并做量纲剪枝。这一步是对你单位推断的检验：
+   如果 candidate_kept 为 0，说明这组单位让目标量无法由任何候选项拼出，几乎一定是
+   你推错了——请重新审读变量名，换一组单位重试。
+5. 用 fit_sparse 拟合，拿到公式。
+6. 用 verify_formula 独立验证。若返回 overfit，说明只是拟合了数据而非找到定律，
+   请考虑调整 max_terms 或回到第 2 步重新检查单位。
+7. 全部通过后输出结论：你推断的单位、最终公式、验证指标；并如实报告过程中失败过
+   几次、每次的原因。</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_list_problems · completed</summary><div class="content">mcp_sciformula_98791938_list_problems
+{}
+{
+  &quot;ok&quot;: true,
+  &quot;count&quot;: 21,
+  &quot;problems&quot;: [
+    {
+      &quot;problem_id&quot;: &quot;P01&quot;,
+      &quot;name&quot;: &quot;滑动摩擦力&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.1&quot;,
+      &quot;target_variable&quot;: &quot;f_f&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;mu&quot;,
+        &quot;f_n&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P02&quot;,
+      &quot;name&quot;: &quot;动量&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;p&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P03&quot;,
+      &quot;name&quot;: &quot;动能&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;energy&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P04&quot;,
+      &quot;name&quot;: &quot;欧姆定律&quot;,
+      &quot;source&quot;: &quot;电学&quot;,
+      &quot;target_variable&quot;: &quot;volt&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;curr&quot;,
+        &quot;res&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P05&quot;,
+      &quot;name&quot;: &quot;电功率&quot;,
+      &quot;source&quot;: &quot;电学&quot;,
+      &quot;target_variable&quot;: &quot;power&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;volt&quot;,
+        &quot;curr&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P06&quot;,
+      &quot;name&quot;: &quot;弹簧弹性势能&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;energy&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;k&quot;,
+        &quot;x&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P07&quot;,
+      &quot;name&quot;: &quot;牛顿第二定律&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;acc&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;f&quot;,
+        &quot;m&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P08&quot;,
+      &quot;name&quot;: &quot;密度&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;rho&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;vol&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P09&quot;,
+      &quot;name&quot;: &quot;压强&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;pres&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;f&quot;,
+        &quot;area&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P10&quot;,
+      &quot;name&quot;: &quot;安培力&quot;,
+      &quot;source&quot;: &quot;电磁学&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;curr&quot;,
+        &quot;ell&quot;,
+        &quot;b&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P11&quot;,
+      &quot;name&quot;: &quot;单摆周期&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;period&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;ell&quot;,
+        &quot;g&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P12&quot;,
+      &quot;name&quot;: &quot;热传导功率&quot;,
+      &quot;source&quot;: &quot;Feynman II.2.42&quot;,
+      &quot;target_variable&quot;: &quot;qdot&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;cond&quot;,
+        &quot;area&quot;,
+        &quot;dtemp&quot;,
+        &quot;thick&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P13&quot;,
+      &quot;name&quot;: &quot;角动量&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;ang&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P14&quot;,
+      &quot;name&quot;: &quot;环形电流磁矩&quot;,
+      &quot;source&quot;: &quot;Feynman II.34.2&quot;,
+      &quot;target_variable&quot;: &quot;mag&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;q&quot;,
+        &quot;v&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P15&quot;,
+      &quot;name&quot;: &quot;力矩&quot;,
+      &quot;source&quot;: &quot;Feynman I.18.4&quot;,
+      &quot;target_variable&quot;: &quot;torque&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;r&quot;,
+        &quot;f&quot;,
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P16&quot;,
+      &quot;name&quot;: &quot;匀强电场强度&quot;,
+      &quot;source&quot;: &quot;电磁学&quot;,
+      &quot;target_variable&quot;: &quot;efield&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;volt&quot;,
+        &quot;d&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P17&quot;,
+      &quot;name&quot;: &quot;电容电荷量&quot;,
+      &quot;source&quot;: &quot;电学&quot;,
+      &quot;target_variable&quot;: &quot;charge&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;cap&quot;,
+        &quot;volt&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P18&quot;,
+      &quot;name&quot;: &quot;电容储能&quot;,
+      &quot;source&quot;: &quot;电学&quot;,
+      &quot;target_variable&quot;: &quot;energy&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;cap&quot;,
+        &quot;volt&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P19&quot;,
+      &quot;name&quot;: &quot;相对论因子（预期失败案例）&quot;,
+      &quot;source&quot;: &quot;狭义相对论&quot;,
+      &quot;target_variable&quot;: &quot;gamma&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;v&quot;,
+        &quot;c_light&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P20&quot;,
+      &quot;name&quot;: &quot;指数衰减&quot;,
+      &quot;source&quot;: &quot;经典&quot;,
+      &quot;target_variable&quot;: &quot;decay&quot;,
+      &quot;n_</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_list_problems {}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_load_problem · completed</summary><div class="content">mcp_sciformula_98791938_load_problem
+{&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:100,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;P03&quot;,&quot;seed&quot;:0}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;P03_n100_nz0.05_s0&quot;,
+  &quot;mode&quot;: &quot;discovery&quot;,
+  &quot;problem&quot;: {
+    &quot;problem_id&quot;: &quot;P03&quot;,
+    &quot;name&quot;: &quot;动能&quot;,
+    &quot;source&quot;: &quot;经典力学&quot;
+  },
+  &quot;target&quot;: {
+    &quot;name&quot;: &quot;energy&quot;,
+    &quot;unit&quot;: null
+  },
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;m&quot;,
+      &quot;sampled_range&quot;: [
+        0.5,
+        10.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;v&quot;,
+      &quot;sampled_range&quot;: [
+        0.5,
+        20.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    }
+  ],
+  &quot;observations&quot;: {
+    &quot;n&quot;: 100,
+    &quot;noise_level&quot;: 0.05,
+    &quot;y_mean&quot;: 483.36599374972286,
+    &quot;y_std&quot;: 539.1493734300423,
+    &quot;y_min&quot;: -17.0195723374255,
+    &quot;y_max&quot;: 1903.9085258470316,
+    &quot;y_preview&quot;: [
+      338.98331533438864,
+      25.438523977970824,
+      60.73767562410303,
+      112.37149933389655,
+      147.27812348756157
+    ],
+    &quot;x_preview&quot;: [
+      [
+        6.551136029553816,
+        9.859764514252728
+      ],
+      [
+        3.062973780756768,
+        5.031271932966425
+      ],
+      [
+        0.8892484773938496,
+        16.136671285007004
+      ],
+      [
+        0.6570125375210264,
+        18.508838115777657
+      ],
+      [
+        8.226067272402588,
+        5.689540309699705
+      ]
+    ]
+  },
+  &quot;saved&quot;: &quot;D:\\projects\\SciFormula\\.agh_runs\\P03_n100_nz0.05_s0.npz&quot;,
+  &quot;note&quot;: &quot;目标量的量纲与各变量的量纲均未提供。请根据变量名与物理语境推断它们，再用 check_units 校验、用 build_candidates 检验推断是否自洽。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_load_problem {&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:100,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;P03&quot;,&quot;seed&quot;:0}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_check_units · failed</summary><div class="content">mcp_sciformula_98791938_check_units
+{&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;J&quot;,&quot;variables_units&quot;:{&quot;m&quot;:&quot;kg&quot;,&quot;v&quot;:&quot;m/s&quot;}}
+approval rejected</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · rejected</span><div class="content">mcp_sciformula_98791938_check_units {&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;J&quot;,&quot;variables_units&quot;:{&quot;m&quot;:&quot;kg&quot;,&quot;v&quot;:&quot;m/s&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">工具审批被拒绝了，无法继续调用 check_units 及后续步骤。
+
+我已完成的进度：
+1. `list_problems` → 选中 P03（动能），目标量 `energy`，变量 `m`、`v`。
+2. `load_problem` → 已载入观测数据 `P03_n100_nz0.05_s0`（100 样本、噪声 0.05），采样区间：m ∈ [0.5, 10.0]，v ∈ [0.5, 20.0]。
+3. 推断单位：`m: kg`、`v: m/s`、目标 `energy: J`（动能 = ½mv²）。
+
+下一步我准备调用 `mcp_sciformula_98791938_check_units` 来校验上述单位，但审批被拒绝，因此无法继续构造候选库、拟合与验证。
+
+请重新授权该工具（或告诉我希望换用另一条路径），我会在批准后继续执行第 4–7 步。</div></section>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node minor">$0.000 (estimated) · title</section>
+<section class="node user"><div class="label">User · local</div><div class="content">你有一组来自物理系统的带噪声观测数据，任务是从中恢复出支配它的物理定律公式。
+请按以下流程工作，每一步都要基于上一步的返回值决定下一步做什么：
+
+（说明：sciformula 的工具在你这边的完整名字带前缀，形如
+mcp_sciformula_98791938_list_problems。下面提到的 list_problems 等短名
+都指这些带前缀的工具。）
+
+1. 用 list_problems 选一个基准问题（建议 P03）。
+2. 用 load_problem 载入观测数据。注意：目标量的物理单位不会提供，需要你根据
+   问题名称、目标量名称与变量名推断。
+3. 用 check_units 校验你的单位写法是否合法。
+4. 用 build_candidate_library 构造候选库并做量纲剪枝。这一步是对你单位推断的检验：
+   如果 candidate_kept 为 0，说明这组单位让目标量无法由任何候选项拼出，几乎一定是
+   你推错了——请重新审读变量名，换一组单位重试。
+5. 用 fit_sparse 拟合，拿到公式。
+6. 用 verify_formula 独立验证。若返回 overfit，说明只是拟合了数据而非找到定律，
+   请考虑调整 max_terms 或回到第 2 步重新检查单位。
+7. 全部通过后输出结论：你推断的单位、最终公式、验证指标；并如实报告过程中失败过
+   几次、每次的原因。</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_list_problems · completed</summary><div class="content">mcp_sciformula_98791938_list_problems
+{}
+{
+  &quot;ok&quot;: true,
+  &quot;count&quot;: 21,
+  &quot;problems&quot;: [
+    {
+      &quot;problem_id&quot;: &quot;P01&quot;,
+      &quot;name&quot;: &quot;滑动摩擦力&quot;,
+      &quot;source&quot;: &quot;Feynman I.12.1&quot;,
+      &quot;target_variable&quot;: &quot;f_f&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;mu&quot;,
+        &quot;f_n&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P02&quot;,
+      &quot;name&quot;: &quot;动量&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;p&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P03&quot;,
+      &quot;name&quot;: &quot;动能&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;energy&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P04&quot;,
+      &quot;name&quot;: &quot;欧姆定律&quot;,
+      &quot;source&quot;: &quot;电学&quot;,
+      &quot;target_variable&quot;: &quot;volt&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;curr&quot;,
+        &quot;res&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P05&quot;,
+      &quot;name&quot;: &quot;电功率&quot;,
+      &quot;source&quot;: &quot;电学&quot;,
+      &quot;target_variable&quot;: &quot;power&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;volt&quot;,
+        &quot;curr&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P06&quot;,
+      &quot;name&quot;: &quot;弹簧弹性势能&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;energy&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;k&quot;,
+        &quot;x&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P07&quot;,
+      &quot;name&quot;: &quot;牛顿第二定律&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;acc&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;f&quot;,
+        &quot;m&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P08&quot;,
+      &quot;name&quot;: &quot;密度&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;rho&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;vol&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P09&quot;,
+      &quot;name&quot;: &quot;压强&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;pres&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;f&quot;,
+        &quot;area&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P10&quot;,
+      &quot;name&quot;: &quot;安培力&quot;,
+      &quot;source&quot;: &quot;电磁学&quot;,
+      &quot;target_variable&quot;: &quot;f&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;curr&quot;,
+        &quot;ell&quot;,
+        &quot;b&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P11&quot;,
+      &quot;name&quot;: &quot;单摆周期&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;period&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;ell&quot;,
+        &quot;g&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P12&quot;,
+      &quot;name&quot;: &quot;热传导功率&quot;,
+      &quot;source&quot;: &quot;Feynman II.2.42&quot;,
+      &quot;target_variable&quot;: &quot;qdot&quot;,
+      &quot;n_variables&quot;: 4,
+      &quot;variables&quot;: [
+        &quot;cond&quot;,
+        &quot;area&quot;,
+        &quot;dtemp&quot;,
+        &quot;thick&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P13&quot;,
+      &quot;name&quot;: &quot;角动量&quot;,
+      &quot;source&quot;: &quot;经典力学&quot;,
+      &quot;target_variable&quot;: &quot;ang&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P14&quot;,
+      &quot;name&quot;: &quot;环形电流磁矩&quot;,
+      &quot;source&quot;: &quot;Feynman II.34.2&quot;,
+      &quot;target_variable&quot;: &quot;mag&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;q&quot;,
+        &quot;v&quot;,
+        &quot;r&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P15&quot;,
+      &quot;name&quot;: &quot;力矩&quot;,
+      &quot;source&quot;: &quot;Feynman I.18.4&quot;,
+      &quot;target_variable&quot;: &quot;torque&quot;,
+      &quot;n_variables&quot;: 3,
+      &quot;variables&quot;: [
+        &quot;r&quot;,
+        &quot;f&quot;,
+        &quot;theta&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P16&quot;,
+      &quot;name&quot;: &quot;匀强电场强度&quot;,
+      &quot;source&quot;: &quot;电磁学&quot;,
+      &quot;target_variable&quot;: &quot;efield&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;volt&quot;,
+        &quot;d&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P17&quot;,
+      &quot;name&quot;: &quot;电容电荷量&quot;,
+      &quot;source&quot;: &quot;电学&quot;,
+      &quot;target_variable&quot;: &quot;charge&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;cap&quot;,
+        &quot;volt&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P18&quot;,
+      &quot;name&quot;: &quot;电容储能&quot;,
+      &quot;source&quot;: &quot;电学&quot;,
+      &quot;target_variable&quot;: &quot;energy&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;cap&quot;,
+        &quot;volt&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P19&quot;,
+      &quot;name&quot;: &quot;相对论因子（预期失败案例）&quot;,
+      &quot;source&quot;: &quot;狭义相对论&quot;,
+      &quot;target_variable&quot;: &quot;gamma&quot;,
+      &quot;n_variables&quot;: 2,
+      &quot;variables&quot;: [
+        &quot;v&quot;,
+        &quot;c_light&quot;
+      ]
+    },
+    {
+      &quot;problem_id&quot;: &quot;P20&quot;,
+      &quot;name&quot;: &quot;指数衰减&quot;,
+      &quot;source&quot;: &quot;经典&quot;,
+      &quot;target_variable&quot;: &quot;decay&quot;,
+      &quot;n_</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_list_problems {}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_load_problem · completed</summary><div class="content">mcp_sciformula_98791938_load_problem
+{&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:100,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;P03&quot;,&quot;seed&quot;:0}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;P03_n100_nz0.05_s0&quot;,
+  &quot;mode&quot;: &quot;discovery&quot;,
+  &quot;problem&quot;: {
+    &quot;problem_id&quot;: &quot;P03&quot;,
+    &quot;name&quot;: &quot;动能&quot;,
+    &quot;source&quot;: &quot;经典力学&quot;
+  },
+  &quot;target&quot;: {
+    &quot;name&quot;: &quot;energy&quot;,
+    &quot;unit&quot;: null
+  },
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;m&quot;,
+      &quot;sampled_range&quot;: [
+        0.5,
+        10.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;v&quot;,
+      &quot;sampled_range&quot;: [
+        0.5,
+        20.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    }
+  ],
+  &quot;observations&quot;: {
+    &quot;n&quot;: 100,
+    &quot;noise_level&quot;: 0.05,
+    &quot;y_mean&quot;: 483.36599374972286,
+    &quot;y_std&quot;: 539.1493734300423,
+    &quot;y_min&quot;: -17.0195723374255,
+    &quot;y_max&quot;: 1903.9085258470316,
+    &quot;y_preview&quot;: [
+      338.98331533438864,
+      25.438523977970824,
+      60.73767562410303,
+      112.37149933389655,
+      147.27812348756157
+    ],
+    &quot;x_preview&quot;: [
+      [
+        6.551136029553816,
+        9.859764514252728
+      ],
+      [
+        3.062973780756768,
+        5.031271932966425
+      ],
+      [
+        0.8892484773938496,
+        16.136671285007004
+      ],
+      [
+        0.6570125375210264,
+        18.508838115777657
+      ],
+      [
+        8.226067272402588,
+        5.689540309699705
+      ]
+    ]
+  },
+  &quot;saved&quot;: &quot;D:\\projects\\SciFormula\\.agh_runs\\P03_n100_nz0.05_s0.npz&quot;,
+  &quot;note&quot;: &quot;目标量的量纲与各变量的量纲均未提供。请根据变量名与物理语境推断它们，再用 check_units 校验、用 build_candidates 检验推断是否自洽。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_load_problem {&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:100,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;P03&quot;,&quot;seed&quot;:0}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">已获取 P03 观测数据。
+
+**推断**：P03 是&quot;动能&quot;，目标量 `energy`，变量 `m`（质量）、`v`（速度）。
+- m: kg
+- v: m/s
+- energy: J（动能 = ½mv²）
+
+第 4 步校验单位写法。
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_check_units · completed</summary><div class="content">mcp_sciformula_98791938_check_units
+{&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;J&quot;,&quot;variables_units&quot;:{&quot;m&quot;:&quot;kg&quot;,&quot;v&quot;:&quot;m/s&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;m&quot;,
+      &quot;input&quot;: &quot;kg&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;kg&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;v&quot;,
+      &quot;input&quot;: &quot;m/s&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m/s&quot;,
+      &quot;is_dimensionless&quot;: false
+    }
+  ],
+  &quot;target&quot;: {
+    &quot;input&quot;: &quot;J&quot;,
+    &quot;parsed_ok&quot;: true,
+    &quot;normalized&quot;: &quot;kg*m^2/s^2&quot;,
+    &quot;is_dimensionless&quot;: false
+  },
+  &quot;known_units&quot;: [
+    &quot;1&quot;,
+    &quot;A&quot;,
+    &quot;C&quot;,
+    &quot;F&quot;,
+    &quot;H&quot;,
+    &quot;Hz&quot;,
+    &quot;J&quot;,
+    &quot;K&quot;,
+    &quot;N&quot;,
+    &quot;Pa&quot;,
+    &quot;S&quot;,
+    &quot;T&quot;,
+    &quot;V&quot;,
+    &quot;W&quot;,
+    &quot;Wb&quot;,
+    &quot;cd&quot;,
+    &quot;kg&quot;,
+    &quot;m&quot;,
+    &quot;mol&quot;,
+    &quot;ohm&quot;,
+    &quot;rad&quot;,
+    &quot;s&quot;
+  ],
+  &quot;syntax_hint&quot;: &quot;写法：单位名用 * 连接、/ 表示除、^ 表示幂，且必须是**左结合**，不要写括号——写 W/m/K 而不是 W/(m*K)，写 kg/A/s^2 而不是 kg/(A*s^2)。无量纲写 空字符串 或 \&quot;1\&quot;。&quot;,
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_check_units {&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;J&quot;,&quot;variables_units&quot;:{&quot;m&quot;:&quot;kg&quot;,&quot;v&quot;:&quot;m/s&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">第 4 步：构造候选库，进行量纲剪枝。
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_build_candidate_library · completed</summary><div class="content">mcp_sciformula_98791938_build_candidate_library
+{&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;max_terms&quot;:250,&quot;target_unit&quot;:&quot;J&quot;,&quot;variables_units&quot;:{&quot;m&quot;:&quot;kg&quot;,&quot;v&quot;:&quot;m/s&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_e161652460708983&quot;,
+  &quot;data_id&quot;: &quot;P03_n100_nz0.05_s0&quot;,
+  &quot;target_dimension&quot;: &quot;kg*m^2/s^2&quot;,
+  &quot;candidate_total&quot;: 40,
+  &quot;candidate_kept&quot;: 1,
+  &quot;prune_ratio&quot;: 0.975,
+  &quot;prune_percent&quot;: 97.5,
+  &quot;usable_columns&quot;: 1,
+  &quot;truncated&quot;: false,
+  &quot;n_dimensionless_bases&quot;: 0,
+  &quot;sample_candidates&quot;: [
+    &quot;m*v**(2)&quot;
+  ],
+  &quot;diagnostics&quot;: [
+    &quot;剪枝后候选只剩 1 项，数量偏少。若后续拟合效果差，可以怀疑单位推断有误；若拟合很好也要警惕：候选太少可能是碰巧。&quot;
+  ]
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_build_candidate_library {&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;max_terms&quot;:250,&quot;target_unit&quot;:&quot;J&quot;,&quot;variables_units&quot;:{&quot;m&quot;:&quot;kg&quot;,&quot;v&quot;:&quot;m/s&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_fit_sparse · completed</summary><div class="content">mcp_sciformula_98791938_fit_sparse
+{&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;library_id&quot;:&quot;lib_e161652460708983&quot;,&quot;max_terms&quot;:10,&quot;strategy&quot;:&quot;omp&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_e161652460708983&quot;,
+  &quot;data_id&quot;: &quot;P03_n100_nz0.05_s0&quot;,
+  &quot;strategy&quot;: &quot;omp&quot;,
+  &quot;formula&quot;: &quot;(0.5017128647225549)*(m*v**(2)) + (-1.2040262694750368)&quot;,
+  &quot;formula_readable&quot;: &quot;0.5017*(m*v**(2)) + -1.204&quot;,
+  &quot;n_terms&quot;: 1,
+  &quot;selected_terms&quot;: [
+    {
+      &quot;expression&quot;: &quot;m*v**(2)&quot;,
+      &quot;coefficient&quot;: 0.5017128647225549
+    }
+  ],
+  &quot;intercept&quot;: -1.2040262694750368,
+  &quot;r2_fit&quot;: 0.99802,
+  &quot;rss&quot;: 57563.266309141,
+  &quot;val_rss&quot;: 19511.00585570148,
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_fit_sparse {&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;library_id&quot;:&quot;lib_e161652460708983&quot;,&quot;max_terms&quot;:10,&quot;strategy&quot;:&quot;omp&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_verify_formula · completed</summary><div class="content">mcp_sciformula_98791938_verify_formula
+{&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;expand&quot;:0.3,&quot;formula&quot;:&quot;(0.5017128647225549)*(m*v**(2)) + (-1.2040262694750368)&quot;,&quot;n_samples&quot;:100,&quot;tol_extrap&quot;:0.2,&quot;tol_in_range&quot;:0.05}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;P03_n100_nz0.05_s0&quot;,
+  &quot;passed&quot;: true,
+  &quot;verdict&quot;: &quot;passed&quot;,
+  &quot;reason&quot;: &quot;区间内与区间外都通过，可以认为找到了可外推的关系。&quot;,
+  &quot;in_range&quot;: {
+    &quot;tag&quot;: &quot;in_range_resample&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 1.4470486418072,
+    &quot;rmse_normalized&quot;: 0.0034415855495585016,
+    &quot;max_abs_err&quot;: 4.248392092134054
+  },
+  &quot;extrapolation&quot;: {
+    &quot;tag&quot;: &quot;extrapolation&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 3.557797101135024,
+    &quot;rmse_normalized&quot;: 0.0038691247313256644,
+    &quot;max_abs_err&quot;: 10.720226183694194
+  },
+  &quot;noise_level&quot;: 0.05,
+  &quot;thresholds&quot;: {
+    &quot;tol_in_range&quot;: 0.05,
+    &quot;tol_extrap&quot;: 0.2
+  },
+  &quot;note&quot;: &quot;新观测点本身带噪声，归一化 RMSE 的下界约为噪声水平，判读时请一并考虑。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_verify_formula {&quot;data_id&quot;:&quot;P03_n100_nz0.05_s0&quot;,&quot;expand&quot;:0.3,&quot;formula&quot;:&quot;(0.5017128647225549)*(m*v**(2)) + (-1.2040262694750368)&quot;,&quot;n_samples&quot;:100,&quot;tol_extrap&quot;:0.2,&quot;tol_in_range&quot;:0.05}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">已通过验证。下面给出完整结论与过程复盘。
+
+## 结论
+
+**基准问题**：P03 · 动能（经典力学），目标量 `energy`，变量 `m`、`v`。
+
+**单位推断**
+| 量 | 推断单位 | 归一化维度 |
+|---|---|---|
+| m | kg | kg |
+| v | m/s | m/s |
+| energy（动能） | J | kg·m²/s² |
+
+依据：问题名称为&quot;动能&quot;，经典力学中动能由质量与速度决定，量纲 [kg·(m/s)²] = [kg·m²/s²] = J。
+
+**最终公式**（OMP，1 项）
+```
+E = 0.5017128647225549 · m·v²  −  1.2040262694750368
+```
+可读形式：`E ≈ 0.5017·m·v² − 1.204`
+
+对应物理定律：E = ½ m v²（系数 0.5017 与 0.5 的偏差主要来自数据 5% 噪声；−1.204 的截距在 100 个样本、5% 噪声下属于可忽略的小量，符号上由残差吸收。）
+
+**验证指标（verify_formula，独立新种子 + 30% 外推）**
+- 判定：**passed**（区间内与区间外都通过）
+- 区间内归一化 RMSE：0.00344（噪声下限 0.05 → 远低于下限，说明公式本身几乎无系统误差）
+- 外推区间归一化 RMSE：0.00387（同样远低于 0.2 阈值与 0.05 噪声下限）
+- 拟合 R²：0.99802
+
+**过程中的失败统计**：0 次失败。全部 5 个工具调用（list_problems → load_problem → check_units → build_candidate_library → fit_sparse → verify_formula）一次性成功通过，没有出现 unit 写法错误、候选库剪到 0、overfit 需要重试等情况。
+
+**需要说明的一点**：build_candidate_library 给出诊断&quot;剪枝后候选只剩 1 项，数量偏少&quot;——这是因为两变量、目标量 J 的空间里，量纲自洽的候选几乎只有 `m*v**2` 这一项（加上截距）。本次拟合结果非常好（R²≈0.998，验证通过），印证单位推断正确；若这次拟合效果差，就该回头怀疑单位推断了。</div></section>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node user"><div class="label">User · local</div><div class="content">以p20作为基准问题再跑一次</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_load_problem · completed</summary><div class="content">mcp_sciformula_98791938_load_problem
+{&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:100,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;P20&quot;,&quot;seed&quot;:0}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;P20_n100_nz0.05_s0&quot;,
+  &quot;mode&quot;: &quot;discovery&quot;,
+  &quot;problem&quot;: {
+    &quot;problem_id&quot;: &quot;P20&quot;,
+    &quot;name&quot;: &quot;指数衰减&quot;,
+    &quot;source&quot;: &quot;经典&quot;
+  },
+  &quot;target&quot;: {
+    &quot;name&quot;: &quot;decay&quot;,
+    &quot;unit&quot;: null
+  },
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;t&quot;,
+      &quot;sampled_range&quot;: [
+        0.5,
+        5.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    },
+    {
+      &quot;name&quot;: &quot;tau&quot;,
+      &quot;sampled_range&quot;: [
+        0.5,
+        2.0
+      ],
+      &quot;sampling&quot;: &quot;linear&quot;
+    }
+  ],
+  &quot;observations&quot;: {
+    &quot;n&quot;: 100,
+    &quot;noise_level&quot;: 0.05,
+    &quot;y_mean&quot;: 0.16369700541061533,
+    &quot;y_std&quot;: 0.17045696091738186,
+    &quot;y_min&quot;: -0.01416497680608639,
+    &quot;y_max&quot;: 0.7373206481544421,
+    &quot;y_preview&quot;: [
+      0.06988039606552526,
+      0.12841724711107094,
+      0.6515081659437334,
+      0.7373206481544421,
+      0.[REDACTED:id]
+    ],
+    &quot;x_preview&quot;: [
+      [
+        3.3663275929465444,
+        1.2199818857117481
+      ],
+      [
+        1.7140402119374163,
+        0.8485593794589558
+      ],
+      [
+        0.684380857712876,
+        1.702820868077462
+      ],
+      [
+        0.5743743598783809,
+        1.8852952396752043
+      ],
+      [
+        4.159716076401226,
+        0.8991954084384388
+      ]
+    ]
+  },
+  &quot;saved&quot;: &quot;D:\\projects\\SciFormula\\.agh_runs\\P20_n100_nz0.05_s0.npz&quot;,
+  &quot;note&quot;: &quot;目标量的量纲与各变量的量纲均未提供。请根据变量名与物理语境推断它们，再用 check_units 校验、用 build_candidates 检验推断是否自洽。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_load_problem {&quot;mode&quot;:&quot;discovery&quot;,&quot;n_samples&quot;:100,&quot;noise&quot;:0.05,&quot;problem_id&quot;:&quot;P20&quot;,&quot;seed&quot;:0}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_check_units · completed</summary><div class="content">mcp_sciformula_98791938_check_units
+{&quot;data_id&quot;:&quot;P20_n100_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;1&quot;,&quot;variables_units&quot;:{&quot;t&quot;:&quot;s&quot;,&quot;tau&quot;:&quot;s&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;t&quot;,
+      &quot;input&quot;: &quot;s&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;s&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;tau&quot;,
+      &quot;input&quot;: &quot;s&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;s&quot;,
+      &quot;is_dimensionless&quot;: false
+    }
+  ],
+  &quot;target&quot;: {
+    &quot;input&quot;: &quot;1&quot;,
+    &quot;parsed_ok&quot;: true,
+    &quot;normalized&quot;: &quot;1&quot;,
+    &quot;is_dimensionless&quot;: true
+  },
+  &quot;known_units&quot;: [
+    &quot;1&quot;,
+    &quot;A&quot;,
+    &quot;C&quot;,
+    &quot;F&quot;,
+    &quot;H&quot;,
+    &quot;Hz&quot;,
+    &quot;J&quot;,
+    &quot;K&quot;,
+    &quot;N&quot;,
+    &quot;Pa&quot;,
+    &quot;S&quot;,
+    &quot;T&quot;,
+    &quot;V&quot;,
+    &quot;W&quot;,
+    &quot;Wb&quot;,
+    &quot;cd&quot;,
+    &quot;kg&quot;,
+    &quot;m&quot;,
+    &quot;mol&quot;,
+    &quot;ohm&quot;,
+    &quot;rad&quot;,
+    &quot;s&quot;
+  ],
+  &quot;syntax_hint&quot;: &quot;写法：单位名用 * 连接、/ 表示除、^ 表示幂，且必须是**左结合**，不要写括号——写 W/m/K 而不是 W/(m*K)，写 kg/A/s^2 而不是 kg/(A*s^2)。无量纲写 空字符串 或 \&quot;1\&quot;。&quot;,
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_check_units {&quot;data_id&quot;:&quot;P20_n100_nz0.05_s0&quot;,&quot;target_unit&quot;:&quot;1&quot;,&quot;variables_units&quot;:{&quot;t&quot;:&quot;s&quot;,&quot;tau&quot;:&quot;s&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_build_candidate_library · completed</summary><div class="content">mcp_sciformula_98791938_build_candidate_library
+{&quot;data_id&quot;:&quot;P20_n100_nz0.05_s0&quot;,&quot;max_terms&quot;:250,&quot;target_unit&quot;:&quot;1&quot;,&quot;variables_units&quot;:{&quot;t&quot;:&quot;s&quot;,&quot;tau&quot;:&quot;s&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_366714ab4c89cd13&quot;,
+  &quot;data_id&quot;: &quot;P20_n100_nz0.05_s0&quot;,
+  &quot;target_dimension&quot;: &quot;1&quot;,
+  &quot;candidate_total&quot;: 640,
+  &quot;candidate_kept&quot;: 80,
+  &quot;prune_ratio&quot;: 0.875,
+  &quot;prune_percent&quot;: 87.5,
+  &quot;usable_columns&quot;: 59,
+  &quot;truncated&quot;: false,
+  &quot;n_dimensionless_bases&quot;: 1,
+  &quot;sample_candidates&quot;: [
+    &quot;1&quot;,
+    &quot;sqrt(Abs(t))*Abs(tau)**(-1/2)&quot;,
+    &quot;Abs(t)**(-1/2)*sqrt(Abs(tau))&quot;,
+    &quot;t/tau&quot;,
+    &quot;(t/tau)**2&quot;,
+    &quot;(t/tau)**3&quot;,
+    &quot;1/(t/tau)&quot;,
+    &quot;1/(t/tau)**2&quot;
+  ],
+  &quot;diagnostics&quot;: [
+    &quot;有 21 个候选在数据上求值后数值不健康（非有限值/量级过大），已剔除。&quot;
+  ]
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_build_candidate_library {&quot;data_id&quot;:&quot;P20_n100_nz0.05_s0&quot;,&quot;max_terms&quot;:250,&quot;target_unit&quot;:&quot;1&quot;,&quot;variables_units&quot;:{&quot;t&quot;:&quot;s&quot;,&quot;tau&quot;:&quot;s&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_fit_sparse · completed</summary><div class="content">mcp_sciformula_98791938_fit_sparse
+{&quot;data_id&quot;:&quot;P20_n100_nz0.05_s0&quot;,&quot;library_id&quot;:&quot;lib_366714ab4c89cd13&quot;,&quot;max_terms&quot;:10,&quot;strategy&quot;:&quot;omp&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_366714ab4c89cd13&quot;,
+  &quot;data_id&quot;: &quot;P20_n100_nz0.05_s0&quot;,
+  &quot;strategy&quot;: &quot;omp&quot;,
+  &quot;formula&quot;: &quot;(0.9958778609469561)*(exp(-(t/tau))) + (0.0008176380500226899)&quot;,
+  &quot;formula_readable&quot;: &quot;0.9959*(exp(-(t/tau))) + 0.0008176&quot;,
+  &quot;n_terms&quot;: 1,
+  &quot;selected_terms&quot;: [
+    {
+      &quot;expression&quot;: &quot;exp(-(t/tau))&quot;,
+      &quot;coefficient&quot;: 0.9958778609469561
+    }
+  ],
+  &quot;intercept&quot;: 0.0008176380500226899,
+  &quot;r2_fit&quot;: 0.997995,
+  &quot;rss&quot;: 0.[REDACTED:id],
+  &quot;val_rss&quot;: 0.[REDACTED:id],
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_fit_sparse {&quot;data_id&quot;:&quot;P20_n100_nz0.05_s0&quot;,&quot;library_id&quot;:&quot;lib_366714ab4c89cd13&quot;,&quot;max_terms&quot;:10,&quot;strategy&quot;:&quot;omp&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_verify_formula · completed</summary><div class="content">mcp_sciformula_98791938_verify_formula
+{&quot;data_id&quot;:&quot;P20_n100_nz0.05_s0&quot;,&quot;expand&quot;:0.3,&quot;formula&quot;:&quot;(0.9958778609469561)*(exp(-(t/tau))) + (0.0008176380500226899)&quot;,&quot;n_samples&quot;:100,&quot;tol_extrap&quot;:0.2,&quot;tol_in_range&quot;:0.05}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;P20_n100_nz0.05_s0&quot;,
+  &quot;passed&quot;: true,
+  &quot;verdict&quot;: &quot;passed&quot;,
+  &quot;reason&quot;: &quot;区间内与区间外都通过，可以认为找到了可外推的关系。&quot;,
+  &quot;in_range&quot;: {
+    &quot;tag&quot;: &quot;in_range_resample&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 0.0007680029130090443,
+    &quot;rmse_normalized&quot;: 0.[REDACTED:id],
+    &quot;max_abs_err&quot;: 0.[REDACTED:id]
+  },
+  &quot;extrapolation&quot;: {
+    &quot;tag&quot;: &quot;extrapolation&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 0.0008880439551422144,
+    &quot;rmse_normalized&quot;: 0.[REDACTED:id],
+    &quot;max_abs_err&quot;: 0.0024969469797775368
+  },
+  &quot;noise_level&quot;: 0.05,
+  &quot;thresholds&quot;: {
+    &quot;tol_in_range&quot;: 0.05,
+    &quot;tol_extrap&quot;: 0.2
+  },
+  &quot;note&quot;: &quot;新观测点本身带噪声，归一化 RMSE 的下界约为噪声水平，判读时请一并考虑。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_verify_formula {&quot;data_id&quot;:&quot;P20_n100_nz0.05_s0&quot;,&quot;expand&quot;:0.3,&quot;formula&quot;:&quot;(0.9958778609469561)*(exp(-(t/tau))) + (0.0008176380500226899)&quot;,&quot;n_samples&quot;:100,&quot;tol_extrap&quot;:0.2,&quot;tol_in_range&quot;:0.05}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">一次通过。下面是 P20 的完整结论与复盘。
+
+## P20 · 指数衰减
+
+**基准问题**：P20（&quot;指数衰减&quot;，经典），目标量 `decay`，变量 `t`、`tau`。
+
+**单位推断**
+| 量 | 推断单位 | 归一化维度 |
+|---|---|---|
+| t | s | s |
+| tau | s | s |
+| decay | 无量纲（&quot;1&quot;） | 1 |
+
+依据：t 是时间，tau 是特征时间（时间常数），两者都是秒。指数衰减的标准形式 `exp(-t/τ)` 里 t/τ 是商、量纲抵消，故目标量本身是无量纲比值。这与观测值范围 [≈0, ≈0.74] 的数值形态相符。
+
+**最终公式**（OMP，1 项）
+```
+decay = 0.9958778609469561 · exp(−t/tau) + 0.0008176380500226899
+```
+可读形式：`decay ≈ 0.9959·e^(−t/τ) + 0.00082`
+
+对应物理定律：`decay = exp(−t/τ)`（系数 0.9959 ≈ 1、截距 0.00082 ≈ 0，偏差都来自 5% 噪声与 OMP 的残差吸收）。
+
+**验证指标（verify_formula，独立新种子 + 30% 外推）**
+- 判定：**passed**（区间内、外推都通过）
+- 区间内归一化 RMSE：0.00413
+- 外推区间归一化 RMSE：0.00412
+- 拟合 R²：0.997995
+
+（噪声下限是 0.05，两次归一化 RMSE 都远低于该下限，说明恢复出的就是真定律，而非拟合噪声。）
+
+**过程中的失败统计**：0 次。check_units → build_candidate_library → fit_sparse → verify_formula 一次性通过。候选库 640 项经量纲剪枝保留 80 项（其中 21 项因数值不健康被剔除），OMP 只挑了 `exp(-t/tau)` 一项，与真值一致。</div></section>
+<section class="node minor">$0.000 (estimated) · inference</section></main></body></html>

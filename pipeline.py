@@ -375,10 +375,15 @@ def fit_sparse(lib_id, data_id, strategy="omp", max_terms=10, threshold=0.05):
                     hint="通常是单位推断有误，建议回到 build_candidates 重新检验。")
 
     strategy = (strategy or "omp").lower()
+    # 截距是唯一"绕过量纲检查"的自由参数，所以它必须服从同一条规则：
+    # 目标量有量纲时不许出现加性常数，否则会拟合出 `0.5*m*v**2 - 1.2` 这种
+    # 在物理上无意义、在小量级处严重错的公式（实测在 AGH 里就这么发生过）。
+    target_dim = parse_unit(spec["target_unit"])
+    allow_intercept = same(target_dim, ZERO)
     if strategy == "omp":
-        r = fit_best(A, y, max_terms=int(max_terms))
+        r = fit_best(A, y, max_terms=int(max_terms), allow_intercept=allow_intercept)
     elif strategy == "stlsq":
-        r = fit_stlsq(A, y, threshold=float(threshold))
+        r = fit_stlsq(A, y, threshold=float(threshold), allow_intercept=allow_intercept)
         r.setdefault("val_rss", float("nan"))
     else:
         return dict(ok=False, error="未知策略 %r，只支持 omp 或 stlsq" % strategy)
@@ -422,12 +427,20 @@ def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
     """
     独立验证一条公式。
 
-    关键在于：**这里不依赖真值公式**，用的是两批"新观测"：
-      ① 在训练区间内、用另一个随机种子重新采点 → 检验它是不是只在拟合噪声
-      ② 在训练区间之外（expand=0.3 向外扩 30%）重新采点 → 检验它是"找到定律"还是"插值"
-    判据是归一化 RMSE（残差除以观测值的标准差）；因为新观测本身带噪声，
-    所以下界大致就是噪声水平——这一点会一并返回，避免把它误判成"不够准"。
+    做法：**不拿训练数据当依据**，另开两批全新的采样点来查：
+      ① 训练区间内、换一个随机种子重新采点 → 检验它是不是只在拟合噪声
+      ② 训练区间之外（expand=0.3 向外扩 30%）重新采点 → 检验它是"找到定律"还是"插值"
+    判据是归一化 RMSE（残差除以观测值的标准差）。
 
+    除了 RMSE，还做一道**符号合理性检查**：观测值在整段区间上同号时，
+    预测值不应在区间内反号。这道检查是实测被自己的数据打脸后补上的——
+    曾有一条公式在真值 E≈0.14 处预测出 -1.07（负动能），
+    归一化 RMSE 仍只有 0.0034、被判 passed。原因是整体 RMSE 由大量级点主导。
+    所以现在小量级处的相对误差（max_rel_err_small）会单独报出来。
+
+    诚实说明：本函数**需要参考解**（用于在全新点上算误差），
+    参考解取自内置方程库，**不返回给智能体**。所以它检查的是通用化能力，
+    不是"完全无真值的自洽检验"。这一点在报告里如实写明。
     benchmark 模式下额外给出与真值的对比指标，但那只是给评测用的，不参与通过/不通过判定。
     """
     X, y, meta = _load_data(data_id)
@@ -447,9 +460,38 @@ def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
         yn, pred = yn[good], pred[good]
         rmse = float(np.sqrt(np.mean((pred - yn) ** 2)))
         sd = float(np.std(yn)) or 1.0
+
+        # ---- 符号合理性 ----
+        # 观测值在整段区间上同号（例如动能、质量、时间恒为正）时，
+        # 预测值出现在区间内反号的一侧，是与数据直接矛盾的，不必看 RMSE 就能判错。
+        # 加这一条的原因：归一化 RMSE 由大量级点主导，会掩盖小量级处的严重错误。
+        # 实测踩过——`0.5017*m*v**2 - 1.204` 在真值 E≈0.14 处预测出 -1.07（负动能），
+        # 归一化 RMSE 仍只有 0.0034、被判 passed。
+        sign_violation = False
+        if yn.size and pred.size:
+            if np.all(yn > 0) and float(np.min(pred)) < 0:
+                sign_violation = True
+            elif np.all(yn < 0) and float(np.max(pred)) > 0:
+                sign_violation = True
+
+        # ---- 分段相对误差：把大量级与小量级分开看 ----
+        # 只报整体 RMSE 会掩盖"小量级处错得离谱"的情形，所以这里额外给出两段诊断。
+        amax = float(np.max(np.abs(yn))) or 1.0
+        small = np.abs(yn) < 0.05 * amax
+        large = np.abs(yn) >= 0.20 * amax
+        def _maxrel(mask):
+            if mask.sum() < 3:
+                return None
+            r = np.abs(pred[mask] - yn[mask]) / np.abs(yn[mask])
+            return float(np.max(r))
         return dict(tag=tag, ok=True, n=int(good.sum()),
                     rmse=rmse, rmse_normalized=rmse / sd,
-                    max_abs_err=float(np.max(np.abs(pred - yn))))
+                    max_abs_err=float(np.max(np.abs(pred - yn))),
+                    min_pred=float(np.min(pred)), min_obs=float(np.min(yn)),
+                    sign_violation=bool(sign_violation),
+                    max_rel_err_large=_maxrel(large),
+                    max_rel_err_small=_maxrel(small),
+                    small_scale_note=("真值最小的 5%% 区间里有 %d 点" % int(small.sum())))
 
     # ① 训练区间内、新种子重采
     Xi = sample_X(eq, int(n_samples), int(meta["seed"]) + int(seed_offset), expand=0.0)
@@ -461,11 +503,24 @@ def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
 
     passes_in = bool(s_in.get("ok") and s_in["rmse_normalized"] <= tol_in_range)
     passes_ex = bool(s_ex.get("ok") and s_ex["rmse_normalized"] <= tol_extrap)
-    passed = bool(passes_in and passes_ex)
+    violates_sign = bool(s_in.get("sign_violation") or s_ex.get("sign_violation"))
+    passed = bool(passes_in and passes_ex and not violates_sign)
 
     verdict, reason = None, None
     if not s_in.get("ok"):
         verdict, reason = "invalid", "公式在训练区间的新采样点上无法求值：%s" % s_in.get("error")
+    elif violates_sign:
+        who = []
+        if s_in.get("sign_violation"):
+            who.append("区间内")
+        if s_ex.get("sign_violation"):
+            who.append("外推区间")
+        verdict, reason = "implausible", (
+            "%s 违反符号合理性：观测值在整段区间上同号，而公式预测出了相反的符号"
+            "（预测最小值 %.4g，观测最小值 %.4g）。这说明公式在小量级处严重偏离，"
+            "即使归一化 RMSE 很小也不能认为找到了定律——建议检查是否混入了非法的"
+            "加性常数（目标量有量纲时截距必须是 0）。"
+            % ("与".join(who), s_in.get("min_pred", float("nan")), s_in.get("min_obs", float("nan"))))
     elif not passes_in:
         verdict, reason = "underfit", ("训练区间新点上误差偏大（归一化 RMSE %.4g > %.4g），"
                                        "说明公式连区间内都不稳。" % (s_in["rmse_normalized"], tol_in_range))
@@ -480,7 +535,13 @@ def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
                in_range=s_in, extrapolation=s_ex,
                noise_level=noise,
                thresholds=dict(tol_in_range=tol_in_range, tol_extrap=tol_extrap),
-               note="新观测点本身带噪声，归一化 RMSE 的下界约为噪声水平，判读时请一并考虑。")
+               checks=dict(sign_consistency=not violates_sign),
+               note=("检验方式：在**全新的采样点**上把公式与参考解逐点对比，并额外在向外扩张 "
+                     "%.0f%% 的区间外推区上再比一次。判据是归一化 RMSE（残差 ÷ 观测值标准差）。"
+                     "注意这是与参考解对比的通用化检验，不是与训练数据比——"
+                     "所以小量级处的相对误差要单独看 max_rel_err_small，"
+                     "整体 RMSE 会被大量级点主导而掩盖它。"
+                     % (100 * float(expand))))
 
     if meta.get("mode") == BENCHMARK:
         ref = meta["reference"]["expr"]

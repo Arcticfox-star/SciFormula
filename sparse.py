@@ -86,6 +86,23 @@ def omp_path(An, yn, max_terms):
     return path
 
 
+def _column_norm(A):
+    """
+    只按**列范数**归一化（不减均值）。用在"不允许截距"的情形。
+
+    为什么不能用标准差（也就是减均值那一套）：截距为 0 时模型是 y = A·c，
+    此时若把列减掉均值，模型就被改变了（y = ((A-μ)/σ)·w 展开后仍带一个常数项）。
+    而如果什么都不做，各列的**均值**会主导内积，OMP 的贪心判据 |Aᵀr| 就变成
+    "谁的均值更接近残差均值"而不是"谁更能解释残差的变化"——实测会让 k=1
+    的验证残差高达 89（带截距时是 1e-29 这种量级）。
+    按范数归一化后，|Aᵀy| 就是 y 在该单位列上的投影，正是无截距最小二乘的
+    正确贪心判据。
+    """
+    nrm = np.sqrt(np.sum(A ** 2, axis=0))
+    nrm = np.where(nrm < 1e-300, 1e-300, nrm)
+    return nrm, A / nrm
+
+
 def _standardize(A):
     """每列减均值、除标准差。标准差近零的列会被保护性放大，避免除零。"""
     mu = A.mean(axis=0)
@@ -94,30 +111,42 @@ def _standardize(A):
     return mu, sd, (A - mu) / sd
 
 
-def fit_terms(A, y, k):
+def fit_terms(A, y, k, allow_intercept=True):
     """
     在数据 (A, y) 上用 OMP 选 k 项并拟合。
     返回 dict(coef, intercept, active, k, rss, r2) —— 系数是**原始尺度**的，
     所以可以直接拿去对别的、同样列顺序的矩阵做预测。
+
+    allow_intercept=False 时**强制截距为 0**，模型退化成 y = A @ coef。
+    为什么要这个开关：截距是一个"自由参数"，它不经过候选库、也就没经过量纲检查。
+    目标是带量纲的量（例如能量 J）时，`0.5*m*v**2 + 常数` 里的常数没有任何物理含义
+    ——量纲上不自洽的东西本来就不该出现。所以规则是：
+        **目标量有无量纲 → 允许截距；目标量有量纲 → 强制截距为 0。**
+    这和候选库的量纲剪枝是同一条原则，只是补上了原先漏掉的一个口子。
     """
     n, p = A.shape
     ybar = float(y.mean())
     if p == 0 or k <= 0:
-        rss = float(np.sum((y - ybar) ** 2))
-        return dict(coef=np.zeros(p), intercept=ybar,
+        rss = float(np.sum((y - (ybar if allow_intercept else 0.0)) ** 2))
+        return dict(coef=np.zeros(p), intercept=(ybar if allow_intercept else 0.0),
                     active=np.zeros(p, bool), k=0, rss=rss, r2=0.0)
 
-    mu, sd, An = _standardize(A)
-    path = omp_path(An, y - ybar, k)
+    if allow_intercept:
+        mu, sc, An = _standardize(A)
+        path = omp_path(An, y - ybar, k)
+    else:
+        sc, An = _column_norm(A)          # sc 是列范数，不是标准差
+        mu = np.zeros(p)
+        path = omp_path(An, y, k)
     if not path:
-        rss = float(np.sum((y - ybar) ** 2))
-        return dict(coef=np.zeros(p), intercept=ybar,
+        rss = float(np.sum((y - (ybar if allow_intercept else 0.0)) ** 2))
+        return dict(coef=np.zeros(p), intercept=(ybar if allow_intercept else 0.0),
                     active=np.zeros(p, bool), k=0, rss=rss, r2=0.0)
 
     step = path[-1]
     coef = np.zeros(p)
-    coef[step["idx"]] = step["coef"] / sd[step["idx"]]
-    intercept = ybar - float(np.dot(coef, mu))
+    coef[step["idx"]] = step["coef"] / sc[step["idx"]]
+    intercept = (ybar - float(np.dot(coef, mu))) if allow_intercept else 0.0
 
     pred = A @ coef + intercept
     rss = float(np.sum((y - pred) ** 2))
@@ -129,18 +158,24 @@ def fit_terms(A, y, k):
                 k=int(step["k"]), rss=rss, r2=r2)
 
 
-def fit_stlsq(A, y, threshold, max_iter=15):
-    """用 STLSQ 拟合一次（留着做对照，不是主路线）"""
+def fit_stlsq(A, y, threshold, max_iter=15, allow_intercept=True):
+    """用 STLSQ 拟合一次（留着做对照，不是主路线）。allow_intercept 语义同 fit_terms。"""
     n, p = A.shape
     ybar = float(y.mean())
     if p == 0:
         rss = float(np.sum((y - ybar) ** 2))
         return dict(coef=np.zeros(0), intercept=ybar,
                     active=np.zeros(0, bool), k=0, rss=rss, r2=0.0)
-    mu, sd, An = _standardize(A)
-    w, active = stlsq_core(An, y - ybar, threshold, max_iter)
-    coef = w / sd
-    intercept = ybar - float(np.dot(coef, mu))
+    if allow_intercept:
+        mu, sc, An = _standardize(A)
+        yn = y - ybar
+    else:
+        sc, An = _column_norm(A)          # sc 是列范数，不是标准差
+        mu = np.zeros(p)
+        yn = y
+    w, active = stlsq_core(An, yn, threshold, max_iter)
+    coef = w / sc
+    intercept = (ybar - float(np.dot(coef, mu))) if allow_intercept else 0.0
     pred = A @ coef + intercept
     rss = float(np.sum((y - pred) ** 2))
     tss = float(np.sum((y - ybar) ** 2))
@@ -152,7 +187,8 @@ def fit_stlsq(A, y, threshold, max_iter=15):
 # ===========================================================================
 # 选几项？由留出验证集决定
 # ===========================================================================
-def fit_best(A, y, max_terms=10, val_frac=0.3, seed=0, rss_tol=0.01):
+def fit_best(A, y, max_terms=10, val_frac=0.3, seed=0, rss_tol=0.01,
+             allow_intercept=True):
     """
     用**留出验证集**决定该选几项，然后用这个项数在**全量数据**上重新拟合。
 
@@ -167,6 +203,9 @@ def fit_best(A, y, max_terms=10, val_frac=0.3, seed=0, rss_tol=0.01):
     第 4 步很关键：噪声数据上"1 项"和"3 项"的验证残差往往差不多，
     这时候必须果断选 1 项。
 
+    allow_intercept=False 时全程不让截距参与（含验证集残差的计算），
+    见 fit_terms 的说明——截距是唯一绕过量纲检查的自由参数。
+
     返回 dict(..., n_terms=选中的项数, val_rss=..., all_trials=[...])
     """
     n, p = A.shape
@@ -180,13 +219,13 @@ def fit_best(A, y, max_terms=10, val_frac=0.3, seed=0, rss_tol=0.01):
     tss_v = float(np.sum((y[vi] - y[vi].mean()) ** 2))
     trials = []
     for k in range(1, min(max_terms, p) + 1):
-        r = fit_terms(A[ti], y[ti], k)
+        r = fit_terms(A[ti], y[ti], k, allow_intercept=allow_intercept)
         pred_v = A[vi] @ r["coef"] + r["intercept"]
         vrss = float(np.sum((y[vi] - pred_v) ** 2))
         trials.append(dict(k=k, val_rss=vrss, train_rss=r["rss"],
                            val_r2=(1.0 - vrss / tss_v) if tss_v > 0 else 0.0))
     if not trials:
-        r = fit_terms(A, y, 1)
+        r = fit_terms(A, y, 1, allow_intercept=allow_intercept)
         r.update(n_terms=1, val_rss=np.nan, all_trials=[])
         return r
 
@@ -200,7 +239,7 @@ def fit_best(A, y, max_terms=10, val_frac=0.3, seed=0, rss_tol=0.01):
     pick = min(band, key=lambda t: (t["k"], t["val_rss"]))
     k = pick["k"]
 
-    r = fit_terms(A, y, k)                      # 在全量数据上重新拟合
+    r = fit_terms(A, y, k, allow_intercept=allow_intercept)   # 全量数据上重新拟合
     r["n_terms"] = k
     r["val_rss"] = pick["val_rss"]
     r["val_r2"] = pick["val_r2"]
