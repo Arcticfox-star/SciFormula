@@ -20,7 +20,22 @@ equations.py —— 内置物理方程库 + 观测数据生成
 "算法能否跑通"这件事验证掉，之后再无缝替换成官方数据。
 """
 
+import os
+
 import numpy as np
+
+from dims import expr_dim as _dims_expr_dim
+
+
+# ---------------------------------------------------------------------------
+# 求解表达式量纲：转发给 dims.expr_dim
+# 保留这个三参数签名，是因为 features.py 的自检里已经在这么调用它了。
+# 真正的实现在 dims.py —— 放那里是为了让方程库和它自己的自检都能用，
+# 而不会形成循环依赖。
+# ---------------------------------------------------------------------------
+def _expr_dim(e, dims, parse_unit=None):
+    """算一个 sympy 表达式的量纲。parse_unit 参数保留只为兼容旧签名。"""
+    return _dims_expr_dim(e, dims)
 
 
 # ---------------------------------------------------------------------------
@@ -31,7 +46,7 @@ import numpy as np
 #   target    目标变量名（我们要求 AI 反推出的那个量）
 #   ref       公式出处
 # ---------------------------------------------------------------------------
-EQUATIONS = [
+MINI_EQUATIONS = [
     dict(id="P01", name="滑动摩擦力", ref="Feynman I.12.1",
          target="f_f", target_unit="N", expr="mu*f_n",
          vars={"mu": "", "f_n": "N"},
@@ -141,13 +156,43 @@ EQUATIONS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# 选择使用哪一套方程库
+#
+#   mini（默认）  —— 上面这份手写的 21 条迷你库，与官方基准结构一致
+#   feynman      —— 官方 Feynman 符号回归基准的 100 条方程（data/FeynmanEquations.csv）
+#
+# 切换方式（环境变量）：
+#     Linux/macOS :  SCIFORMULA_LIBRARY=feynman python experiment.py
+#     Windows     :  $env:SCIFORMULA_LIBRARY="feynman"; python experiment.py
+#
+# 之所以做成"换数据源"而不是另写一套流程：下游（features / sparse / pipeline /
+# experiment / AGH 工具）访问方程库只用 EQUATIONS、get()、varnames() 三样东西，
+# 所以换成官方基准时它们一行都不用改。
+# ---------------------------------------------------------------------------
+LIBRARY = os.environ.get("SCIFORMULA_LIBRARY", "mini").strip().lower()
+SKIPPED = []          # 装载官方数据集时被量纲自检排除的条目（含原因）
+
+
+def _load_library():
+    global SKIPPED
+    if LIBRARY in ("feynman", "official", "benchmark"):
+        import feynman
+        eqs, skipped = feynman.load()
+        SKIPPED = skipped
+        return eqs
+    return MINI_EQUATIONS
+
+
+EQUATIONS = _load_library()
+
+
 def get(eq_id):
     """按 id 取出某条方程"""
     for e in EQUATIONS:
         if e["id"] == eq_id:
             return e
     raise KeyError(eq_id)
-
 
 def varnames(eq):
     """返回这条方程的变量名列表（顺序固定，和 vars 字典的书写顺序一致）"""
@@ -187,6 +232,7 @@ def sample_data(eq, n=100, noise=0.0, seed=0):
     env = dict(zip(names, X.T))
     y_clean = eval(eq["expr"], {"__builtins__": {}, "sqrt": np.sqrt, "exp": np.exp,
                                 "sin": np.sin, "cos": np.cos, "log": np.log,
+                                "tanh": np.tanh, "arcsin": np.arcsin,
                                 "pi": np.pi}, env)
     y_clean = np.asarray(y_clean, dtype=float) * np.ones(n)
 
@@ -205,35 +251,10 @@ def make_truth_expr(eq):
     return sp.sympify(eq["expr"], locals=dict(zip(names, syms)))
 
 
-def _expr_dim(e, dims, parse_unit):
-    """递归计算一个 sympy 表达式的量纲（用于上面的自检）"""
-    import sympy as sp
-    if e.is_Symbol:
-        return dims[str(e)]
-    if e.is_Number:
-        return parse_unit("")
-    if e.func is sp.Add:
-        return _expr_dim(e.args[0], dims, parse_unit)
-    if e.func is sp.Mul:
-        from dims import add
-        d = parse_unit("")
-        for a in e.args:
-            d = add(d, _expr_dim(a, dims, parse_unit))
-        return d
-    if e.func is sp.Pow:
-        from dims import scale
-        base = _expr_dim(e.args[0], dims, parse_unit)
-        return scale(base, _fraction_of(e.args[1]))
-    # 其余函数（sin / cos / exp / log / tanh 等）要求参数无量纲，结果也无量纲
-    return parse_unit("")
-
-
 def _fraction_of(x):
-    """把 sympy 的指数（可能是 1/2、-3 这样的有理数）转成 Python 的 Fraction"""
-    import sympy as sp
-    from fractions import Fraction
-    r = sp.Rational(x)
-    return Fraction(int(r.p), int(r.q))
+    """兼容旧调用：转发给 dims.fraction_of"""
+    from dims import fraction_of
+    return fraction_of(x)
 
 
 # ---------------------------------------------------------------------------
@@ -247,8 +268,10 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     from dims import parse_unit, fmt, same
 
-    print("=== 方程库概览（共 %d 条）===" % len(EQUATIONS))
-    print("%-5s %-24s %-6s %-10s %s" % ("ID", "名称", "变量数", "目标量纲", "来源"))
+    print("=== 当前方程库：%s（共 %d 条）===" % (LIBRARY, len(EQUATIONS)))
+    if SKIPPED:
+        print("=== 另有 %d 条因量纲自检未通过被排除（见 feynman.py 的报告）===" % len(SKIPPED))
+    print("%-10s %-22s %-6s %-14s %s" % ("ID", "名称", "变量数", "目标量纲", "来源"))
     bad = []
     for eq in EQUATIONS:
         d = parse_unit(eq["target_unit"])
@@ -256,21 +279,29 @@ if __name__ == "__main__":
         syms = sp.symbols(names)
         e = sp.sympify(eq["expr"], locals=dict(zip(names, syms)))
         dims = {name: parse_unit(eq["vars"][name]) for name in names}
-        calc = _expr_dim(e, dims, parse_unit)
+        try:
+            calc = _expr_dim(e, dims, parse_unit)
+        except Exception as exc:
+            bad.append((eq["id"], eq["name"], "检查失败", str(exc)))
+            calc = d
         if not same(calc, d):
-            bad.append((eq["id"], eq["name"], fmt(calc), fmt(d)))
-        print("%-5s %-24s %-6d %-10s %s" % (
+            bad.append((eq["id"], eq["name"], fmt(calc), "声明为 %s" % (eq["target_unit"] or "无量纲")))
+        print("%-10s %-22s %-6d %-14s %s" % (
             eq["id"], eq["name"], len(names),
             eq["target_unit"] or "(无量纲)", eq["ref"]))
 
-    print("\n=== 交叉校验：声明的单位 vs 从公式算出的量纲 ===")
+    print("\n=== 量纲自检：加法是否同量纲、三角函数参数是否无量纲 ===")
     if bad:
-        for i, nm, got, want in bad:
-            print("  FAIL %s %s：公式算出 %s，但声明为 %s" % (i, nm, got, want))
+        print("  有 %d 条没通过：" % len(bad))
+        for row in bad[:40]:
+            print("    FAIL %s %s：%s" % (row[0], row[1], row[2]))
+        if len(bad) > 40:
+            print("    ...（还有 %d 条）" % (len(bad) - 40))
     else:
-        print("  全部一致 ✔（方程库里每条的单位表都没写错）")
+        print("  全部通过 ✔")
 
-    print("\n=== 数据生成自检（P03 动能，无噪声）===")
-    X, y, yc = sample_data(get("P03"), n=5, noise=0.0, seed=1)
-    print("  前 3 行：m=%.3f v=%.3f -> E=%.6f" % (X[0, 0], X[0, 1], y[0]))
+    print("\n=== 数据生成自检 ===")
+    probe = "P03" if any(x["id"] == "P03" for x in EQUATIONS) else EQUATIONS[0]["id"]
+    X, y, yc = sample_data(get(probe), n=5, noise=0.0, seed=1)
+    print("  %s：前 3 个观测值 %s" % (probe, np.round(y[:3], 5)))
     print("  与真值完全一致：", np.allclose(y, yc))

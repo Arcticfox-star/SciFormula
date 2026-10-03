@@ -62,6 +62,11 @@ EXP_SINGLE = [Fr(1), Fr(2), Fr(3), Fr(-1), Fr(-2), Fr(1, 2), Fr(-1, 2)]
 EXP_PAIR   = [Fr(1), Fr(2), Fr(-1), Fr(1, 2), Fr(-1, 2)]
 EXP_MULTI  = [Fr(1), Fr(2), Fr(-1)]           # 三变量及以上，控制组合爆炸
 
+# 变量个数超过这个值时，只生成到"两变量乘积"。
+# 理由：三/四变量的幂次组合随变量数指数增长，变量多的题目会直接卡死；
+# 而变量多的物理公式通常本身也不需要把四个变量同时乘起来。
+MULTI_VAR_LIMIT = 5
+
 
 # ---------------------------------------------------------------------------
 # 项的表示：一个候选项 = "量纲核" × "无量纲函数因子"
@@ -147,10 +152,17 @@ def build_library(varnames, vardims, target_dim, max_terms=250, verbose=False):
     nv = len(varnames)
 
     # ---- 第 1 步：生成"量纲核"候选（各变量幂次的乘积）----
+    # 变量一多，三变量/四变量的组合会爆炸（4 个变量时 3^4 就已经上百，
+    # 9 个变量时单个 k=4 就是上万），所以设一个上限：超过就只生成到两变量乘积。
+    # 本项目内置迷你库最多 4 个变量，不受影响；换成官方 Feynman 基准
+    # （变量最多的条目有 9 个）时才生效。
+    plan = [(1, EXP_SINGLE), (2, EXP_PAIR)]
+    if nv <= MULTI_VAR_LIMIT:
+        plan += [(3, EXP_MULTI), (4, EXP_MULTI)]
     cores = set()
-    for k, exps in ((1, EXP_SINGLE), (2, EXP_PAIR), (3, EXP_MULTI), (4, EXP_MULTI)):
+    for k, exps in plan:
         if k > nv:
-            break
+            continue
         for combo in combinations(varnames, k):
             for e in product(exps, repeat=k):
                 cores.add(_mkcore(list(zip(combo, e))))
@@ -239,6 +251,8 @@ import numpy as np
 _NUMPY_ENV = {
     "sqrt": np.sqrt, "Abs": np.abs, "exp": np.exp, "log": np.log,
     "sin": np.sin, "cos": np.cos, "tanh": np.tanh, "pi": np.pi,
+    # 官方 Feynman 数据集里用到了 arcsin（I.26.2 / I.30.5），补上以免求值时报错
+    "arcsin": np.arcsin, "asin": np.arcsin,
 }
 
 

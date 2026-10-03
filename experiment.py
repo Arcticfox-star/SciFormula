@@ -105,6 +105,25 @@ def run_one(eq, noise, verbose=False):
     # 3) 稀疏回归
     fit = P.fit_sparse(lib["lib_id"], data_id, strategy="omp")
 
+    # 3b) 有些题目在候选库里根本找不到任何合法项，拟合会直接失败。
+    #     这不是程序错误，而是"特征库表达力不够"这一能力边界的真实体现，
+    #     必须如实记一行，不能让它把整批实验打断。
+    if not fit.get("ok"):
+        return dict(
+            eq_id=eq["id"], eq_name=eq["name"], ref=eq["ref"],
+            target_unit=eq["target_unit"] or "(无量纲)",
+            n_vars=len(names), noise=noise,
+            cand_total=lib["candidate_total"], cand_kept=lib["candidate_kept"],
+            prune_ratio=lib["prune_ratio"], truncated=lib["truncated"],
+            n_cols=lib["usable_columns"], n_terms=0, val_rss=float("nan"),
+            r2_train=float("nan"), intercept=float("nan"),
+            truth=eq["expr"], pred="(无合法候选，未拟合)", pred_full="0",
+            verdict="no_candidates", max_rel=float("nan"),
+            ratio=float("nan"), nmse_train=float("nan"),
+            r2_extrap=float("nan"), nmse_extrap=float("nan"),
+            seconds=time.time() - t0,
+        )
+
     # 4) 与真值对比打分（含区间外推）
     sc = P.score_prediction(fit["formula"], data_id,
                             ext_samples=N_EXTRAP, expand=EXTRAP_FACTOR)
@@ -200,8 +219,11 @@ def print_summary(rows):
 
     tot_c = sum(r["cand_total"] for r in rows)
     tot_k = sum(r["cand_kept"] for r in rows)
-    print("\n  量纲剪枝：候选全集 %d 项 → 剪枝后 %d 项，共砍掉 %.1f%%"
-          % (tot_c, tot_k, 100 * (1 - tot_k / tot_c)))
+    if tot_c:
+        print("\n  量纲剪枝：候选全集 %d 项 → 剪枝后 %d 项，共砍掉 %.1f%%"
+              % (tot_c, tot_k, 100 * (1 - tot_k / tot_c)))
+    else:
+        print("\n  量纲剪枝：本批没有任何候选项被生成（检查题目是否匹配上了）")
 
     bad = [r for r in rows if r["noise"] == 0 and not is_recovered(r["verdict"])]
     print("\n  无噪声下未恢复的题目（%d 条，这些是要写进报告的失败案例）：" % len(bad))
@@ -324,7 +346,9 @@ small{color:var(--tx3)}
         if r["noise"] != 0:
             continue
         cls = {"exact": "ok", "up_to_constant": "warn",
-               "approx": "warn", "wrong": "no", "error": "no"}[r["verdict"]]
+               "approx": "warn", "wrong": "no", "error": "no",
+               # 候选库无解 / 违反符号合理性：都是"失败"展示样式
+               "no_candidates": "no", "implausible": "no"}[r["verdict"]]
         ratio = "  (×%.4g)" % r["ratio"] if r["verdict"] == "up_to_constant" else ""
         pct = 100 * (1 - r["cand_kept"] / max(r["cand_total"], 1))
         H.append("<tr><td class='mono'>%s</td><td><code>%s</code></td>"
@@ -452,8 +476,13 @@ def main(argv):
     outdir = os.path.join(here, "results")
     os.makedirs(outdir, exist_ok=True)
 
-    wanted = [a.upper() for a in argv[1:]]
-    eqs = [e for e in EQ.EQUATIONS if not wanted or e["id"] in wanted]
+    # 注意不要在这里强行 upper()：官方 Feynman 基准的编号形如 I.6.2a、I.15.3x，
+    # 带小写字母，转成大写就一条也匹配不上了（实测踩过）。改成大小写无关比较。
+    wanted = [a.strip().lower() for a in argv[1:]]
+    eqs = [e for e in EQ.EQUATIONS if not wanted or e["id"].lower() in wanted]
+    if wanted and not eqs:
+        print("没有匹配到任何题目：%s" % ", ".join(argv[1:]))
+        return 2
 
     print("SciFormula 实验开始：%d 条方程 × %d 个噪声档" % (len(eqs), len(NOISE_LEVELS)))
     t0 = time.time()
@@ -470,8 +499,10 @@ def main(argv):
     total = time.time() - t0
     print("\n耗时 %.1f 秒（平均每档 %.3f 秒）" % (total, total / max(len(rows), 1)))
 
-    csv_path = os.path.join(outdir, "detailed.csv")
-    html_path = os.path.join(outdir, "report.html")
+    # 两套基准结果分开存，免得跑官方基准时把迷你库的结果覆盖掉
+    suffix = "" if EQ.LIBRARY == "mini" else "_" + EQ.LIBRARY
+    csv_path = os.path.join(outdir, "detailed%s.csv" % suffix)
+    html_path = os.path.join(outdir, "report%s.html" % suffix)
     write_csv(rows, csv_path)
     print_summary(rows)
     write_report(rows, html_path)

@@ -157,6 +157,95 @@ def check_homogeneous_add(a, b):
 
 
 # ---------------------------------------------------------------------------
+# 从一个符号表达式里算出量纲
+# 放在 dims.py 而不是别处，是为了让「方程库」和「方程库的自检」都能用它，
+# 而不产生循环依赖。
+# ---------------------------------------------------------------------------
+
+# 这些函数的参数必须是无量纲量（角度、比值、指数）
+TRANSCENDENTAL = ("sin", "cos", "tan", "asin", "acos", "atan", "arcsin", "arccos",
+                  "arctan", "sinh", "cosh", "tanh", "exp", "log", "ln", "Log")
+
+
+def expr_dim(e, dims):
+    """
+    递归计算 sympy 表达式 e 的量纲。
+
+    dims 是 {变量名: 量纲元组}。
+    规则：
+      乘法    -> 指数相加
+      除法    -> 指数相减
+      幂      -> 指数相乘（指数必须是有理数；x**y 而 y 带量纲是物理上无意义的）
+      加法    -> 要求各项量纲相同，返回第一项的量纲
+      三角函数/指数/对数 -> 参数必须无量纲，结果无量纲
+      sqrt    -> 指数乘 1/2
+    """
+    import sympy as sp
+
+    if e.is_Symbol:
+        name = str(e)
+        if name not in dims:
+            raise KeyError("表达式里的符号 %r 不在单位表里" % name)
+        return dims[name]
+    if e.is_Number:
+        return ZERO
+
+    if e.func is sp.Add:
+        d0 = expr_dim(e.args[0], dims)
+        for a in e.args[1:]:
+            if not same(expr_dim(a, dims), d0):
+                raise ValueError("加法两侧量纲不一致：%s 对 %s" % (
+                    fmt(expr_dim(a, dims)), fmt(d0)))
+        return d0
+
+    if e.func is sp.Mul:
+        d = ZERO
+        for a in e.args:
+            d = add(d, expr_dim(a, dims))
+        return d
+
+    if e.func is sp.Pow:
+        base = expr_dim(e.args[0], dims)
+        expo = e.args[1]
+        if not expo.is_Number:
+            raise ValueError("指数 %s 不是常数，无法判断量纲" % expo)
+        return scale(base, fraction_of(expo))
+
+    if e.func is sp.sqrt:
+        return scale(expr_dim(e.args[0], dims), Fr(1, 2))
+
+    fname = getattr(e.func, "__name__", str(e.func))
+    if fname in TRANSCENDENTAL:
+        arg = expr_dim(e.args[0], dims)
+        if not same(arg, ZERO):
+            raise ValueError("%s() 的参数必须是无量纲量，实际是 %s" % (fname, fmt(arg)))
+        return ZERO
+
+    # 其余未登记的函数：保守地要求参数无量纲
+    for a in e.args:
+        if not same(expr_dim(a, dims), ZERO):
+            raise ValueError("未登记的函数 %s 带了有量纲的参数" % fname)
+    return ZERO
+
+
+def fraction_of(x):
+    """把 sympy 的数（可能是 1/2、-3 这样的有理数）转成 Python 的 Fraction"""
+    import sympy as sp
+    r = sp.Rational(x)
+    return Fr(int(r.p), int(r.q))
+
+
+def expr_dim_str(expr_str, dims):
+    """便捷入口：把公式字符串 + 变量量纲表 直接算成量纲元组"""
+    import sympy as sp
+    names = sorted(dims)
+    syms = sp.symbols(names)
+    e = sp.sympify(expr_str, locals=dict(zip(names, syms)))
+    return expr_dim(e, dims)
+
+
+
+# ---------------------------------------------------------------------------
 # 自检：直接运行这个文件时，会跑一遍小测试，确认量纲运算正确
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
