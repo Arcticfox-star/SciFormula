@@ -39,6 +39,36 @@ DEFAULT_PROTOCOL = "2024-11-05"
 E_PARSE, E_INVALID_REQ, E_NO_METHOD, E_INVALID_PARAMS, E_INTERNAL = -32700, -32600, -32601, -32602, -32603
 
 
+def _setup_stdio():
+    """
+    把标准流强制设成 UTF-8 —— **这一条在 Windows 上是必需的，不是可选项。**
+
+    为什么：MCP 规范规定 stdio 传输使用 UTF-8 编码，但 Windows 上 Python 的
+    stdin/stdout 默认用本地代码页（中文系统是 cp936/GBK）。
+    而我们的工具返回值里**大量是中文**（诊断信息、公式说明、候选表达式说明），
+    `json.dumps(..., ensure_ascii=False)` 会把它们原样写出去。
+    不设 UTF-8 的后果：写出去的是 GBK 字节，客户端按 UTF-8 解码 →
+    轻则中文乱码，重则 JSON 解析失败、整个 MCP 连接报废。
+
+    这个坑在 Linux/macOS 上**永远遇不到**（那边默认就是 UTF-8），
+    所以特别留这段注释：以后若有人把这套代码搬到别的语言/平台，
+    别忘了这一层要有等价处理。
+
+    另外 stdin 用 errors="replace"：客户端万一发来不合法的字节，
+    宁可把它替换成占位符也不要让进程崩掉——MCP 服务器崩了，AGH 侧只会看到"连接断开"，
+    很难排查。
+    """
+    for stream, errors in ((sys.stdin, "replace"), (sys.stdout, None), (sys.stderr, "replace")):
+        try:
+            kwargs = {"encoding": "utf-8"}
+            if errors:
+                kwargs["errors"] = errors
+            stream.reconfigure(**kwargs)
+        except Exception:
+            # 极端情况下（流被替换成不可重配置的对象）忽略即可，不阻断启动
+            pass
+
+
 def _log(*parts):
     """所有日志走 stderr —— stdout 是协议通道，绝不能碰"""
     print("[sciformula]", *parts, file=sys.stderr, flush=True)
@@ -158,7 +188,9 @@ def dispatch(msg):
 
 
 def serve():
+    _setup_stdio()
     _log("sciformula MCP server 启动（stdio）。日志走 stderr，协议走 stdout。")
+    _log("标准流编码已强制为 UTF-8（Windows 必需）。")
     for line in sys.stdin:
         line = line.strip()
         if not line:
@@ -177,6 +209,8 @@ def serve():
 # 自检：不接 AGH，直接把协议走一遍
 # ---------------------------------------------------------------------------
 def selftest():
+    _setup_stdio()
+
     def run(messages):
         out = []
         real_stdout = sys.stdout
