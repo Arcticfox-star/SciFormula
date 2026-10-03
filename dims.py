@@ -147,6 +147,24 @@ def fmt(d):
     return head if not neg else head + "/" + "/".join(neg)
 
 
+def fmt_exp(d):
+    """
+    把量纲元组打印成**无歧义**的显式指数形式，例如 'kg^1*m^1*s^-1'。
+
+    为什么需要它：fmt() 用「/ 连接负指数」的紧凑写法（如 `kg/m/s`），读起来省事，
+    但**多个斜杠时会歧义**——`kg/m/s` 按左结合是 kg·m⁻¹·s⁻¹，不是 kg·m·s⁻¹。
+    实测 AGH 里的智能体把动量写成 `kg/m/s`，结果剪枝保留了一个物理上错误的候选项、
+    拟合 R²=-1.116，白绕了十几轮才走出来。所以给智能体回显时用这个不带斜杠的写法，
+    让它一眼看出「我的单位串被解析成了什么」。
+    """
+    items = []
+    for sym, e in zip(BASE_SYMBOLS, d):
+        if e == 0:
+            continue
+        items.append("%s^%s" % (sym, e))
+    return "*".join(items) if items else "1"
+
+
 def check_homogeneous_add(a, b):
     """
     量纲一致性检查：两个量能不能相加。

@@ -4,18 +4,20 @@
 #   · 行为 sha256sum 兼容格式（`sha256sum -c results/EVIDENCE.sha256` 可直接用）
 #   · 也可用项目自带脚本核对：python verify_evidence.py
 #
-# 生成时间（UTC）：2026-10-03T14:55Z（北京时间 2026-10-03 22:55）
+# 生成时间（UTC）：2026-10-03T15:5xZ（北京时间 2026-10-03 约 23:55）
 # 生成方式：sha256sum results/... docs/...（AGH 官方导出 + 自动生成的报告与摘要）
 #
-# ⚠️ 这三个 agh-session-*.html 是 AGH 官方导出的原件。
+# ⚠️ 这四个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
 #    data-page-node-id 之类的属性，破坏原件字节一致性。
 #    只想看内容时，用浏览器打开即可（浏览器不会写文件）。
 2d6a7b01a03d8c3e8bded27f5d4a09c05c3e9f318daecf4dd1c6b1b49eb74dac  results/agh-session.html
 372b63b23af79d6db28558ec0ee7af206b6adf710475a2de714ee5f8e560672a  results/agh-session-feynman.html
 12b9826e211c51aff6e2ba8158c7db111d8ee1cff8ff1fa4126e944ee3160b49  results/agh-session-unitinfer.html
+30d9e51301a4b72da98775ad1517b604d6274e10e8704935be1e15fa6e185713  results/agh-session-demo.html
 077b30fd291d70f5969845c81898d160089bdea26dbf1367c1f916ad7ddad7f5  results/agh-trace-summary.md
 3707f3f1b6b039d095f505d2801c7e684ccbc2708200e81c0f68c456fa895f42  results/agh-trace-feynman.md
+37cd3e7828668e1eb694ecb928c3ddc0b1cab1220a91ca86deab23dab95c2825  results/agh-trace-demo.md
 36fcbf0ac1b7387adbe955ce8ca831e2abf97c4175c03c9c47618497322ac818  results/report.html
 cd3aa2e43d89ec2edd5294b6cda6f8ca5c3adc7bcaf7e950c0f912f57e0b3a9f  results/report_feynman.html
 1b84fb854068c67f4bd895c9c3df8107ee70235e8a2b5145745f1bb56757a4cc  results/detailed.csv

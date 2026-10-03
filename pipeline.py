@@ -50,7 +50,7 @@ import hashlib
 import numpy as np
 
 import equations as EQ
-from dims import UNITS, ZERO, fmt, parse_unit, same
+from dims import UNITS, ZERO, fmt, fmt_exp, parse_unit, same
 from features import build_library as _build_library, make_matrix
 from sparse import fit_best, fit_stlsq, to_expression
 from equivalence import (VERDICT_LABEL, build_expr_string, classify, evaluate,
@@ -230,6 +230,23 @@ _UNIT_HINT = ("写法：单位名用 * 连接、/ 表示除、^ 表示幂，且�
               "不要写括号——写 W/m/K 而不是 W/(m*K)，写 kg/A/s^2 而不是 kg/(A*s^2)。"
               "无量纲写 空字符串 或 \"1\"。")
 
+# 多斜杠但没有乘号的写法（如 kg/m/s）是左结合的，容易被误读成别的量，
+# 所以单独给一句提醒（只解释写法语义，不涉及物理答案）。
+_SLASH_TRAP_HINT = ("`{raw}` 按左结合解析 = {exp}（斜杠从左往右依次作除）。"
+                    "若你要表达的是分子里含乘号的量（例如动量 kg*m/s），"
+                    "请把乘号写出来：`kg*m/s`；写成 `kg/m/s` 会被读成 kg/(m*s)。")
+
+
+def _slash_warning(raw):
+    """若单位串含多个斜杠且没有乘号，返回一条"左结合"提醒；否则返回 None。"""
+    s = (raw or "").strip()
+    if s.count("/") < 2 or "*" in s:
+        return None
+    try:
+        return _SLASH_TRAP_HINT.format(raw=s, exp=fmt_exp(parse_unit(s)))
+    except Exception:
+        return None
+
 
 def check_units(variables_units, target_unit, data_id=None):
     """
@@ -238,14 +255,28 @@ def check_units(variables_units, target_unit, data_id=None):
     只做两件事：① 每个单位串能不能解析；② 变量集合是否和数据对得上。
     **不判断物理上是否正确**——一个能解析但物理上错误的单位，会在这里通过，
     然后在 build_candidates 里表现为"候选被剪到几乎没有"。这正是编排层要观察的反馈。
+
+    两个辅助输出，都是为了减少"写法歧义"这一类无谓的弯路：
+      · `exponent_form`：把每个单位串用**显式指数**回显（如 kg/m/s → kg^1*m^-1*s^-1），
+        让智能体一眼看出自己的写法被解析成了什么（紧凑的 `normalized` 看不出差别）；
+      · `warnings`：多斜杠且无乘号的写法（如 kg/m/s）会附一条左结合提醒。
+    实测背景：AGH 里的智能体把动量写成 `kg/m/s`（实为 kg/(m·s)），
+    导致剪枝保留了物理上错误的候选项、最终拟合 R²=-1.116，绕了十几轮才纠正。
     """
     variables_units = variables_units or {}
     rows, ok_all = [], True
+    warnings = []
     for name, unit in variables_units.items():
         rec = dict(name=name, input=unit)
         try:
             d = parse_unit(unit)
-            rec.update(parsed_ok=True, normalized=fmt(d) or "1", is_dimensionless=bool(same(d, ZERO)))
+            rec.update(parsed_ok=True, normalized=fmt(d) or "1",
+                       exponent_form=fmt_exp(d),
+                       is_dimensionless=bool(same(d, ZERO)))
+            w = _slash_warning(unit)
+            if w:
+                warnings.append("[%s] %s" % (name, w))
+                rec["warning"] = w
         except Exception as exc:
             rec.update(parsed_ok=False, error=str(exc))
             ok_all = False
@@ -254,7 +285,13 @@ def check_units(variables_units, target_unit, data_id=None):
     tgt = dict(input=target_unit)
     try:
         d = parse_unit(target_unit)
-        tgt.update(parsed_ok=True, normalized=fmt(d) or "1", is_dimensionless=bool(same(d, ZERO)))
+        tgt.update(parsed_ok=True, normalized=fmt(d) or "1",
+                   exponent_form=fmt_exp(d),
+                   is_dimensionless=bool(same(d, ZERO)))
+        w = _slash_warning(target_unit)
+        if w:
+            warnings.append("[目标量] %s" % w)
+            tgt["warning"] = w
     except Exception as exc:
         tgt.update(parsed_ok=False, error=str(exc))
         ok_all = False
@@ -273,6 +310,7 @@ def check_units(variables_units, target_unit, data_id=None):
             ok_all = False
 
     return dict(ok=ok_all, variables=rows, target=tgt,
+                warnings=warnings,
                 known_units=sorted(UNITS.keys()), syntax_hint=_UNIT_HINT,
                 notes=notes)
 
@@ -328,7 +366,10 @@ def build_candidates(data_id, variables_units, target_unit, max_terms=250):
                 "建议重新审读变量名与物理语境，再试一组（check_units 只能查写法，查不出这种物理错误）。")
     elif st["kept"] < 5:
         hint = ("剪枝后候选只剩 %d 项，数量偏少。若后续拟合效果差，可以怀疑单位推断有误；"
-                "若拟合很好也要警惕：候选太少可能是碰巧。" % st["kept"])
+                "若拟合很好也要警惕：候选太少可能是碰巧。"
+                "另请顺带核对**写法**：含多个斜杠的单位按左结合解析"
+                "（如 kg/m/s = kg/(m*s)，动量应当写 kg*m/s），"
+                "这类写法歧义会让量纲看起来自洽、实际推错。" % st["kept"])
     if st["truncated"]:
         diagnostics.append("保留项超过 max_terms=%d，已按「表达式最简优先」截断。" % int(max_terms))
     if len(used) < st["kept"]:
@@ -410,6 +451,12 @@ def fit_sparse(lib_id, data_id, strategy="omp", max_terms=10, threshold=0.05):
     if r["k"] >= int(max_terms):
         notes.append("选中的项数已达到 max_terms=%d 上限，可能是候选表达力不足；"
                      "可以考虑放宽 max_terms，或检查单位推断。" % int(max_terms))
+    if float(r["r2"]) <= 0.0:
+        # 实测：单位写法歧义（把动量写成 kg/m/s 而不是 kg*m/s）会让剪枝只留下
+        # 一个量纲自洽但物理上错误的候选项，单靠它拟合就会得到负 R²。
+        notes.append("R² ≤ 0：拟合还不如直接用均值预测，通常说明候选本身在物理上不对。"
+                     "优先怀疑单位推断——包括**写法歧义**（含多个斜杠的单位按左结合解析，"
+                     "如 kg/m/s = kg/(m*s)，动量应写 kg*m/s）。")
     if strategy == "stlsq":
         notes.append("STLSQ 在候选项共线时系数会膨胀、阈值失去区分力，"
                      "对照结论请以 compare_strategies 的输出为准。")

@@ -298,8 +298,8 @@ agh mcp reconnect sciformula --expected-revision REVISION
 
 | 4.2 要求 | 我们提供什么 |
 |---|---|
-| AGH 执行记录 | 三份官方导出：`results/agh-session.html`（迷你库 P03/P20）、`results/agh-session-feynman.html`（官方题库闭环，388 事件）、`results/agh-session-unitinfer.html`（单位推断评测作答）|
-| ≥1 条工具/设备调用链 | 迷你库 8 步链（`agh-trace-summary.md`）；官方题库 19 次调用、含候选归零→自主诊断→换题的纠错链（`agh-trace-feynman.md`）；`sciformula/.agh_runs/episode_*.json` 是本地副本 |
+| AGH 执行记录 | 四份官方导出：`results/agh-session.html`（迷你库 P03/P20）、`results/agh-session-feynman.html`（官方题库闭环，388 事件）、`results/agh-session-unitinfer.html`（单位推断评测作答）、`results/agh-session-demo.html`（官方题演示：I.39.22 一次通过 + I.34.8 写法歧义后自纠）|
+| ≥1 条工具/设备调用链 | 迷你库 8 步链（`agh-trace-summary.md`）；官方题库 19 次调用、含候选归零→自主诊断→换题的纠错链（`agh-trace-feynman.md`）；演示会话 25 次调用（`agh-trace-demo.md`）；`sciformula/.agh_runs/episode_*.json` 是本地副本 |
 | Agnes 模型参与核心任务证据 | 单位推断环节由 Agnes 完成（12 题量化评测：变量级 45/54，见 `results/unit_infer_report.md`），三份会话轨迹里都能看到它的推断过程 |
 | 关键配置 | MCP 服务定义（`mcp get` 的输出）、`mcp tools` 的工具清单 |
 | 专业验证结果 | `results/report.html` + `results/report_feynman.html` + `verify_formula` 的判定输出 |
