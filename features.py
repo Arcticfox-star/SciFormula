@@ -27,10 +27,19 @@ features.py —— 候选特征库构造 + 量纲剪枝  ★本项目的技术�
    变成 AI 搜索过程里的硬约束。这就是"把物理先验注入 AI 搜索"。
 """
 
+import os
 from fractions import Fraction as Fr
 from itertools import combinations, product
 
 from dims import ZERO, add, same, scale
+
+# 消融实验开关（对照组用）：SCIFORMULA_NO_PRUNE=1 时**关掉量纲剪枝**，
+# 其余流程（表达式去重、按复杂度截断到 max_terms、数值净化、OMP 回归）完全一致。
+# 用途：量化"量纲剪枝到底带来了什么"——对照跑同一套基准，
+# 回答两个问题：① 精度掉多少（真值项被复杂度排序挤出前 250 名 / 贪心被垃圾列带偏）；
+# ② 耗时变多少（给本该被剪掉的项生成表达式、排序、去重）。
+# 结论写进 README 第四节"消融实验"。正常运行**不要**设置这个变量。
+_NO_PRUNE = os.environ.get("SCIFORMULA_NO_PRUNE", "0").strip() in ("1", "true", "yes")
 
 
 # ---------------------------------------------------------------------------
@@ -167,7 +176,12 @@ def build_library(varnames, vardims, target_dim, max_terms=250, verbose=False):
             for e in product(exps, repeat=k):
                 cores.add(_mkcore(list(zip(combo, e))))
     cores.add(())                                    # 常数项（空核）
-    cores = sorted(cores, key=lambda c: (len(c), sum(abs(float(e)) for _, e in c)))
+    # 排序键必须能**唯一**定序：只用 (长度, 幂次绝对值之和) 时会大量并列，
+    # 并列项的相对顺序就落回 set 的迭代序——而字符串哈希跨进程是随机的
+    # （PYTHONHASHSEED），导致截断 kept[:max_terms] 时不同进程挑中不同候选，
+    # 全量基准成绩出现 ±1 的漂移（实测：53/53/56 → 52/52/55 → 52/52/56）。
+    # 加 repr(c) 当决胜项后，任何进程里顺序都完全一致，结果可复现。
+    cores = sorted(cores, key=lambda c: (len(c), sum(abs(float(e)) for _, e in c), repr(c)))
 
     # ---- 第 2 步：挑出"无量纲基" U，并派出函数因子 ----
     # U 里每个元素的量纲都是零，所以可以安全地送进 sin / exp / log。
@@ -204,12 +218,18 @@ def build_library(varnames, vardims, target_dim, max_terms=250, verbose=False):
             push(c, f)
 
     total = len(all_terms)
-    kept = [t for t in all_terms if same(t.dim, target_dim)]
+    if _NO_PRUNE:
+        # 消融对照组：不做量纲过滤。去重 / 截断 / 回归等后续流程与正常路径完全一致，
+        # 保证对比只有"剪枝"这一个变量。
+        kept = list(all_terms)
+    else:
+        kept = [t for t in all_terms if same(t.dim, target_dim)]
 
     # ---- 第 3.5 步：按表达式去重 ----
     # 同一个表达式可能由两条路径生成（幂次核 m*mu，和"核 m × 恒等因子 mu"），
     # 必须合并，否则会白白占用候选项名额、还会让系数被拆到两列上去。
-    kept.sort(key=lambda t: (t.size, len(t.core)))
+    # 同理：这里也必须全序（加 t.expr 决胜），否则截断结果随哈希种子漂移
+    kept.sort(key=lambda t: (t.size, len(t.core), t.expr))
     uniq, seen_expr = [], set()
     for t in kept:
         if t.expr in seen_expr:
@@ -234,10 +254,13 @@ def build_library(varnames, vardims, target_dim, max_terms=250, verbose=False):
         n_units=len(U),
         unit_bases=U,
         truncated=truncated,
+        no_prune=_NO_PRUNE,
     )
     if verbose:
-        print("  候选全集 %d 项 → 量纲剪枝后 %d 项（砍掉 %.1f%%）%s"
-              % (total, len(kept), 100 * stats["prune_ratio"],
+        print("  候选全集 %d 项 → %s %d 项（砍掉 %.1f%%）%s"
+              % (total,
+                 "量纲剪枝后" if not _NO_PRUNE else "未剪枝保留(消融对照)",
+                 len(kept), 100 * stats["prune_ratio"],
                  "   [已截断到 %d]" % max_terms if truncated else ""))
     return kept, stats
 

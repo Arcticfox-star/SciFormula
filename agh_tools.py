@@ -50,9 +50,18 @@ TOOL_DEFS = [
         description=(
             "列出可用于评测的物理定律基准问题（编号、名称、目标量名、变量名）。"
             "第一步调用它来挑选一个 problem_id。注意：本工具不返回任何物理单位，"
-            "目标量的量纲需要你根据问题名称与变量名自行推断。"),
-        inputSchema=dict(type="object", properties={}, additionalProperties=False),
-        handler=lambda a: P.list_problems(),
+            "目标量的量纲需要你根据问题名称与变量名自行推断。"
+            "可选两套题库：library 不传 = 教学迷你库（21 题，P01~P21，变量少、适合演示流程）；"
+            "library=\"feynman\" = 官方 Feynman 符号回归基准（100 题，编号如 I.12.11，"
+            "变量多、难度高，正式成绩在这套库上测出）。"),
+        inputSchema=dict(
+            type="object",
+            properties=dict(
+                library=dict(type="string", enum=["mini", "feynman"], default="mini",
+                             description="题库：mini=21 题迷你库（默认）；feynman=官方 100 题基准"),
+            ),
+            additionalProperties=False),
+        handler=lambda a: P.list_problems(a.get("library")),
     ),
 
     dict(
@@ -65,7 +74,8 @@ TOOL_DEFS = [
         inputSchema=dict(
             type="object",
             properties=dict(
-                problem_id=dict(type="string", description="list_problems 返回的问题编号，例如 P03"),
+                problem_id=dict(type="string",
+                                description="list_problems 返回的问题编号，例如 P03（迷你库）或 I.12.11（官方库）"),
                 n_samples=dict(type="integer", default=100, description="采样点数，默认 100"),
                 noise=dict(type="number", default=0.0,
                            description="噪声水平：加到真值上的高斯噪声标准差 = noise × 真值标准差。0 表示无噪声"),

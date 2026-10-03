@@ -162,37 +162,84 @@ MINI_EQUATIONS = [
 #   mini（默认）  —— 上面这份手写的 21 条迷你库，与官方基准结构一致
 #   feynman      —— 官方 Feynman 符号回归基准的 100 条方程（data/FeynmanEquations.csv）
 #
-# 切换方式（环境变量）：
+# 切换方式（环境变量，主要给 experiment.py 批量评测用）：
 #     Linux/macOS :  SCIFORMULA_LIBRARY=feynman python experiment.py
 #     Windows     :  $env:SCIFORMULA_LIBRARY="feynman"; python experiment.py
 #
-# 之所以做成"换数据源"而不是另写一套流程：下游（features / sparse / pipeline /
-# experiment / AGH 工具）访问方程库只用 EQUATIONS、get()、varnames() 三样东西，
-# 所以换成官方基准时它们一行都不用改。
+# 【AGH / MCP 路径不走环境变量】——AGH 拉起 mcp_server.py 的进程时看不到
+# 用户 shell 里的环境变量。所以 MCP 工具（list_problems / load_problem）
+# 带了显式的 library 参数，两套库在同一个进程里共存、按需装载：
+#   EQ.ensure_library("feynman")  首次调用时读 CSV，之后复用
+#   EQ.find(eq_id)                在已装载的库里跨库解析（mini 优先；两库编号
+#                                 不重叠——mini 是 P01..P21，feynman 是 I.6.2a 这类）
+# 下游 pipeline 只调 EQ.get()，不感知库的存在，一行都不用改。
 # ---------------------------------------------------------------------------
 LIBRARY = os.environ.get("SCIFORMULA_LIBRARY", "mini").strip().lower()
 SKIPPED = []          # 装载官方数据集时被量纲自检排除的条目（含原因）
 
+# 已装载的库：name -> 方程列表。mini 是内存里的常量，零成本先放进来；
+# feynman 首次用到才读 CSV（读取 + 量纲自检约几十毫秒，懒装载完全够用）。
+_LIBRARIES = {}
+
+
+def ensure_library(name):
+    """装载（或返回已装载的）一套方程库。返回方程列表。"""
+    global SKIPPED
+    name = (name or "mini").strip().lower()
+    if name in ("feynman", "official", "benchmark"):
+        name = "feynman"
+    else:
+        name = "mini"
+    if name not in _LIBRARIES:
+        if name == "feynman":
+            import feynman
+            eqs, skipped = feynman.load()
+            SKIPPED = skipped
+            _LIBRARIES[name] = eqs
+        else:
+            _LIBRARIES[name] = MINI_EQUATIONS
+    return _LIBRARIES[name]
+
+
+def library_names():
+    """当前进程里已装载的库名列表（调试与自检用）"""
+    return sorted(_LIBRARIES.keys())
+
+
+def find(eq_id):
+    """
+    在已装载的库里跨库找一条方程，返回 (方程, 库名)；找不到返回 (None, None)。
+    mini 优先；mini 里没有时自动装载 feynman 再找——这让 pipeline 下游的
+    EQ.get(meta["problem_id"]) 无论题目来自哪套库都能解析到。
+    """
+    for e in _LIBRARIES.get("mini", []):
+        if e["id"] == eq_id:
+            return e, "mini"
+    if "feynman" not in _LIBRARIES:
+        try:
+            ensure_library("feynman")
+        except Exception:
+            pass
+    for e in _LIBRARIES.get("feynman", []):
+        if e["id"] == eq_id:
+            return e, "feynman"
+    return None, None
+
 
 def _load_library():
-    global SKIPPED
-    if LIBRARY in ("feynman", "official", "benchmark"):
-        import feynman
-        eqs, skipped = feynman.load()
-        SKIPPED = skipped
-        return eqs
-    return MINI_EQUATIONS
+    ensure_library("mini")                      # mini 永远可用（零成本）
+    return ensure_library(LIBRARY)              # 再按环境变量装载主库
 
 
 EQUATIONS = _load_library()
 
 
 def get(eq_id):
-    """按 id 取出某条方程"""
-    for e in EQUATIONS:
-        if e["id"] == eq_id:
-            return e
-    raise KeyError(eq_id)
+    """按 id 取出某条方程（跨已装载的库解析）"""
+    eq, _lib = find(eq_id)
+    if eq is None:
+        raise KeyError(eq_id)
+    return eq
 
 def varnames(eq):
     """返回这条方程的变量名列表（顺序固定，和 vars 字典的书写顺序一致）"""

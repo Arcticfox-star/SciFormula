@@ -501,6 +501,10 @@ def main(argv):
 
     # 两套基准结果分开存，免得跑官方基准时把迷你库的结果覆盖掉
     suffix = "" if EQ.LIBRARY == "mini" else "_" + EQ.LIBRARY
+    # 消融实验（SCIFORMULA_NO_PRUNE=1，关掉量纲剪枝的对照组）单独命名，
+    # 避免覆盖正式成绩文件
+    if os.environ.get("SCIFORMULA_NO_PRUNE", "0").strip() in ("1", "true", "yes"):
+        suffix += "_noprune"
     csv_path = os.path.join(outdir, "detailed%s.csv" % suffix)
     html_path = os.path.join(outdir, "report%s.html" % suffix)
     write_csv(rows, csv_path)

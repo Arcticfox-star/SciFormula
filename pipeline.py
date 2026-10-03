@@ -118,15 +118,24 @@ def add_noise(y_clean, noise, seed):
 # ---------------------------------------------------------------------------
 # 能力 1：列出可用问题
 # ---------------------------------------------------------------------------
-def list_problems():
+def list_problems(library=None):
     """
     列出基准问题清单。
+
+    参数 library：不传（默认）= 当前主库（环境变量决定的 mini）；
+    传 "feynman" = 官方 Feynman 基准 100 题。两套库可在同一进程里共存。
 
     注意：这里**故意不返回目标量的单位**。目标单位属于"要推断的东西"，
     由智能体根据问题名称、目标量名称和变量名来判断。
     """
+    if library and str(library).strip().lower() not in ("mini", ""):
+        eqs = EQ.ensure_library(library)
+        lib_name = "feynman" if str(library).strip().lower() in ("feynman", "official", "benchmark") else "mini"
+    else:
+        eqs = EQ.EQUATIONS
+        lib_name = EQ.LIBRARY
     rows = []
-    for eq in EQ.EQUATIONS:
+    for eq in eqs:
         names = EQ.varnames(eq)
         rows.append(dict(
             problem_id=eq["id"],
@@ -136,7 +145,7 @@ def list_problems():
             n_variables=len(names),
             variables=names,
         ))
-    return dict(ok=True, count=len(rows), problems=rows,
+    return dict(ok=True, library=lib_name, count=len(rows), problems=rows,
                 note="选取一个 problem_id 调 load_problem 取得观测数据；"
                      "目标量的量纲未提供，需要自行推断，再用 check_units 校验。")
 
