@@ -216,7 +216,7 @@ def report(rows, slice_tags):
     L, A = [], None
     A = L.append
     n = len(slice_tags)
-    A("# 同类方法对比：gplearn vs 本项目（1% 噪声档，全部 %d 题）\n" % n)
+    A("# 同类方法对比：gplearn vs 本项目（1%% 噪声档，全部 %d 题）\n" % n)
     A("三种方法跑在**完全相同**的数据与验收口径上；本项目这一列也**只取这 %d 题**，")
     A("保证同题同条件（不是拿全量成绩跟子集比）。\n")
     A("| 方法 | 训练 R²/结构 | 区间内 nRMSE（中位）| 外推 nRMSE（中位）| **双口径通过** | 单题耗时（中位）| 给出公式 |")
@@ -235,9 +235,13 @@ def report(rows, slice_tags):
             cnt = Counter(r["structure"] for r in ok)
             good = cnt.get("exact", 0) + cnt.get("up_to_constant", 0)
             struct = "结构对 %d/%d" % (good, len(ok))
-        A("| %s | %s | %.4f | %.4f | **%d/%d（%.0f%%）** | %s | %s |" % (
-            NAMES.get(m, m), struct or "—", med_in, med_ex, passed, len(ok),
-            100.0 * passed / len(ok) if ok else 0,
+        rate = "%d/%d（%.0f%%）" % (passed, len(ok), 100.0 * passed / len(ok) if ok else 0)
+        if m == "ours":
+            # 本项目还有若干题根本没产出公式（能力边界）——两种分母都给，避免显得偏高
+            rate += "　→ 计入未出公式题 %d/%d（%.0f%%）" % (
+                passed, n, 100.0 * passed / n)
+        A("| %s | %s | %.4f | %.4f | **%s** | %s | %s |" % (
+            NAMES.get(m, m), struct or "—", med_in, med_ex, rate,
             ("%.2fs" % timing[m]) if m in timing else "—",
             "否" if m in ("rf", "gbrt") else "是"))
     A("")
@@ -248,7 +252,11 @@ def report(rows, slice_tags):
     A("2. **时间要给足**：gplearn 用的是 population×generations 的遗传搜索，本题集上单题数秒，")
     A("   本项目 0.13 秒——时间差就是「先验」的价值：量纲剪枝把搜索空间砍掉 99%，")
     A("   省下来的算力可以换成更彻底的多项式搜索。")
-    A("3. **本项目并非全胜**：结构判定一栏如实给出 gplearn 找对结构的题数，")
+    A("3. **分母要看清**：本项目一列按「产出公式的题」算，同时给出「计入未出公式题」的口径；")
+    A("   gplearn 一列按同一切片的全部题算（它每题都会给一条公式——**给得出不等于给得对**）。")
+    A("   结构判定里的 `无法解析` 指公式转换/求值失败（例如 log 作用在负数上），")
+    A("   不能算对，故如实单列。")
+    A("4. **本项目并非全胜**：结构判定一栏如实给出 gplearn 找对结构的题数，")
     A("   两边各自在哪类题上更强，明细见 `results/baseline_gp_scores.csv`。\n")
     A("生成命令：`.venv-baseline/Scripts/python.exe scripts/run_baseline.py --methods gp,gpx --noise 0.01`")
     A("→ `python scripts/score_gp.py`")

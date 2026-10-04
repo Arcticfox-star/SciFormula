@@ -105,7 +105,7 @@ def main():
                 np.savez(os.path.join(PRED, "%s__%s.npz" % (kind, tag)),
                          pred_in=pin, pred_ex=pex)
                 r2tr = float(model.score(X, y))
-                expr = str(model) if kind == "gp" else ""
+                expr = str(model) if kind.startswith("gp") else ""   # gp 与 gpx 都要存公式
                 rows.append(dict(method=kind, tag=tag, ok=1, seconds=round(sec, 3),
                                  r2_train=round(r2tr, 6), expr=expr))
             except Exception as exc:                     # 单个失败不能拖垮整批
