@@ -16,3 +16,4 @@ results/*.tmp
 
 # 基线实验的导出数据（可由脚本重新生成）
 results/baseline_input/
+results/baseline_pred/
