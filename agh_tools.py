@@ -36,6 +36,7 @@ import sys
 import json
 import time
 
+import datasets as DS
 import pipeline as P
 
 
@@ -45,6 +46,34 @@ import pipeline as P
 # 「拿到这个结果之后该怎么想」，而不只是"这个工具做什么"。
 # ---------------------------------------------------------------------------
 TOOL_DEFS = [
+    dict(
+        name="list_datasets",
+        description=(
+            "列出**磁盘上可用的观测数据文件**（数据集名、文件路径、行数、列名）。"
+            "这是接入外部数据的地方：每个 CSV 就是一次真实/仿真的采样记录，"
+            "只含变量取值与目标量观测值——**不含真值公式、也不含任何单位**。"
+            "先调用它看看有什么数据，再用 load_dataset 载入。"
+            "提示：数据文件是可替换的，换成你自己的测量 CSV 也能走同一套流程。"),
+        inputSchema=dict(type="object", properties=dict(), additionalProperties=False),
+        handler=lambda a: DS.list_datasets(),
+    ),
+    dict(
+        name="load_dataset",
+        description=(
+            "载入一个数据文件（CSV），返回变量名、采样范围、观测值统计与预览，"
+            "以及后续步骤要用的 data_id。"
+            "与 load_problem 一样**不返回真值公式与单位**——目标量的量纲需要你根据"
+            "列名与物理语境自行推断；若该数据集对应官方题库中的题目，"
+            "独立验证（verify_formula）可用，否则只能用留出法自行检验。"),
+        inputSchema=dict(
+            type="object",
+            properties=dict(
+                name=dict(type="string",
+                          description="list_datasets 返回的数据集名（可带 .csv 后缀），例如 I.39.22"),
+            ),
+            required=["name"], additionalProperties=False),
+        handler=lambda a: DS.load_dataset(a["name"]),
+    ),
     dict(
         name="list_problems",
         description=(

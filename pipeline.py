@@ -501,7 +501,16 @@ def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
     """
     X, y, meta = _load_data(data_id)
     names = [v["name"] for v in meta["variables"]]
-    eq = EQ.get(meta["problem_id"])
+    pid = meta.get("problem_id") or ""
+    try:
+        eq = EQ.get(pid)
+    except Exception:
+        return dict(ok=False, error="这批数据没有可用的参考解，无法做独立验证",
+                    hint=("独立验证的做法是「换一批新采样点、与参考解逐点比对」，"
+                          "所以它需要参考解——本项目里只有官方基准题（含磁盘上的观测数据文件）"
+                          "与仿真实验附带参考解。若是完全外部的测量数据，请改用留出法："
+                          "把已有数据一分为二，一份拟合、一份检验；但要如实说明，"
+                          "那样验的是插值能力，不是外推能力。"))
     noise = float(meta["noise"])
 
     def _score(Xn, tag):

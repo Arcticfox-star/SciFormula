@@ -56,6 +56,8 @@ python experiment.py       # 9. 跑全量实验，结果写到 results/
 | `posthoc_eval.py` | **会话级后验评分器**：读 AGH 导出，给会话打评分卡（公式判定 / 单位准确率 / 过程指标 / 诚实性与完整性核对）。**只在会话结束后跑，不进 MCP 工具集** |
 | `exp_units_ab.py` | **对照实验 A**：单位「已知 vs 需推断」两臂对比，量化"不提供单位"的代价 |
 | `exp_verify_ab.py` | **对照实验 B**：验收环节消融——统计"放行但实际错"的假阳性率与"误杀正确"的假阴性率 |
+| `datasets.py` | **数据接入层**：`list_datasets` / `load_dataset` 读磁盘上的观测数据 CSV（智能体经 AGH 的 MCP 通道读，不读内存合成值）|
+| `scripts/make_observation_csv.py` | 把观测数据物化成 `data/observations/*.csv`（100 份，只含观测值、不含公式与单位）|
 | `scripts/fetch_baseline_wheels.sh` | 用 curl 从镜像取基线库（gplearn / scikit-learn / scipy）的 wheel（本机 pip 直连被拦，只能这样装）|
 | `scripts/export_baseline_input.py` | 为对照实验导出数据：训练/预测点给基线，**真值只给评分脚本**（边界靠文件分离）|
 | `scripts/run_baseline.py` | 在隔离环境里跑基线方法（随机森林 / 梯度提升 / gplearn）|
@@ -374,6 +376,26 @@ gplearn 是成熟选择（BSD-3-Clause）。它比本项目慢约 40 倍，所�
 > `results/baseline_timing.csv`（逐条耗时与公式原文）。
 > 复现：`.venv-baseline/Scripts/python.exe scripts/run_baseline.py --methods gp,gpx --noise 0.01`
 > → `python scripts/score_gp.py`
+
+
+### 数据来自文件（对应竞赛规则「由 AGH 连接数据」）
+
+观测数据不只是进程内合成的——它们被物化成磁盘文件 `data/observations/<题目编号>.csv`
+（100 份，每份 200 行，列为各变量 + 目标量；**不含真值公式、不含单位**）。
+智能体通过 AGH 的 MCP 工具 `list_datasets` / `load_dataset` 去读这些文件：
+
+```
+智能体 →（AGH / MCP）→ list_datasets → load_dataset → check_units
+       → build_candidate_library → fit_sparse → verify_formula
+```
+
+**为什么这不只是"合规"**：数据文件是**可替换的**。把同格式的真实测量数据
+（实验记录、公开数据集）丢进 `data/observations/`，同一套流程照跑，算法一行都不用改。
+
+一条如实声明的边界：`verify_formula` 需要在**新采样点**上与参考解比对，
+所以它只对「官方题库数据集」可用（题目名与题库一致时自动附带参考解）。
+完全外部的数据没有参考解，工具会**明确报错**并提示改用留出法——
+这只是插值能力的检验，不是外推能力。工具提示里就写着这句话。
 
 ### 会话级后验评分：一条必须画清的边界
 
