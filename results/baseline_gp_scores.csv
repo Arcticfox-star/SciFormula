@@ -1,0 +1,486 @@
+﻿method,tag,n_in,n_ex,ok_pass,structure,expr
+gbrt,I.6.2a__nz0.01,0.022669521131931943,0.1676742080899112,1,,
+rf,I.6.2a__nz0.01,0.0162295376578183,0.17554230505742788,1,,
+gp,I.6.2a__nz0.01,0.2443444004062773,0.4558295390780022,0,wrong,"inv(mul(div(X0, 0.255), X0))"
+gpx,I.6.2a__nz0.01,0.25294191588678305,0.4492162084254811,0,wrong,abs(log(tanh(X0)))
+gbrt,I.6.2__nz0.01,0.15547781563264246,0.3113979786220614,0,,
+rf,I.6.2__nz0.01,0.1764899972916102,0.3660434352772726,0,,
+gp,I.6.2__nz0.01,0.4875136270679657,0.6726714996760883,0,wrong,"mul(mul(0.575, 0.377), inv(X1))"
+gpx,I.6.2__nz0.01,0.5324509578637543,0.5678753863019534,0,wrong,"div(0.188, X1)"
+gbrt,I.6.2b__nz0.01,0.49232028198502426,0.7508509988855738,0,,
+rf,I.6.2b__nz0.01,0.48599898851191176,0.7839567953713049,0,,
+gp,I.6.2b__nz0.01,0.6804760348389995,1.1943221931834542,0,wrong,"div(0.380, X0)"
+gpx,I.6.2b__nz0.01,0.5960838405191952,0.9575256714524709,0,wrong,"tanh(tanh(tanh(tanh(tanh(inv(div(X0, 0.411)))))))"
+gbrt,I.8.14__nz0.01,0.5617107072017116,0.8724592103028557,0,,
+rf,I.8.14__nz0.01,0.6522176239664523,0.937049931829116,0,,
+gp,I.8.14__nz0.01,0.7708368985459068,0.8767093344379907,0,wrong,"add(inv(add(0.753, abs(sub(X1, X0)))), abs(sub(X1, X0)))"
+gpx,I.8.14__nz0.01,0.6914861279244782,0.8349715370347361,0,wrong,"add(sqrt(sub(X3, add(sqrt(X2), sqrt(sub(X3, sqrt(add(sqrt(X2), abs(add(sqrt(sub(X3, add(sqrt(X2), sqrt(sub(X3, sqrt(X2)))))), sqrt(sub(X3, X2))))))))))), sqrt(sub(X3, X2)))"
+gbrt,I.9.18__nz0.01,0.5272681427287395,0.906543295962114,0,,
+rf,I.9.18__nz0.01,0.5435498428337704,0.9207038093421137,0,,
+gp,I.9.18__nz0.01,0.4736611249570448,0.7647773101704953,0,wrong,"div(mul(div(mul(div(X0, add(0.290, X5)), add(X1, X2)), add(0.290, X5)), add(X1, X2)), X3)"
+gpx,I.9.18__nz0.01,0.8471067018180779,0.9410374141843244,0,wrong,"tanh(add(log(sqrt(X0)), log(inv(cos(log(X2))))))"
+gbrt,I.10.7__nz0.01,0.06617047738405746,0.34491448753863513,0,,
+rf,I.10.7__nz0.01,0.07591178278810147,0.3630058261124583,0,,
+gp,I.10.7__nz0.01,0.11222740846028086,0.2673513464683264,0,up_to_constant,"abs(sub(neg(0.038), sub(X0, neg(0.038))))"
+gpx,I.10.7__nz0.01,0.10585727240397357,0.2549844406820623,0,up_to_constant,"log(sub(-0.503, exp(add(-0.192, div(X0, cos(sin(sin(sin(sin(-0.420))))))))))"
+gbrt,I.11.19__nz0.01,0.41012390604655447,0.7100563727761878,0,,
+rf,I.11.19__nz0.01,0.45392257885700554,0.7809955207017512,0,,
+gp,I.11.19__nz0.01,0.2478168587528462,0.384999850638664,0,error,"add(X2, add(add(div(mul(add(mul(X1, log(mul(X4, X2))), sub(abs(X5), div(0.550, X3))), abs(X5)), X5), X5), sub(abs(X4), neg(sub(abs(add(log(abs(X4)), sub(abs(add(log(X4), mul(X3, X0))), div(inv(sqrt(mul(div(inv(sqrt(log(abs(X1)))), log(abs(X1))), neg(add(log(mul(add(mul(X1, log(mul(X4, X2))), sub(abs(X5), div(0.550, X3))), abs(X5))), add(log(abs(X1)), X4)))))), log(abs(X1)))))), div(inv(sqrt(mul(div(inv(sqrt(mul(add(neg(sub(neg(X3), neg(X3))), neg(X3)), neg(add(log(sub(X4, X2)), add(log(sub(X4, X2)), X4)))))), log(abs(X1))), neg(X5)))), log(abs(X1))))))))"
+gpx,I.11.19__nz0.01,0.3610782772687743,0.4189695870003472,0,wrong,"add(add(sub(sub(mul(X3, X5), tanh(log(X3))), tanh(X2)), add(sub(sub(add(add(X2, X4), mul(X0, X1)), tanh(mul(tanh(X2), X5))), tanh(tanh(log(X3)))), abs(X4))), mul(mul(abs(abs(X2)), log(X3)), log(add(X4, -0.224))))"
+gbrt,I.12.1__nz0.01,0.14154835341994718,0.3740626373166081,0,,
+rf,I.12.1__nz0.01,0.1405724368647056,0.39593980535775425,0,,
+gp,I.12.1__nz0.01,0.0,0.0,1,exact,"mul(X1, X0)"
+gpx,I.12.1__nz0.01,0.0,0.0,1,exact,"mul(X0, X1)"
+gbrt,I.12.2__nz0.01,0.5190863124412812,0.5465858798145705,0,,
+rf,I.12.2__nz0.01,0.5836479553951961,0.6150510967662377,0,,
+gp,I.12.2__nz0.01,0.7553662157484473,0.8023678230331313,0,wrong,"div(0.260, mul(X3, X3))"
+gpx,I.12.2__nz0.01,0.9130438755933427,0.8671252416068937,0,wrong,"inv(mul(X3, exp(X3)))"
+gbrt,I.12.4__nz0.01,0.4054765985836139,0.527519402905424,0,,
+rf,I.12.4__nz0.01,0.47027347867567654,0.591888021112715,0,,
+gp,I.12.4__nz0.01,0.5836841295405732,0.6131139832622565,0,wrong,"div(0.096, mul(X2, X2))"
+gpx,I.12.4__nz0.01,0.955960657968138,0.9524795220512062,0,wrong,"div(0.021, X2)"
+gbrt,I.12.5__nz0.01,0.14154835341994718,0.3740626373166081,0,,
+rf,I.12.5__nz0.01,0.1405724368647056,0.39593980535775425,0,,
+gp,I.12.5__nz0.01,0.0,0.0,1,exact,"mul(X1, X0)"
+gpx,I.12.5__nz0.01,0.0,0.0,1,exact,"mul(X0, X1)"
+gbrt,I.12.11__nz0.01,0.4017042103418386,0.5894884830339182,0,,
+rf,I.12.11__nz0.01,0.43464478236859977,0.5740633056739599,0,,
+gp,I.12.11__nz0.01,0.2623180731629946,0.7130660493514542,0,wrong,"mul(add(mul(inv(mul(div(-0.396, X2), neg(-0.572))), log(sqrt(mul(X4, 0.369)))), log(sub(mul(abs(abs(div(abs(mul(div(-0.396, abs(-0.491)), abs(-0.491))), neg(mul(X4, 0.369))))), add(add(mul(inv(mul(div(-0.396, X2), abs(-0.491))), log(sqrt(mul(X4, 0.369)))), log(mul(inv(mul(div(-0.396, X2), abs(div(abs(-0.491), mul(X4, 0.369))))), log(sqrt(mul(X4, 0.369)))))), mul(X4, 0.369))), add(X2, X1)))), mul(X3, X0))"
+gpx,I.12.11__nz0.01,0.1897850905874892,0.21168882713991066,0,wrong,"sub(mul(add(add(exp(exp(sin(sin(X4)))), sub(X1, X4)), mul(abs(X2), mul(tanh(sin(X4)), sub(X3, exp(sin(sin(X4))))))), X0), -0.635)"
+gbrt,I.13.4__nz0.01,0.27497181913703717,0.6483890208805797,0,,
+rf,I.13.4__nz0.01,0.32018796778092645,0.7089149069739685,0,,
+gp,I.13.4__nz0.01,0.1624160584668165,0.26020818748876984,0,approx,"add(sub(sub(mul(inv(0.598), mul(X0, X3)), mul(X1, neg(mul(X0, X2)))), div(sub(sub(sub(sub(mul(inv(0.598), mul(X0, X3)), mul(X1, neg(mul(X0, X2)))), div(sub(sub(mul(inv(0.598), mul(X0, X3)), mul(X1, div(X0, -0.444))), neg(mul(X0, add(X1, mul(div(sub(mul(abs(X2), mul(div(sub(mul(abs(X2), mul(X0, X3)), mul(inv(0.598), mul(X0, X3))), add(X3, mul(X1, X0))), mul(X0, X3))), neg(mul(X0, add(X1, X1)))), add(X3, mul(X1, X0))), mul(X0, X3)))))), mul(X3, X0))), mul(X1, abs(inv(X2)))), mul(X1, neg(mul(X0, X2)))), add(X3, mul(X1, X0)))), add(mul(X0, X3), neg(X0)))"
+gpx,I.13.4__nz0.01,0.23008442733277915,0.3041489549933336,0,wrong,"add(mul(add(mul(X1, X3), X0), X0), mul(X2, X2))"
+gbrt,I.13.12__nz0.01,0.5453953243919573,0.6161675953926924,0,,
+rf,I.13.12__nz0.01,0.5533755300470791,0.6549158289954616,0,,
+gp,I.13.12__nz0.01,0.3218079725080213,0.41729902407061564,0,error,"neg(add(add(div(add(div(add(div(X1, X3), mul(sqrt(mul(mul(sqrt(mul(mul(sub(0.549, X4), X3), add(sqrt(sub(X2, X3)), mul(sub(X2, X3), X3)))), add(X3, X0)), log(div(X2, X3)))), mul(sub(X2, X3), mul(mul(X0, X1), sub(X2, div(-0.881, 0.846)))))), 0.846), inv(X1)), mul(mul(X0, X1), add(add(X3, X0), add(X3, X0)))), mul(sub(X2, X3), abs(sub(X2, X3)))), neg(mul(sqrt(mul(mul(sub(0.549, X4), div(X1, X3)), log(div(X2, X3)))), mul(sub(X2, X3), add(X3, X0))))))"
+gpx,I.13.12__nz0.01,0.53975079214365,0.6690935787204825,0,wrong,"add(mul(neg(sub(X3, X2)), abs(div(X4, mul(inv(X0), X3)))), neg(inv(X3)))"
+gbrt,I.14.3__nz0.01,0.25159334962745145,0.48238663523082537,0,,
+rf,I.14.3__nz0.01,0.25391891532332583,0.5139982872123607,0,,
+gp,I.14.3__nz0.01,1.3303051596869017e-16,1.6417235057522656e-16,1,exact,"mul(mul(X1, X2), X0)"
+gpx,I.14.3__nz0.01,0.12187280303904074,0.4520374753933486,0,wrong,"sqrt(mul(sqrt(mul(exp(exp(log(X0))), sqrt(mul(sqrt(mul(sqrt(mul(exp(neg(neg(X0))), add(exp(X2), sin(X2)))), mul(X2, log(sqrt(add(exp(div(X1, X2)), exp(mul(exp(log(X0)), log(sqrt(add(div(neg(X0), X2), exp(exp(X1))))))))))))), mul(X2, log(sqrt(add(exp(div(X1, X2)), exp(mul(exp(log(X0)), log(sqrt(add(exp(log(X0)), exp(exp(X1))))))))))))))), add(sqrt(mul(add(exp(X2), abs(0.714)), abs(exp(X1)))), tanh(mul(X2, log(sqrt(log(X0))))))))"
+gbrt,I.14.4__nz0.01,0.1576330148726359,0.4729644499329018,0,,
+rf,I.14.4__nz0.01,0.1296005698947584,0.4879029450337607,0,,
+gp,I.14.4__nz0.01,0.03246476469209053,0.053324269218381695,1,error,"mul(add(sub(div(abs(div(X1, X1)), div(X1, X0)), add(add(X0, X1), mul(0.304, X0))), sqrt(sub(sub(div(X1, mul(sqrt(X0), add(-0.519, X1))), mul(sqrt(X0), add(-0.519, X1))), div(sub(sub(X0, X0), neg(X0)), sub(mul(X1, -0.468), mul(X0, X1)))))), sub(sub(abs(log(X0)), mul(sqrt(X0), add(-0.519, X1))), div(sub(X1, sub(inv(X1), neg(X0))), sub(log(sub(sub(div(X1, X1), mul(sqrt(X0), add(-0.519, X1))), mul(X0, X1))), mul(X0, X1)))))"
+gpx,I.14.4__nz0.01,0.0021235931048087554,0.004223203170723112,1,error,"abs(abs(mul(abs(mul(abs(add(exp(mul(div(sub(abs(abs(mul(abs(mul(add(sqrt(mul(mul(-0.695, 0.582), 0.582)), X1), mul(X0, X1))), neg(tanh(mul(-0.695, 0.582)))))), div(-0.693, X1)), div(add(sub(abs(mul(add(-0.851, X1), mul(X0, mul(X1, -0.618)))), mul(neg(X1), mul(X0, 0.775))), mul(X0, X1)), sub(div(-0.693, X1), log(-0.919)))), X1)), sub(log(0.472), mul(X1, -0.618)))), mul(X0, X1))), neg(add(-0.905, 0.126)))))"
+gbrt,I.15.3x__nz0.01,0.20476513084976036,0.47796562985689633,0,,
+rf,I.15.3x__nz0.01,0.24152377676634304,0.506225136642448,0,,
+gp,I.15.3x__nz0.01,0.10608557608551035,0.10063059092234646,0,up_to_constant,"sub(X0, mul(X3, X1))"
+gpx,I.15.3x__nz0.01,0.19819623902183836,0.43916700482486265,0,approx,"mul(cos(cos(cos(sqrt(mul(cos(cos(add(div(mul(X3, 0.466), cos(cos(cos(sqrt(cos(add(cos(sqrt(mul(mul(X3, 0.466), X0))), X1))))))), X1))), X0))))), X0)"
+gbrt,I.15.3t__nz0.01,0.10402736872619801,nan,0,,
+rf,I.15.3t__nz0.01,0.12383451677481191,nan,0,,
+gp,I.15.3t__nz0.01,0.11756581417305502,nan,0,up_to_constant,X3
+gpx,I.15.3t__nz0.01,0.11756581417305502,nan,0,up_to_constant,X3
+gbrt,I.15.1__nz0.01,0.14099990695218706,0.4859056470705758,0,,
+rf,I.15.1__nz0.01,0.177255203935944,0.5174121945324321,0,,
+gp,I.15.1__nz0.01,0.023980298669962888,0.14383637185409578,1,up_to_constant,"add(inv(mul(X2, div(mul(X2, inv(X1)), mul(X1, X0)))), mul(X0, X1))"
+gpx,I.15.1__nz0.01,0.13697828712668114,0.2715166858048216,0,up_to_constant,"mul(X0, X1)"
+gbrt,I.16.6__nz0.01,0.18133371559097838,0.2965948080007178,0,,
+rf,I.16.6__nz0.01,0.19174668758042515,0.32333355146994525,0,,
+gp,I.16.6__nz0.01,0.32193373545221005,0.38229672692794336,0,wrong,X0
+gpx,I.16.6__nz0.01,0.30738734408853546,0.37404950745151644,0,wrong,"mul(X0, tanh(mul(X0, tanh(X0))))"
+gbrt,I.18.4__nz0.01,0.25316887695237505,0.4325390996177436,0,,
+rf,I.18.4__nz0.01,0.2588734957060029,0.5018491204084998,0,,
+gp,I.18.4__nz0.01,0.30542490293587055,0.3758069877378615,0,approx,"sqrt(mul(X2, X3))"
+gpx,I.18.4__nz0.01,0.2703115953129295,0.4385846284180185,0,approx,"sub(log(div(X3, -0.848)), sub(tan(tanh(neg(sqrt(add(sub(tan(tanh(sub(tan(tanh(neg(sqrt(add(tan(tanh(neg(X2))), abs(X2)))))), mul(X3, 0.252)))), mul(sin(X3), mul(abs(X2), 0.252))), abs(X2)))))), mul(abs(X2), 0.252)))"
+gbrt,I.18.12__nz0.01,0.27952415592832036,0.38804178962706226,0,,
+rf,I.18.12__nz0.01,0.3307524262067264,0.4174353003576898,0,,
+gp,I.18.12__nz0.01,0.3725339526302913,1.045786691408038,0,error,"add(add(add(-0.201, X1), mul(sub(add(X1, 0.079), abs(neg(add(mul(add(-0.594, X2), add(-0.201, X1)), sub(sqrt(-0.083), add(-0.201, X1)))))), abs(log(neg(X0))))), mul(sub(add(X1, 0.079), abs(neg(add(mul(sub(add(X1, sqrt(X1)), abs(neg(add(mul(add(-0.594, X2), add(-0.201, X1)), sub(log(X2), add(-0.201, X1)))))), abs(log(neg(X0)))), sub(sqrt(-0.083), add(-0.201, X1)))))), abs(log(neg(X0)))))"
+gpx,I.18.12__nz0.01,0.12128458958481017,0.20362652437835704,0,wrong,"add(add(mul(tan(X2), mul(mul(cos(X2), exp(sqrt(mul(neg(neg(X0)), sin(sqrt(sqrt(X1))))))), sqrt(X1))), sin(-0.069)), sin(add(sub(mul(add(tan(X2), sin(-0.069)), mul(cos(X2), exp(sqrt(X1)))), sin(-0.069)), mul(neg(neg(X0)), cos(X2)))))"
+gbrt,I.18.14__nz0.01,0.37763847596718275,0.6267668267559474,0,,
+rf,I.18.14__nz0.01,0.372499627281793,0.5899939731120349,0,,
+gp,I.18.14__nz0.01,0.4024225838491903,0.9394981687317591,0,error,"sub(add(sub(sub(inv(abs(neg(abs(sub(mul(log(X2), neg(X2)), log(log(0.088))))))), sub(mul(add(X0, X0), sub(X3, X0)), X3)), sub(-0.393, add(neg(abs(sub(mul(log(X2), add(sub(mul(log(X2), add(neg(abs(sub(mul(log(X2), mul(X3, X3)), log(log(0.088))))), sqrt(mul(sub(abs(add(X1, -0.767)), mul(X3, neg(X2))), sub(X3, X0))))), log(log(0.088))), sub(X2, X3))), log(mul(add(X0, X0), sub(X3, X0)))))), sqrt(mul(sub(abs(add(X1, -0.767)), mul(X3, sub(-0.393, add(sub(sub(inv(sqrt(mul(sub(abs(add(X1, -0.767)), add(X1, -0.767)), sub(X3, X1)))), sub(mul(mul(X3, X3), sub(X3, X0)), X3)), sub(-0.393, add(neg(abs(sub(mul(log(X2), mul(X3, X3)), log(log(0.088))))), sqrt(mul(sub(abs(add(X1, -0.767)), neg(X2)), sub(X3, X1)))))), inv(mul(inv(mul(X0, X2)), inv(sub(X2, X3)))))))), sub(X3, X1)))))), inv(mul(inv(add(X0, X0)), inv(sub(X2, X3))))), sub(X3, X1))"
+gpx,I.18.14__nz0.01,0.06521396781006512,0.08581787907920611,0,approx,"add(mul(mul(sub(X1, -0.366), mul(X0, mul(X2, sin(X3)))), 0.809), mul(sub(X1, -0.366), sin(X3)))"
+gbrt,I.24.6__nz0.01,0.3191880640594099,0.7293267020256076,0,,
+rf,I.24.6__nz0.01,0.37378447007092186,0.7937766302187501,0,,
+gp,I.24.6__nz0.01,0.16564303491853324,0.33057469222158425,0,approx,"add(mul(abs(mul(abs(mul(X3, X1)), sub(add(X0, X3), sqrt(X2)))), X2), neg(log(abs(abs(add(mul(abs(mul(abs(abs(mul(div(X3, 0.795), mul(add(mul(X3, X1), neg(mul(X0, X1))), add(mul(X3, X1), neg(mul(X0, X1))))))), sub(add(X0, X3), sqrt(mul(abs(mul(abs(mul(X3, X1)), mul(div(X3, 0.795), add(mul(X3, X1), neg(mul(X0, X1)))))), X2))))), X2), add(X1, mul(X3, X1))))))))"
+gpx,I.24.6__nz0.01,0.20208501693910821,0.3865758306925465,0,wrong,"add(cos(add(X2, X0)), add(cos(add(X2, abs(X2))), add(X2, add(cos(add(X2, abs(X2))), add(cos(add(X2, abs(X3))), add(cos(add(X2, abs(X2))), add(cos(add(X2, add(cos(add(X2, add(X2, X0))), add(cos(add(X2, X0)), add(X2, add(cos(add(X2, abs(X2))), add(cos(add(X2, X0)), add(cos(add(X2, X0)), add(X2, add(cos(add(X2, add(X2, X0))), mul(mul(mul(X1, X3), X0), X3))))))))))), add(X2, add(cos(add(X2, abs(X3))), mul(mul(mul(X1, X3), X0), X3))))))))))"
+gbrt,I.25.13__nz0.01,0.2562054039669538,0.3515573760283264,0,,
+rf,I.25.13__nz0.01,0.26962830956103057,0.3758550513943614,0,,
+gp,I.25.13__nz0.01,0.0,0.0,1,exact,"div(X0, X1)"
+gpx,I.25.13__nz0.01,0.0,0.0,1,exact,"div(X0, X1)"
+gbrt,I.26.2__nz0.01,0.14392403874426196,nan,0,,
+rf,I.26.2__nz0.01,0.11167530390865557,nan,0,,
+gp,I.26.2__nz0.01,0.21917825799732735,nan,0,error,"mul(sub(log(sqrt(X1)), inv(div(0.670, 0.384))), mul(X0, sub(neg(X1), abs(abs(sqrt(inv(-0.371)))))))"
+gpx,I.26.2__nz0.01,0.035103349306445604,nan,0,up_to_constant,"tan(mul(tanh(tan(X0)), sin(X1)))"
+gbrt,I.27.6__nz0.01,0.2565666517275737,0.3465580751697396,0,,
+rf,I.27.6__nz0.01,0.26128854123405043,0.3969171832674896,0,,
+gp,I.27.6__nz0.01,0.0,0.0,1,exact,"inv(add(div(X2, X1), inv(X0)))"
+gpx,I.27.6__nz0.01,0.27441878707724904,0.2541527647723616,0,wrong,"div(sqrt(add(X1, X0)), add(inv(sqrt(sqrt(log(X0)))), div(add(X2, -0.332), log(X1))))"
+gbrt,I.29.4__nz0.01,0.3213828061517599,0.3433104540510594,0,,
+rf,I.29.4__nz0.01,0.3076196766119958,0.3524370689957469,0,,
+gp,I.29.4__nz0.01,0.0,0.0,1,exact,"div(X0, X1)"
+gpx,I.29.4__nz0.01,0.0,0.0,1,exact,"div(X0, X1)"
+gbrt,I.29.16__nz0.01,0.7857498841156448,0.8349974971268941,0,,
+rf,I.29.16__nz0.01,0.8028551926575818,0.8369352083422154,0,,
+gp,I.29.16__nz0.01,0.3766880380973251,0.7338651819824932,0,error,"sub(add(sub(abs(add(div(sub(abs(neg(X1)), add(abs(X0), mul(0.435, 0.515))), sqrt(neg(add(X0, add(-0.431, sqrt(neg(abs(add(-0.431, abs(add(neg(X3), X2))))))))))), add(X0, add(-0.431, abs(add(neg(X3), X2)))))), abs(inv(X0))), add(-0.431, abs(add(neg(X3), X2)))), log(sqrt(sub(abs(add(sqrt(neg(mul(X1, X0))), abs(add(neg(X3), X2)))), abs(inv(X0))))))"
+gpx,I.29.16__nz0.01,0.9764375352334633,0.9861342874087207,0,wrong,"add(mul(mul(sqrt(X3), tanh(log(X3))), mul(mul(div(abs(X1), X2), tanh(log(X3))), tanh(tanh(mul(mul(sqrt(X3), mul(inv(sin(sqrt(X3))), tanh(cos(cos(cos(tanh(tanh(log(X1))))))))), mul(div(abs(X1), X2), tanh(cos(cos(X0))))))))), X0)"
+gbrt,I.30.3__nz0.01,0.7751997241016779,1.0075244216295323,0,,
+rf,I.30.3__nz0.01,0.7690887953321105,1.0075520933547428,0,,
+gp,I.30.3__nz0.01,0.7632296064327782,1.007619436517606,0,wrong,"add(add(sqrt(div(div(div(inv(log(X1)), inv(abs(X0))), sqrt(sqrt(inv(div(X0, X1))))), sqrt(abs(inv(div(X0, mul(X2, X1))))))), div(div(X0, X1), mul(X2, X1))), div(neg(neg(div(X0, X1))), div(inv(log(X1)), inv(X0))))"
+gpx,I.30.3__nz0.01,1.353075708367093,1.0076199124873546,0,wrong,"add(sqrt(tan(sqrt(mul(X1, X2)))), div(add(div(X0, abs(X2)), div(div(add(div(X0, abs(tan(sqrt(mul(X1, X2))))), div(div(add(div(add(div(X0, X1), div(X0, X1)), X1), div(X0, X1)), X1), X1)), X1), X1)), X1))"
+gbrt,I.30.5__nz0.01,0.2840708302099166,0.4760277282762742,0,,
+rf,I.30.5__nz0.01,0.336853538995845,0.5385890416367694,0,,
+gp,I.30.5__nz0.01,0.04654290054475927,0.10125066954763774,1,up_to_constant,"div(inv(X1), div(X2, X0))"
+gpx,I.30.5__nz0.01,0.28723211390066306,0.3809284742652539,0,wrong,"inv(sqrt(mul(mul(X1, X2), add(div(X2, X0), div(X2, X0)))))"
+gbrt,I.32.5__nz0.01,0.8680634476361088,0.6895031970335838,0,,
+rf,I.32.5__nz0.01,0.953428844481603,0.7425012868066165,0,,
+gp,I.32.5__nz0.01,0.153152672233945,0.2935547684483957,0,approx,"mul(X0, inv(div(add(sqrt(X2), X3), mul(X0, inv(div(add(sqrt(X2), X3), div(X1, mul(add(inv(div(X1, mul(add(sqrt(X2), X3), sqrt(X2)))), X3), X3))))))))"
+gpx,I.32.5__nz0.01,0.5591646341423924,0.7196776914298804,0,wrong,"exp(sub(log(X1), inv(exp(sub(log(X0), X3)))))"
+gbrt,I.32.17__nz0.01,0.7820564949822699,1.0089804776935976,0,,
+rf,I.32.17__nz0.01,0.8301542595152248,1.0089903419547905,0,,
+gp,I.32.17__nz0.01,0.1665027235237092,1.003704886318706,0,wrong,"mul(log(mul(X2, X4)), div(mul(div(mul(X0, X3), log(X5)), div(mul(div(mul(log(abs(mul(abs(X4), mul(X4, X1)))), div(mul(X4, div(mul(log(abs(mul(abs(X4), mul(X4, X1)))), div(mul(X4, X2), abs(X4))), log(X5))), log(X5))), log(X5)), X3), log(X5))), log(X5)))"
+gpx,I.32.17__nz0.01,0.5646778824944707,1.0088920021901382,0,wrong,"mul(tan(tanh(X3)), mul(sub(cos(tanh(exp(inv(tan(sub(sqrt(exp(sin(mul(X2, sqrt(exp(X1)))))), tanh(X3))))))), log(sin(X5))), tan(sub(abs(X4), inv(X3)))))"
+gbrt,I.34.8__nz0.01,0.31940345465237263,0.5461473871943981,0,,
+rf,I.34.8__nz0.01,0.416890825737496,0.6127915932359681,0,,
+gp,I.34.8__nz0.01,0.028636550999495834,0.03350375160458445,1,up_to_constant,"sub(add(mul(X2, X1), div(neg(mul(-0.261, X2)), div(add(X0, add(mul(-0.261, X2), X2)), neg(mul(X1, div(neg(sub(X3, X0)), div(mul(X3, 0.303), mul(-0.261, X2)))))))), mul(X1, div(neg(sub(X3, X0)), div(mul(X3, 0.303), mul(-0.261, X2)))))"
+gpx,I.34.8__nz0.01,1.596951441434313e-16,1.2061920373900214e-16,1,exact,"mul(div(X1, X3), mul(X2, X0))"
+gbrt,I.34.1__nz0.01,0.2003468344163343,1.0080854507054002,0,,
+rf,I.34.1__nz0.01,0.24703178195608638,1.006864348683507,0,,
+gp,I.34.1__nz0.01,0.22636465514759113,1.0180841223243453,0,error,"add(div(add(X1, X2), X0), sub(add(-0.184, sub(X2, mul(sqrt(mul(inv(X0), abs(0.325))), add(sub(log(X0), inv(neg(X1))), sub(sqrt(div(sub(log(X2), sqrt(X0)), div(sqrt(X0), add(X2, 0.648)))), mul(sqrt(X2), log(X1))))))), div(sub(log(X2), sqrt(X2)), div(sqrt(X0), add(X1, X2)))))"
+gpx,I.34.1__nz0.01,0.2808867946922288,1.0104660375845973,0,approx,"div(div(X2, abs(neg(0.796))), cos(exp(mul(sub(X0, exp(cos(mul(sub(X0, div(X2, abs(neg(0.796)))), log(-0.755))))), log(-0.755)))))"
+gbrt,I.34.14__nz0.01,0.15096367223323492,nan,0,,
+rf,I.34.14__nz0.01,0.1967750938971309,nan,0,,
+gp,I.34.14__nz0.01,0.10849637273211461,nan,0,approx,"add(abs(X2), div(add(log(log(abs(X1))), add(div(X1, div(sqrt(X0), X2)), add(X1, X2))), X0))"
+gpx,I.34.14__nz0.01,0.1539724674138805,nan,0,up_to_constant,"div(div(X2, 0.796), cos(exp(mul(sub(sub(X0, exp(mul(sub(X0, abs(X1)), mul(sub(sub(X0, sin(sub(X0, abs(X1)))), abs(X1)), log(-0.755))))), abs(X1)), log(-0.755)))))"
+gbrt,I.34.27__nz0.01,0.14154835341994731,0.3740626373166082,0,,
+rf,I.34.27__nz0.01,0.14033796426544137,0.39591020602924054,0,,
+gp,I.34.27__nz0.01,0.13424310020797547,0.12081289950654303,0,error,"div(mul(abs(mul(abs(abs(X0)), mul(div(X1, X0), sub(X0, 0.885)))), inv(inv(sqrt(X0)))), inv(div(inv(abs(sub(neg(sqrt(X0)), sqrt(sub(neg(sqrt(X0)), sqrt(neg(X0))))))), abs(div(sqrt(X0), div(-0.396, 0.480))))))"
+gpx,I.34.27__nz0.01,0.13720889199206748,0.23437148267161834,0,error,"mul(sqrt(mul(log(X0), div(cos(log(abs(add(add(X1, X0), add(0.552, abs(add(X1, -0.481))))))), inv(sub(add(X1, -0.481), mul(sub(sqrt(mul(log(mul(X0, X0)), sub(add(X1, -0.481), sqrt(0.552)))), inv(X0)), inv(X0))))))), sqrt(sqrt(X0)))"
+gbrt,I.37.4__nz0.01,0.27624640801190514,0.5447873506324954,0,,
+rf,I.37.4__nz0.01,0.33039579285642773,0.6317940731195438,0,,
+gp,I.37.4__nz0.01,0.5341760159147261,0.8479976941106235,0,error,"sqrt(sub(neg(mul(mul(X2, X2), log(X1))), div(add(div(add(div(add(add(add(log(X1), div(X0, X2)), add(log(X1), div(X0, X2))), X1), X2), sqrt(X1)), X2), abs(sqrt(sub(neg(div(add(log(X1), div(X0, X2)), 0.395)), add(sub(X2, X0), abs(X2)))))), div(neg(X2), div(add(log(X1), div(X0, X2)), 0.395)))))"
+gpx,I.37.4__nz0.01,0.29989665598536674,1.0474938704175598,0,error,"abs(sqrt(mul(add(tanh(exp(-0.475)), mul(add(tanh(tan(X2)), mul(mul(add(cos(tan(cos(X2))), sub(sqrt(mul(sqrt(inv(sqrt(tan(X2)))), mul(add(tanh(sub(abs(X2), neg(tan(cos(X2))))), cos(X2)), mul(div(X0, sqrt(inv(tan(X2)))), sin(X2))))), neg(X1))), tanh(sqrt(tan(X2)))), sin(X2))), sin(X2))), add(tanh(exp(-0.475)), mul(add(sin(X2), mul(sub(sqrt(sqrt(mul(add(tanh(sub(abs(X2), sin(X2))), mul(sub(X1, -0.563), sin(X2))), mul(sub(X1, -0.563), sin(X2))))), add(add(sub(sqrt(neg(cos(neg(sqrt(neg(sqrt(tan(X2)))))))), X0), neg(tan(cos(X2)))), neg(tan(tan(cos(X2)))))), sin(X2))), sin(X2))))))"
+gbrt,I.38.12__nz0.01,0.6032793710411904,0.9192547137635816,0,,
+rf,I.38.12__nz0.01,0.6676738805819864,0.9370461484519188,0,,
+gp,I.38.12__nz0.01,0.054237310568597215,0.06827430462339393,0,approx,"mul(log(X2), mul(div(div(div(X2, X1), X0), X1), X3))"
+gpx,I.38.12__nz0.01,0.6105394500248622,0.7741617519935199,0,wrong,"div(mul(add(X2, add(add(add(add(add(mul(add(X2, sin(X0)), inv(X1)), tanh(-0.292)), tanh(sin(X0))), tanh(-0.292)), tanh(-0.292)), tanh(-0.292))), inv(X1)), X1)"
+gbrt,I.39.1__nz0.01,0.14154835341994718,0.3740626373166082,0,,
+rf,I.39.1__nz0.01,0.13933095709632054,0.39544455889210617,0,,
+gp,I.39.1__nz0.01,0.003248950980463079,0.005507212707477558,1,up_to_constant,"mul(sub(inv(mul(sub(inv(add(mul(X1, sub(sub(X1, 0.848), X1)), X1)), div(X1, -0.674)), div(inv(neg(log(0.848))), log(mul(X1, X1))))), div(X1, -0.674)), X0)"
+gpx,I.39.1__nz0.01,0.05087417996366842,0.05544377042720297,0,approx,"sub(add(sub(cos(X1), sub(div(0.601, div(-0.967, X0)), neg(exp(tanh(X0))))), abs(add(sub(mul(abs(X1), X0), neg(abs(sub(sub(neg(0.715), abs(sub(X1, X0))), neg(add(X1, X0)))))), tan(0.601)))), neg(sub(log(0.472), mul(X1, -0.618))))"
+gbrt,I.39.11__nz0.01,0.319261544042888,0.790814479649554,0,,
+rf,I.39.11__nz0.01,0.35828013845637674,0.8304152477390112,0,,
+gp,I.39.11__nz0.01,0.11035672471967929,0.351770288787935,0,up_to_constant,"abs(mul(inv(add(X0, -0.612)), add(add(inv(add(X0, -0.612)), X2), mul(sub(neg(X2), add(log(div(add(X0, mul(add(X0, mul(mul(mul(inv(add(X0, inv(add(X0, -0.612)))), mul(X2, X1)), X1), log(inv(X1)))), log(inv(X1)))), X0)), X2)), log(inv(X1))))))"
+gpx,I.39.11__nz0.01,0.25022354110993816,0.575320521503409,0,wrong,"add(sub(X2, X0), add(X1, div(log(sub(sub(exp(abs(add(sub(X2, X0), add(X1, div(add(sub(X2, X0), add(add(add(X1, cos(add(X1, neg(X2)))), cos(add(X1, div(X2, X0)))), add(X1, sub(X2, X0)))), X0))))), exp(X0)), neg(tanh(X0)))), X0)))"
+gbrt,I.39.22__nz0.01,0.5170322258396779,0.6021046668956342,0,,
+rf,I.39.22__nz0.01,0.5411777000042108,0.6823533598760055,0,,
+gp,I.39.22__nz0.01,2.2040701754773019e-16,1.3258564544730945e-16,1,exact,"mul(div(mul(X3, X1), X2), X0)"
+gpx,I.39.22__nz0.01,0.5602292776289152,2.3686186176720625,0,wrong,"add(add(div(add(sub(add(sub(div(add(sub(sub(add(sub(mul(X3, X0), X2), abs(X1)), tanh(add(sub(sub(add(sub(add(div(add(sub(add(sub(sub(div(add(sub(sub(add(sub(mul(X3, X0), inv(X1)), log(abs(X1))), log(sub(add(div(add(sub(add(sub(add(sub(mul(X3, X0), inv(X1)), exp(div(X1, X2))), log(sub(add(div(add(sub(add(sub(mul(X3, X0), X3), exp(div(X1, X2))), tanh(X0)), tanh(X2)), tanh(X2)), log(log(sub(X1, 0.377)))), inv(X1)))), exp(div(X1, X2))), tanh(X0)), tanh(X2)), tanh(X2)), log(div(X1, X2))), inv(X1)))), X2), sub(X1, 0.377)), tanh(add(sub(mul(X3, X0), tanh(X1)), abs(exp(div(X3, X2)))))), tanh(X0)), X3), exp(div(X1, X2))), tanh(X0)), tanh(X2)), tanh(X2)), log(log(sub(X1, 0.377)))), inv(X1)), abs(X1)), tanh(X0)), X3), abs(exp(div(X3, X2)))))), X3), abs(exp(div(X3, X2)))), tanh(X2)), tanh(log(abs(X1)))), log(abs(X1))), tanh(X0)), log(sub(X1, 0.377))), tanh(X2)), log(log(sub(X1, 0.377)))), log(sub(X1, log(X0))))"
+gbrt,I.40.1__nz0.01,0.5728785719927015,0.6236360650748914,0,,
+rf,I.40.1__nz0.01,0.6723868600257984,0.7270973964466881,0,,
+gp,I.40.1__nz0.01,0.44426941052180596,0.6259329203802625,0,wrong,"div(mul(X3, div(mul(log(sqrt(X0)), sqrt(mul(X3, inv(abs(X2))))), mul(X1, div(X4, X5)))), abs(X2))"
+gpx,I.40.1__nz0.01,0.5073704994001549,0.5485464697764697,0,wrong,"div(mul(mul(X3, 0.668), div(div(sub(sqrt(X5), neg(X0)), exp(inv(X3))), X4)), mul(X2, X1))"
+gbrt,I.41.16__nz0.01,0.8187981529511813,0.7359050878584982,0,,
+rf,I.41.16__nz0.01,0.6906251724327682,0.8400067978570941,0,,
+gp,I.41.16__nz0.01,0.6103161764200852,0.6788621510930701,0,wrong,"abs(div(log(X0), inv(abs(div(add(add(sub(X1, X4), abs(mul(log(sub(mul(log(X4), div(X0, X2)), abs(sub(X1, X1)))), div(log(div(X0, X4)), inv(mul(sub(X1, X4), inv(X4))))))), X0), neg(X4))))))"
+gpx,I.41.16__nz0.01,0.15849692545938404,0.16640260047124233,0,approx,"mul(mul(tanh(sqrt(log(abs(abs(X0))))), mul(mul(mul(log(X0), div(X1, X4)), div(X3, X4)), sqrt(log(abs(X0))))), sqrt(log(X0)))"
+gbrt,I.43.16__nz0.01,0.31940345465237263,0.5461473871943981,0,,
+rf,I.43.16__nz0.01,0.416890825737496,0.6127915932359681,0,,
+gp,I.43.16__nz0.01,0.028636550999495834,0.03350375160458445,1,up_to_constant,"sub(add(mul(X2, X1), div(neg(mul(-0.261, X2)), div(add(X0, add(mul(-0.261, X2), X2)), neg(mul(X1, div(neg(sub(X3, X0)), div(mul(X3, 0.303), mul(-0.261, X2)))))))), mul(X1, div(neg(sub(X3, X0)), div(mul(X3, 0.303), mul(-0.261, X2)))))"
+gpx,I.43.16__nz0.01,1.596951441434313e-16,1.2061920373900214e-16,1,exact,"mul(div(X1, X3), mul(X2, X0))"
+gbrt,I.43.31__nz0.01,0.2515933496274514,0.48238663523082537,0,,
+rf,I.43.31__nz0.01,0.2536805626520598,0.5127723016408262,0,,
+gp,I.43.31__nz0.01,1.81521301405929e-16,1.5283315150348986e-16,1,exact,"mul(mul(X1, X2), X0)"
+gpx,I.43.31__nz0.01,0.12187280303904072,0.4520374753933486,0,wrong,"sqrt(mul(sqrt(mul(exp(exp(log(X0))), sqrt(mul(sqrt(mul(sqrt(mul(exp(neg(neg(X0))), add(exp(X2), sin(X2)))), mul(X2, log(sqrt(add(exp(div(X1, X2)), exp(mul(exp(log(X0)), log(sqrt(add(div(neg(X0), X2), exp(exp(X1))))))))))))), mul(X2, log(sqrt(add(exp(div(X1, X2)), exp(mul(exp(log(X0)), log(sqrt(add(exp(log(X0)), exp(exp(X1))))))))))))))), add(sqrt(mul(add(exp(X2), abs(0.714)), abs(exp(X1)))), tanh(mul(X2, log(sqrt(log(X0))))))))"
+gbrt,I.43.43__nz0.01,0.5110097114449514,0.6568097738899186,0,,
+rf,I.43.43__nz0.01,0.49244064550918676,0.6666263495432203,0,,
+gp,I.43.43__nz0.01,0.0919740061271522,0.26798412067825983,0,error,"add(mul(div(abs(mul(inv(add(X0, -0.602)), add(sqrt(X0), X1))), X2), abs(X3)), neg(div(inv(sqrt(X1)), mul(sqrt(sqrt(sub(log(div(log(mul(X3, 0.914)), div(X2, X1))), abs(mul(X3, 0.914))))), div(X2, X3)))))"
+gpx,I.43.43__nz0.01,0.012355637088456916,0.07893192365871614,1,up_to_constant,"mul(neg(div(X3, X0)), neg(add(div(X1, X2), div(add(div(X1, X2), div(add(div(X1, X2), div(mul(neg(sqrt(sqrt(sqrt(div(div(X1, X2), X0))))), neg(add(div(X1, X2), div(X1, X2)))), X0)), X0)), X0))))"
+gbrt,I.44.4__nz0.01,0.6648476426715013,0.6882815203159354,0,,
+rf,I.44.4__nz0.01,0.5985602976117467,0.6653075860237612,0,,
+gp,I.44.4__nz0.01,0.2977805983816211,0.398973649494371,0,wrong,"sub(sub(inv(mul(mul(abs(X3), abs(-0.221)), abs(-0.221))), mul(mul(sqrt(add(0.814, -0.624)), add(div(X1, X3), mul(X0, abs(X2)))), sub(mul(abs(X3), abs(-0.221)), sub(sub(inv(neg(abs(X4))), mul(mul(sqrt(add(0.814, -0.624)), add(div(X1, X3), mul(X0, X1))), sub(mul(abs(X3), abs(-0.221)), log(abs(X4))))), abs(div(X1, sqrt(X4))))))), mul(sqrt(add(0.814, -0.624)), add(log(abs(X4)), add(div(log(abs(X4)), X3), mul(X0, X1)))))"
+gpx,I.44.4__nz0.01,0.17825261427928066,0.1968486330643083,0,wrong,"sub(mul(mul(add(X4, add(add(abs(div(div(X2, X3), X3)), sub(abs(X1), X4)), add(abs(div(X2, X3)), sub(X2, X4)))), sub(X4, X3)), abs(sub(X0, div(X0, X1)))), sub(X4, X3))"
+gbrt,I.47.23__nz0.01,0.20579389816461677,0.33236447416025433,0,,
+rf,I.47.23__nz0.01,0.24941169255924367,0.3933531350789817,0,,
+gp,I.47.23__nz0.01,1.5784433725280533e-16,1.674817720952732e-16,1,exact,"sqrt(div(X0, div(X2, X1)))"
+gpx,I.47.23__nz0.01,0.4647712808838223,0.4584611708110998,0,error,"add(div(X1, X2), sqrt(log(add(tanh(add(X2, add(div(X1, X2), sqrt(log(log(add(tanh(add(X2, X0)), mul(X0, -0.148)))))))), mul(X0, -0.148)))))"
+gbrt,I.48.2__nz0.01,0.15358352787500304,0.4481048586145565,0,,
+rf,I.48.2__nz0.01,0.14225578205832815,0.4867700703221455,0,,
+gp,I.48.2__nz0.01,0.012162892676719099,0.019219383228804083,1,up_to_constant,"add(log(X1), add(log(X1), add(log(X1), add(log(X1), add(X0, abs(mul(mul(X0, X2), abs(X2))))))))"
+gpx,I.48.2__nz0.01,0.17727436050974274,0.4136065538799602,0,approx,"sqrt(mul(mul(add(X0, X0), sub(sub(mul(div(sub(abs(X2), X0), 0.049), exp(X0)), tan(X0)), sub(cos(sin(exp(X2))), neg(add(div(neg(add(abs(sqrt(mul(add(add(exp(X2), exp(X2)), mul(add(exp(X2), mul(exp(X2), sin(abs(neg(X2))))), sin(abs(sin(div(sub(abs(X2), log(add(mul(exp(X2), sin(cos(sin(div(abs(X2), 0.049))))), X0))), tan(X0))))))), X2))), X2)), abs(0.060)), div(sub(abs(X2), log(-0.755)), 0.049)))))), sin(log(add(cos(sin(div(sin(sub(exp(X2), neg(X1))), 0.049))), X0)))))"
+gbrt,I.50.26__nz0.01,0.7422120309618243,1.0483865701788146,0,,
+rf,I.50.26__nz0.01,0.7734758464713641,0.906922392267681,0,,
+gp,I.50.26__nz0.01,0.8237358454138539,0.9890952087528702,0,error,"mul(abs(abs(mul(abs(log(mul(X3, X0))), sqrt(mul(mul(X0, log(X1)), log(sub(sqrt(log(mul(log(mul(abs(log(mul(X3, X0))), sqrt(neg(X1)))), div(X1, X2)))), neg(X1)))))))), log(mul(log(sub(div(X1, X2), add(X3, X1))), neg(X0))))"
+gpx,I.50.26__nz0.01,0.7722624307820807,0.9172477236812091,0,wrong,"mul(log(div(div(X3, -0.996), inv(mul(cos(cos(inv(mul(cos(cos(log(X2))), cos(cos(log(X2))))))), X0)))), mul(X0, sqrt(cos(X1))))"
+gbrt,II.2.42__nz0.01,0.44777078166313067,0.5711536802253844,0,,
+rf,II.2.42__nz0.01,0.4103797440598248,0.5900857290809914,0,,
+gp,II.2.42__nz0.01,1.32632605661345e-16,1.3149656163784287e-16,1,exact,"div(mul(X3, sub(X2, X1)), mul(X4, inv(X0)))"
+gpx,II.2.42__nz0.01,0.28888190670053004,0.36947699337119627,0,error,"sub(sub(mul(X0, add(neg(X1), add(X2, 0.213))), mul(add(neg(X1), add(X2, 0.213)), tan(mul(cos(log(mul(mul(cos(div(X4, X3)), inv(neg(sqrt(sub(0.183, neg(sqrt(tanh(div(X4, X3))))))))), inv(X4)))), inv(neg(sqrt(cos(tanh(inv(add(neg(X1), add(X2, 0.213)))))))))))), mul(add(neg(X1), X2), tan(mul(cos(div(X4, X3)), inv(neg(sqrt(inv(neg(sqrt(sub(0.183, neg(sqrt(tanh(abs(inv(X4))))))))))))))))"
+gbrt,II.3.24__nz0.01,0.3047820684530347,0.45724445496312666,0,,
+rf,II.3.24__nz0.01,0.29676986571352637,0.5000706418528384,0,,
+gp,II.3.24__nz0.01,0.7120884045797835,0.8127960039922034,0,wrong,"mul(0.088, inv(X1))"
+gpx,II.3.24__nz0.01,0.48101999274945495,0.5691880585434067,0,wrong,"abs(div(-0.491, exp(X1)))"
+gbrt,II.4.23__nz0.01,0.3944599473874836,0.4326929127437466,0,,
+rf,II.4.23__nz0.01,0.44899242319275745,0.5179408008120374,0,,
+gp,II.4.23__nz0.01,0.598041650642348,0.6303162485004755,0,wrong,"div(0.211, mul(X1, X2))"
+gpx,II.4.23__nz0.01,0.8452559508197877,0.865931904631836,0,wrong,"div(0.070, X2)"
+gbrt,II.6.11__nz0.01,0.30824746965359767,0.6441649895218853,0,,
+rf,II.6.11__nz0.01,0.38907371452377143,0.7071600415832526,0,,
+gp,II.6.11__nz0.01,1.0151800134519828,1.0004571613180653,0,wrong,-0.015
+gpx,II.6.11__nz0.01,1.002493827587646,1.0100983921322384,0,wrong,-0.009
+gbrt,II.6.15a__nz0.01,0.5173234555543853,0.7343480188206598,0,,
+rf,II.6.15a__nz0.01,0.45251626600637823,0.7187267484696644,0,,
+gp,II.6.15a__nz0.01,0.8309626300390694,4.049181608904204,0,wrong,"div(mul(div(div(0.171, X2), X2), log(X4)), log(X2))"
+gpx,II.6.15a__nz0.01,0.4516835861478151,7.900888486243482,0,wrong,"tan(tan(mul(X5, mul(div(inv(X2), exp(X2)), inv(X2)))))"
+gbrt,II.6.15b__nz0.01,1.0995562379597397,1.1847104225578273,0,,
+rf,II.6.15b__nz0.01,0.7393053624559061,1.1373320408491638,0,,
+gp,II.6.15b__nz0.01,1.0243124462682802,1.0076277531469022,0,wrong,-0.003
+gpx,II.6.15b__nz0.01,1.0013487093933682,1.016898110949552,0,wrong,-0.009
+gbrt,II.8.7__nz0.01,0.29111683193404136,0.4814940507899609,0,,
+rf,II.8.7__nz0.01,0.31153220932289344,0.5111635925768735,0,,
+gp,II.8.7__nz0.01,0.17820311564771787,0.13840755500659654,0,approx,"mul(sqrt(X0), mul(X0, mul(0.211, mul(X0, mul(0.211, div(inv(X1), add(X2, X2)))))))"
+gpx,II.8.7__nz0.01,1.011288786431432,1.0349979251938433,0,wrong,0.059
+gbrt,II.8.31__nz0.01,0.1576330148726359,0.4729644499329018,0,,
+rf,II.8.31__nz0.01,0.1296005698947584,0.4879029450337607,0,,
+gp,II.8.31__nz0.01,0.03246476469209053,0.053324269218381695,1,error,"mul(add(sub(div(abs(div(X1, X1)), div(X1, X0)), add(add(X0, X1), mul(0.304, X0))), sqrt(sub(sub(div(X1, mul(sqrt(X0), add(-0.519, X1))), mul(sqrt(X0), add(-0.519, X1))), div(sub(sub(X0, X0), neg(X0)), sub(mul(X1, -0.468), mul(X0, X1)))))), sub(sub(abs(log(X0)), mul(sqrt(X0), add(-0.519, X1))), div(sub(X1, sub(inv(X1), neg(X0))), sub(log(sub(sub(div(X1, X1), mul(sqrt(X0), add(-0.519, X1))), mul(X0, X1))), mul(X0, X1)))))"
+gpx,II.8.31__nz0.01,0.0021235931048087554,0.004223203170723112,1,error,"abs(abs(mul(abs(mul(abs(add(exp(mul(div(sub(abs(abs(mul(abs(mul(add(sqrt(mul(mul(-0.695, 0.582), 0.582)), X1), mul(X0, X1))), neg(tanh(mul(-0.695, 0.582)))))), div(-0.693, X1)), div(add(sub(abs(mul(add(-0.851, X1), mul(X0, mul(X1, -0.618)))), mul(neg(X1), mul(X0, 0.775))), mul(X0, X1)), sub(div(-0.693, X1), log(-0.919)))), X1)), sub(log(0.472), mul(X1, -0.618)))), mul(X0, X1))), neg(add(-0.905, 0.126)))))"
+gbrt,II.10.9__nz0.01,0.3227403441786044,0.42770124080958843,0,,
+rf,II.10.9__nz0.01,0.40987500002137706,0.4877631872184146,0,,
+gp,II.10.9__nz0.01,0.20638413311748754,0.23568438683637596,0,wrong,"inv(abs(div(div(sqrt(X2), inv(X1)), sqrt(sub(X0, sqrt(sub(X2, sqrt(X2))))))))"
+gpx,II.10.9__nz0.01,0.2686935344761232,0.4552489912311351,0,wrong,"tanh(div(log(X0), sqrt(mul(mul(X1, X2), log(mul(X1, log(mul(X1, X2))))))))"
+gbrt,II.11.3__nz0.01,0.4012577727133833,1.0038971840498427,0,,
+rf,II.11.3__nz0.01,0.5410393437160917,1.0034104928579346,0,,
+gp,II.11.3__nz0.01,0.39377084677165625,1.001739576536622,0,wrong,"mul(mul(add(log(X1), log(X0)), inv(X2)), inv(X3))"
+gpx,II.11.3__nz0.01,0.3664769451161608,1.0023543681488065,0,wrong,"sqrt(div(mul(inv(mul(sub(0.977, X3), X2)), div(log(X0), X2)), sub(X1, X3)))"
+gbrt,II.11.17__nz0.01,0.47754049672537446,0.6602137551731551,0,,
+rf,II.11.17__nz0.01,0.449005997967739,0.6850552148966812,0,,
+gp,II.11.17__nz0.01,0.6313371963368629,0.844355582765769,0,wrong,"div(add(log(neg(sub(inv(abs(X1)), add(abs(neg(sub(inv(abs(X1)), add(div(add(div(X2, X3), div(X2, X3)), X3), abs(div(div(add(log(abs(neg(sub(inv(abs(X1)), add(abs(sub(inv(abs(X1)), add(div(add(div(X2, X3), div(X2, X3)), X3), abs(div(div(X2, X3), X3))))), div(X2, X3)))))), X0), X3), X3)))))), div(X2, X3))))), X0), X3)"
+gpx,II.11.17__nz0.01,0.4350764964770975,0.7573093559849586,0,wrong,"add(mul(div(X0, X3), sin(X3)), log(add(div(inv(sqrt(exp(sub(neg(cos(X3)), div(X0, X3))))), X3), add(div(X2, X3), log(mul(div(X1, X3), inv(sqrt(exp(sub(log(X5), add(-0.778, exp(sub(neg(tan(cos(X3))), div(X0, X3))))))))))))))"
+gbrt,II.11.20__nz0.01,0.5804124982797221,0.7546285257212656,0,,
+rf,II.11.20__nz0.01,0.6424279088816773,0.8854192184794644,0,,
+gp,II.11.20__nz0.01,0.04423421795157223,0.04030337846129968,1,up_to_constant,"mul(X2, div(neg(div(mul(mul(div(X1, X4), X1), X0), inv(-0.345))), X3))"
+gpx,II.11.20__nz0.01,0.8219852805174219,1.2783496995243322,0,wrong,"mul(exp(mul(add(mul(X4, -0.334), X1), 0.677)), div(X2, X3))"
+gbrt,II.11.27__nz0.01,0.3617452713093303,0.6837427923136196,0,,
+rf,II.11.27__nz0.01,0.36973008801642665,0.7274895748711302,0,,
+gp,II.11.27__nz0.01,0.21392576422645165,0.30496399194593493,0,wrong,"mul(add(mul(mul(mul(X2, X1), X3), X0), X0), X1)"
+gpx,II.11.27__nz0.01,0.11737928289064542,0.1734958782064846,0,wrong,"add(mul(mul(X1, mul(sqrt(X2), X0)), X3), mul(mul(mul(X1, X3), X0), mul(mul(X1, sqrt(X2)), X0)))"
+gbrt,II.11.28__nz0.01,0.1602370852242405,0.4435850010889997,0,,
+rf,II.11.28__nz0.01,0.1461739517081791,0.4669913757478166,0,,
+gp,II.11.28__nz0.01,0.37997745829562624,0.5287673821511562,0,error,"sqrt(mul(add(0.560, abs(X0)), sub(neg(add(sqrt(-0.527), X1)), X1)))"
+gpx,II.11.28__nz0.01,0.04120908279102066,0.31982266925356934,0,up_to_constant,"exp(sin(mul(X0, X1)))"
+gbrt,II.13.17__nz0.01,0.5051940131465787,0.7017521424108359,0,,
+rf,II.13.17__nz0.01,0.4745245993665954,0.6321308479824388,0,,
+gp,II.13.17__nz0.01,1.1394846816393909,1.0593418895542923,0,wrong,neg(-0.003)
+gpx,II.13.17__nz0.01,1.027930893794423,1.017695144557035,0,wrong,0.010
+gbrt,II.13.23__nz0.01,0.06617047738405746,0.34491448753863513,0,,
+rf,II.13.23__nz0.01,0.07591178278810147,0.3630058261124583,0,,
+gp,II.13.23__nz0.01,0.11222740846028086,0.2673513464683264,0,up_to_constant,"abs(sub(neg(0.038), sub(X0, neg(0.038))))"
+gpx,II.13.23__nz0.01,0.10585727240397357,0.2549844406820623,0,up_to_constant,"log(sub(-0.503, exp(add(-0.192, div(X0, cos(sin(sin(sin(sin(-0.420))))))))))"
+gbrt,II.13.34__nz0.01,0.14099990695218706,0.4859056470705758,0,,
+rf,II.13.34__nz0.01,0.177255203935944,0.5174121945324321,0,,
+gp,II.13.34__nz0.01,0.023980298669962888,0.14383637185409578,1,up_to_constant,"add(inv(mul(X2, div(mul(X2, inv(X1)), mul(X1, X0)))), mul(X0, X1))"
+gpx,II.13.34__nz0.01,0.13697828712668114,0.2715166858048216,0,up_to_constant,"mul(X0, X1)"
+gbrt,II.15.4__nz0.01,0.39933976753369976,0.6702563292175845,0,,
+rf,II.15.4__nz0.01,0.40110737605631186,0.8862198825719413,0,,
+gp,II.15.4__nz0.01,0.4673336150121963,0.9122709586005581,0,error,"mul(add(log(abs(X2)), X1), log(sub(inv(X0), add(mul(sub(inv(add(div(X2, X0), add(neg(add(mul(log(abs(X2)), add(mul(log(inv(log(log(abs(X2))))), neg(sub(add(sqrt(mul(log(X2), neg(X0))), add(sub(inv(add(div(X2, X0), add(neg(add(mul(log(sub(mul(X2, X0), X0)), add(mul(log(inv(log(sub(inv(X0), add(mul(sub(inv(add(div(X2, X0), add(neg(add(mul(log(abs(X2)), add(mul(log(inv(log(log(abs(X2))))), neg(sub(add(sqrt(mul(log(X2), neg(X0))), add(sub(sub(mul(X2, X0), X0), neg(mul(X2, X0))), add(X0, X0))), sub(X2, X1)))), 0.645)), 0.645)), X0))), neg(log(inv(log(log(abs(X2))))))), neg(X0)), 0.645))))), neg(sub(add(sqrt(mul(log(X2), neg(X0))), add(sub(mul(X2, X0), neg(inv(X0))), add(X0, X0))), log(inv(inv(inv(X0))))))), 0.645)), 0.645)), X0))), neg(mul(X2, X0))), add(X0, X0))), sub(X2, X1)))), 0.645)), 0.645)), X0))), neg(log(inv(log(log(abs(X2))))))), neg(X0)), 0.645))))"
+gpx,II.15.4__nz0.01,0.003571572332314059,0.0022339484176296387,1,up_to_constant,"mul(mul(cos(X2), sub(exp(inv(-0.212)), X0)), X1)"
+gbrt,II.15.5__nz0.01,0.39933976753369976,0.6702563292175845,0,,
+rf,II.15.5__nz0.01,0.40110737605631186,0.8862198825719413,0,,
+gp,II.15.5__nz0.01,0.4673336150121963,0.9122709586005581,0,error,"mul(add(log(abs(X2)), X1), log(sub(inv(X0), add(mul(sub(inv(add(div(X2, X0), add(neg(add(mul(log(abs(X2)), add(mul(log(inv(log(log(abs(X2))))), neg(sub(add(sqrt(mul(log(X2), neg(X0))), add(sub(inv(add(div(X2, X0), add(neg(add(mul(log(sub(mul(X2, X0), X0)), add(mul(log(inv(log(sub(inv(X0), add(mul(sub(inv(add(div(X2, X0), add(neg(add(mul(log(abs(X2)), add(mul(log(inv(log(log(abs(X2))))), neg(sub(add(sqrt(mul(log(X2), neg(X0))), add(sub(sub(mul(X2, X0), X0), neg(mul(X2, X0))), add(X0, X0))), sub(X2, X1)))), 0.645)), 0.645)), X0))), neg(log(inv(log(log(abs(X2))))))), neg(X0)), 0.645))))), neg(sub(add(sqrt(mul(log(X2), neg(X0))), add(sub(mul(X2, X0), neg(inv(X0))), add(X0, X0))), log(inv(inv(inv(X0))))))), 0.645)), 0.645)), X0))), neg(mul(X2, X0))), add(X0, X0))), sub(X2, X1)))), 0.645)), 0.645)), X0))), neg(log(inv(log(log(abs(X2))))))), neg(X0)), 0.645))))"
+gpx,II.15.5__nz0.01,0.003571572332314059,0.0022339484176296387,1,up_to_constant,"mul(mul(cos(X2), sub(exp(inv(-0.212)), X0)), X1)"
+gbrt,II.21.32__nz0.01,0.46665425977866276,0.5607861219406248,0,,
+rf,II.21.32__nz0.01,0.5226098953084543,0.6390472977785709,0,,
+gp,II.21.32__nz0.01,0.753907981519576,0.6395857154822209,0,wrong,"div(inv(X1), div(X2, 0.372))"
+gpx,II.21.32__nz0.01,0.8458143993995438,0.8765546841484652,0,wrong,"div(0.193, add(X2, X2))"
+gbrt,II.24.17__nz0.01,0.19051980765006712,0.48147953195436094,0,,
+rf,II.24.17__nz0.01,0.21853925121400997,0.5214195411239982,0,,
+gp,II.24.17__nz0.01,0.1589836687906643,0.16494760272922998,0,up_to_constant,"div(add(-0.351, X0), X1)"
+gpx,II.24.17__nz0.01,0.11624507991648725,0.13618125779270995,0,up_to_constant,"mul(div(X0, X1), cos(neg(inv(div(X0, X1)))))"
+gbrt,II.27.16__nz0.01,0.3384905792455673,0.5255023222820262,0,,
+rf,II.27.16__nz0.01,0.2953345303413129,0.5668200256085812,0,,
+gp,II.27.16__nz0.01,1.7662261037249832e-16,1.2273809995200023e-16,1,exact,"mul(mul(X0, X2), mul(X1, X2))"
+gpx,II.27.16__nz0.01,0.23754506843760326,0.6667465873015971,0,error,"add(exp(add(log(div(add(0.966, X1), neg(add(log(div(sqrt(sqrt(div(add(0.966, X1), neg(add(log(div(tan(-0.989), neg(sqrt(add(X2, X1))))), X2))))), add(tan(-0.989), add(log(div(add(0.966, X1), sqrt(mul(div(add(0.966, X1), neg(add(log(div(add(0.966, X1), X1)), X2))), X0)))), X2)))), X2)))), X2)), exp(mul(sqrt(tan(-0.989)), sqrt(mul(add(log(div(add(0.966, log(div(exp(X1), neg(neg(X2))))), X2)), X2), X0)))))"
+gbrt,II.27.18__nz0.01,0.1576330148726359,0.4729644499329018,0,,
+rf,II.27.18__nz0.01,0.1296005698947584,0.4879029450337607,0,,
+gp,II.27.18__nz0.01,0.0,0.0,1,exact,"mul(X0, mul(X1, X1))"
+gpx,II.27.18__nz0.01,1.7388958815901526e-16,1.2101679977304442e-16,1,exact,"mul(X1, mul(X0, X1))"
+gbrt,II.34.2a__nz0.01,0.2870765464376587,0.4673853992877111,0,,
+rf,II.34.2a__nz0.01,0.30590683728594,0.5137679563367973,0,,
+gp,II.34.2a__nz0.01,0.1743654123351474,0.1530360451110196,0,approx,"mul(abs(log(sqrt(sub(sub(sub(sub(X0, X2), mul(X2, -0.960)), X2), mul(X2, -0.960))))), div(X1, X2))"
+gpx,II.34.2a__nz0.01,0.1289266622811866,0.18634794972552002,0,approx,"div(sqrt(mul(X1, X0)), add(0.724, div(add(X2, -0.332), log(sqrt(sqrt(abs(mul(X1, X0))))))))"
+gbrt,II.34.2__nz0.01,0.25159334962745145,0.48238663523082537,0,,
+rf,II.34.2__nz0.01,0.25391891532332583,0.5139982872123607,0,,
+gp,II.34.2__nz0.01,0.09039458115180837,0.1836706463907408,0,approx,"mul(sqrt(mul(X1, X2)), sqrt(sub(div(mul(sqrt(inv(X2)), sqrt(abs(sub(sub(X1, X2), mul(sub(X1, X2), sub(inv(X2), mul(neg(abs(X0)), sub(neg(X0), abs(mul(sqrt(inv(X2)), add(div(log(mul(X0, sub(mul(sqrt(inv(X2)), add(add(div(log(mul(X0, X1)), -0.673), sub(sub(X1, X2), abs(abs(add(X1, X1))))), neg(X0))), mul(log(mul(X0, X1)), sub(add(X0, X1), mul(neg(abs(X0)), sub(sub(X1, X2), abs(abs(add(X1, X1)))))))))), -0.673), neg(X1)))))))))))), -0.673), mul(log(mul(X0, X1)), sub(add(X0, X1), mul(neg(abs(X0)), sub(sub(X1, X2), add(X1, X1))))))))"
+gpx,II.34.2__nz0.01,0.05207472163124663,0.0577778736944283,0,error,"sqrt(mul(mul(sub(sqrt(mul(mul(sub(sqrt(X1), sub(log(add(-0.504, X2)), mul(X0, X1))), mul(X0, -0.983)), mul(X1, X2))), mul(X0, X1)), mul(X0, -0.983)), mul(X1, X2)))"
+gbrt,II.34.11__nz0.01,0.31940345465237263,0.5461473871943981,0,,
+rf,II.34.11__nz0.01,0.416890825737496,0.6127915932359681,0,,
+gp,II.34.11__nz0.01,0.09111588295458317,0.16999458867770936,0,error,"sqrt(sub(add(sub(neg(X0), add(sub(-0.487, inv(X0)), div(sub(log(0.869), inv(X0)), neg(X0)))), mul(neg(X0), mul(div(sqrt(sub(add(sub(inv(sub(log(0.869), sqrt(X0))), add(sub(-0.487, inv(X0)), inv(X2))), mul(neg(X0), mul(div(X0, X3), mul(X1, X2)))), inv(sub(log(inv(X2)), mul(div(X0, X3), mul(X1, X2)))))), X3), mul(X1, X2)))), mul(neg(X0), mul(div(X0, X3), mul(X1, X2)))))"
+gpx,II.34.11__nz0.01,0.5288440735533065,0.5953162607185494,0,error,"sqrt(mul(mul(add(-0.363, X2), sqrt(sub(X1, exp(0.424)))), mul(X0, div(sqrt(mul(mul(abs(sub(X1, X3)), sub(X1, 0.377)), sqrt(mul(mul(add(mul(sub(sqrt(sub(X1, neg(X0))), X3), mul(abs(sub(X1, X3)), sub(X1, 0.377))), X2), neg(neg(X0))), abs(mul(sqrt(mul(neg(X0), div(mul(add(-0.363, X2), add(-0.363, div(sub(X1, 0.377), exp(0.424)))), neg(-0.936)))), sqrt(sub(X1, sqrt(exp(X1)))))))))), exp(0.424)))))"
+gbrt,II.34.29a__nz0.01,0.2870765464376587,0.4673853992877111,0,,
+rf,II.34.29a__nz0.01,0.30590683728594,0.5137679563367973,0,,
+gp,II.34.29a__nz0.01,0.22041457075886825,0.1834682995190643,0,wrong,"sub(sub(X2, X2), mul(sub(div(X2, X2), sqrt(X0)), mul(inv(X2), log(X1))))"
+gpx,II.34.29a__nz0.01,0.25366056851524,0.3973786951228052,0,wrong,"div(log(X1), add(exp(div(X2, X0)), div(X2, X0)))"
+gbrt,II.34.29b__nz0.01,0.533564991272355,0.6545447382686127,0,,
+rf,II.34.29b__nz0.01,0.5949041175056816,0.7459491231844041,0,,
+gp,II.34.29b__nz0.01,0.36604572764992094,0.6269977628875645,0,error,"sub(sub(X1, sub(X3, X0)), div(sub(mul(X4, mul(X3, X2)), sub(sub(log(log(sqrt(sub(neg(X3), log(-0.990))))), sqrt(sub(sub(sqrt(0.385), X0), X3))), sub(sub(sqrt(0.385), X0), X3))), div(neg(sqrt(mul(X1, neg(sqrt(mul(X1, X0)))))), add(mul(mul(X0, X0), sqrt(X3)), sqrt(mul(X2, X4))))))"
+gpx,II.34.29b__nz0.01,0.4837897854523356,1.199892533702928,0,wrong,"add(add(div(add(div(mul(X0, add(div(mul(X0, div(mul(X0, div(mul(X0, exp(X2)), X2)), X2)), X1), exp(X4))), X1), exp(X4)), X1), div(mul(X0, exp(X2)), X2)), mul(exp(X3), X2))"
+gbrt,II.35.18__nz0.01,0.36450112240221794,0.4595279234489078,0,,
+rf,II.35.18__nz0.01,0.41069977727938295,0.5212108884651038,0,,
+gp,II.35.18__nz0.01,0.71215570743761,0.87277386148208,0,error,"log(sqrt(sub(sub(X3, X0), add(X0, X1))))"
+gpx,II.35.18__nz0.01,0.5725811723364519,0.6006023566368784,0,wrong,"neg(mul(tanh(sub(0.740, X1)), sqrt(div(sin(sin(div(-0.273, X4))), div(cos(mul(log(X0), sin(X3))), sub(sub(neg(X0), X0), sin(sub(sub(neg(X0), X0), log(sin(X3))))))))))"
+gbrt,II.35.21__nz0.01,0.3298811098509029,0.4582758361352103,0,,
+rf,II.35.21__nz0.01,0.3669417279500705,0.4856461519455914,0,,
+gp,II.35.21__nz0.01,0.39424843753146716,0.4404533529722431,0,wrong,"sub(mul(X1, X0), log(mul(mul(X3, log(X4)), log(mul(X3, X0)))))"
+gpx,II.35.21__nz0.01,0.36485762334897825,0.3935667200647608,0,wrong,"add(cos(sqrt(X3)), abs(add(cos(sqrt(X4)), add(cos(sqrt(X4)), add(cos(sqrt(X3)), abs(add(cos(sqrt(X3)), abs(add(tanh(div(X1, -0.750)), add(cos(sqrt(X4)), mul(X0, X1)))))))))))"
+gbrt,II.36.38__nz0.01,0.5375924046642304,0.6878047222866117,0,,
+rf,II.36.38__nz0.01,0.6114416520851915,0.7610332021986672,0,,
+gp,II.36.38__nz0.01,0.31547645370926636,0.4527200914560362,0,error,"sqrt(mul(div(X0, X3), mul(sqrt(sub(sub(X6, X0), mul(div(X1, X2), X7))), div(add(div(add(div(X0, sqrt(X2)), div(mul(sqrt(sub(sub(X6, X0), mul(mul(div(X1, X2), sqrt(sub(sub(X6, X0), sqrt(sub(sub(X6, X0), mul(div(X1, X2), X7)))))), X7))), div(X1, X2)), X2)), sqrt(X2)), div(X1, X2)), X3))))"
+gpx,II.36.38__nz0.01,0.3195606027723236,0.4099917309778749,0,wrong,"add(inv(div(X3, X0)), div(div(add(sub(X1, X2), inv(mul(div(X3, add(div(inv(div(X6, X0)), X5), div(inv(div(X6, X0)), X5))), div(X6, add(X4, inv(div(X3, X0))))))), X2), X2))"
+gbrt,II.37.1__nz0.01,0.23627055829576848,0.4786165952579756,0,,
+rf,II.37.1__nz0.01,0.26217176682235194,0.5122049697787655,0,,
+gp,II.37.1__nz0.01,2.372774119870928e-16,1.502207496759238e-16,1,exact,"add(mul(X0, mul(X2, X1)), mul(X1, X0))"
+gpx,II.37.1__nz0.01,0.18310298129378455,0.6037263983892901,0,wrong,"sqrt(mul(sqrt(mul(exp(exp(abs(abs(log(X0))))), add(exp(X2), neg(0.714)))), add(log(add(sin(abs(log(X0))), exp(sub(sqrt(mul(add(log(add(abs(X2), exp(sub(sqrt(mul(exp(exp(log(X0))), add(exp(neg(neg(X1))), exp(neg(neg(X1)))))), cos(add(exp(X1), exp(log(add(abs(abs(log(X0))), exp(sub(sqrt(mul(exp(exp(log(X0))), add(exp(neg(neg(X1))), abs(0.714)))), cos(add(exp(X1), add(log(cos(exp(log(X0)))), div(exp(X1), tanh(X2)))))))))))))))), div(exp(X1), tanh(X2))), div(exp(neg(neg(X1))), abs(0.714)))), cos(abs(0.714)))))), add(exp(neg(neg(X1))), abs(0.714)))))"
+gbrt,II.38.3__nz0.01,0.4971053747771727,0.588258757234543,0,,
+rf,II.38.3__nz0.01,0.5448418900568018,0.681430744647196,0,,
+gp,II.38.3__nz0.01,1.8428307877716016e-16,2.0054835958081314e-16,1,exact,"mul(div(mul(X3, X1), X2), X0)"
+gpx,II.38.3__nz0.01,0.5602292776289152,2.3686186176720625,0,wrong,"add(add(div(add(sub(add(sub(div(add(sub(sub(add(sub(mul(X3, X0), X2), abs(X1)), tanh(add(sub(sub(add(sub(add(div(add(sub(add(sub(sub(div(add(sub(sub(add(sub(mul(X3, X0), inv(X1)), log(abs(X1))), log(sub(add(div(add(sub(add(sub(add(sub(mul(X3, X0), inv(X1)), exp(div(X1, X2))), log(sub(add(div(add(sub(add(sub(mul(X3, X0), X3), exp(div(X1, X2))), tanh(X0)), tanh(X2)), tanh(X2)), log(log(sub(X1, 0.377)))), inv(X1)))), exp(div(X1, X2))), tanh(X0)), tanh(X2)), tanh(X2)), log(div(X1, X2))), inv(X1)))), X2), sub(X1, 0.377)), tanh(add(sub(mul(X3, X0), tanh(X1)), abs(exp(div(X3, X2)))))), tanh(X0)), X3), exp(div(X1, X2))), tanh(X0)), tanh(X2)), tanh(X2)), log(log(sub(X1, 0.377)))), inv(X1)), abs(X1)), tanh(X0)), X3), abs(exp(div(X3, X2)))))), X3), abs(exp(div(X3, X2)))), tanh(X2)), tanh(log(abs(X1)))), log(abs(X1))), tanh(X0)), log(sub(X1, 0.377))), tanh(X2)), log(log(sub(X1, 0.377)))), log(sub(X1, log(X0))))"
+gbrt,II.38.14__nz0.01,0.212104549821602,0.32340074079374254,0,,
+rf,II.38.14__nz0.01,0.23002527123981084,0.35089511555446645,0,,
+gp,II.38.14__nz0.01,0.24412023224248228,0.29514282536759145,0,wrong,"div(log(X0), div(sub(sqrt(X1), mul(mul(X1, X1), -0.247)), div(0.857, inv(sqrt(X1)))))"
+gpx,II.38.14__nz0.01,0.47611447838217696,0.613343169028039,0,wrong,"div(log(X0), X1)"
+gbrt,III.4.32__nz0.01,0.4965688753281977,0.8140813904687569,0,,
+rf,III.4.32__nz0.01,0.5960634833410084,0.8520396569499481,0,,
+gp,III.4.32__nz0.01,0.1257867747295048,0.2812447537408355,0,approx,"div(sub(inv(sqrt(inv(sub(div(add(div(add(div(inv(inv(sub(div(inv(div(X1, X2)), inv(X2)), div(sqrt(abs(div(div(inv(div(X1, X2)), inv(X2)), div(X1, X2)))), mul(X0, 0.096))))), X2), X2), X2), X2), div(X1, X2)), div(sqrt(abs(div(div(inv(div(X1, X2)), inv(X2)), div(X1, X2)))), mul(X0, 0.096)))))), mul(neg(add(div(X1, X2), X3)), div(X3, X0))), div(X1, X2))"
+gpx,III.4.32__nz0.01,0.05473148391171895,0.21048766738259117,0,approx,"sqrt(mul(mul(mul(add(-0.363, X2), exp(inv(mul(mul(mul(add(-0.363, X2), div(abs(X3), tanh(X2))), div(sqrt(X3), mul(sub(tanh(X2), exp(X0)), 0.096))), X1)))), X3), div(div(sqrt(X3), mul(X0, 0.096)), mul(div(X0, sqrt(mul(mul(add(-0.363, X2), tanh(mul(add(-0.363, X2), div(div(sqrt(X3), add(-0.363, X2)), mul(div(sqrt(X1), abs(add(X2, 0.634))), X1))))), div(X3, mul(sub(sqrt(X1), mul(sin(X1), tanh(X2))), 0.096))))), X1))))"
+gbrt,III.4.33__nz0.01,0.15545647525158182,0.407433283548889,0,,
+rf,III.4.33__nz0.01,0.1492405167026979,0.46359483009446356,0,,
+gp,III.4.33__nz0.01,0.059245509737784995,0.06974652568655872,0,error,"add(mul(X2, X3), div(neg(add(mul(X2, X3), div(div(neg(mul(X2, X3)), X1), X1))), add(mul(X3, X2), div(sqrt(mul(X2, div(neg(mul(X2, X3)), X1))), X1))))"
+gpx,III.4.33__nz0.01,0.08175975863097062,0.09000148398803799,0,approx,"add(-0.811, div(X3, sin(inv(X2))))"
+gbrt,III.7.38__nz0.01,0.2870765464376587,0.4673853992877111,0,,
+rf,III.7.38__nz0.01,0.3015912252044371,0.510901852317962,0,,
+gp,III.7.38__nz0.01,0.07030305312425719,0.9157604593831439,0,approx,"add(add(mul(div(sqrt(X0), add(X2, -0.864)), X0), add(add(sub(div(X2, add(add(mul(div(X1, 0.195), div(sqrt(X1), div(add(X0, X0), add(X2, -0.864)))), inv(X2)), inv(X2))), neg(sub(div(X2, div(X1, 0.195)), div(X2, X0)))), add(mul(div(X1, 0.195), div(sqrt(X1), div(X2, X0))), X0)), inv(X2))), div(sub(div(X2, 0.309), X2), add(X2, -0.864)))"
+gpx,III.7.38__nz0.01,0.07271037722286423,0.06976695326826449,0,error,"sqrt(mul(mul(div(div(X0, X2), 0.049), neg(X1)), add(abs(sqrt(mul(mul(sub(sub(X2, X1), sqrt(X0)), sub(sub(X2, X1), sqrt(X0))), sub(sqrt(sub(sub(X2, X1), sqrt(X0))), sub(inv(mul(sub(sub(X2, X1), sqrt(X0)), -0.101)), neg(add(sqrt(X0), sqrt(mul(mul(div(div(X0, X2), 0.049), add(X0, X1)), mul(div(X0, X2), abs(abs(div(div(X0, X2), 0.049))))))))))))), div(X0, 0.302))))"
+gbrt,III.8.54__nz0.01,1.1336469088695855,1.2978742417232436,0,,
+rf,III.8.54__nz0.01,1.098620121735833,1.1434020568913958,0,,
+gp,III.8.54__nz0.01,1.1032211811611528,1.1005908825889907,0,wrong,"sqrt(div(mul(X1, 0.865), add(X2, X0)))"
+gpx,III.8.54__nz0.01,1.0924610497077287,1.0298828994688018,0,wrong,tanh(sqrt(inv(X2)))
+gbrt,III.9.52__nz0.01,0.8988303459214325,0.9931631573163012,0,,
+rf,III.9.52__nz0.01,0.9252251186038721,1.007955502186947,0,,
+gp,III.9.52__nz0.01,0.880276986163884,2.066567875932403,0,error,"add(div(sqrt(log(sqrt(sqrt(add(mul(X3, X0), X5))))), div(inv(sub(sub(mul(X3, X0), abs(neg(neg(0.693)))), sub(sqrt(log(log(neg(sqrt(X3))))), add(0.642, X1)))), abs(add(mul(sub(sub(sub(mul(X3, X0), add(0.642, X1)), sub(neg(neg(0.693)), sub(mul(X3, X0), abs(neg(neg(0.693)))))), div(0.550, X3)), abs(0.137)), div(div(-0.356, -0.050), add(sqrt(log(sqrt(sqrt(add(X5, X5))))), neg(X3))))))), log(sub(sqrt(X5), add(0.642, X1))))"
+gpx,III.9.52__nz0.01,0.893212119177314,1.0569285163623103,0,wrong,"add(add(0.468, add(X1, div(exp(X0), div(div(tan(0.468), sin(X3)), sin(sin(X3)))))), mul(X1, X2))"
+gbrt,III.10.19__nz0.01,0.21278476233818433,0.5106638983686181,0,,
+rf,III.10.19__nz0.01,0.2734974273708688,0.566222925273157,0,,
+gp,III.10.19__nz0.01,0.18855258057381272,0.33194105898104476,0,error,"abs(sub(mul(add(X1, X0), log(sub(div(add(mul(X0, X3), add(X0, -0.187)), sqrt(log(0.563))), sub(add(div(add(div(X3, X1), sqrt(X0)), X1), log(-0.944)), add(sqrt(X0), sub(div(log(sub(div(add(mul(X0, X3), add(X0, -0.187)), sqrt(log(0.563))), div(X3, X2))), X3), add(div(X3, X0), log(log(sub(div(add(mul(X0, X3), add(X0, -0.187)), sqrt(log(0.563))), div(div(X3, X1), neg(X2)))))))))))), sub(div(add(neg(X1), X2), -0.944), add(div(div(X3, X1), X1), log(-0.944)))))"
+gpx,III.10.19__nz0.01,0.16848230672929937,0.20019327601804568,0,approx,"add(div(X0, sqrt(inv(mul(add(add(X1, X3), X3), abs(X2))))), mul(add(X1, add(X1, X3)), inv(mul(abs(abs(X2)), abs(abs(X2))))))"
+gbrt,III.12.43__nz0.01,0.14154835341994731,0.3740626373166082,0,,
+rf,III.12.43__nz0.01,0.14033796426544137,0.39591020602924054,0,,
+gp,III.12.43__nz0.01,0.13424310020797547,0.12081289950654303,0,error,"div(mul(abs(mul(abs(abs(X0)), mul(div(X1, X0), sub(X0, 0.885)))), inv(inv(sqrt(X0)))), inv(div(inv(abs(sub(neg(sqrt(X0)), sqrt(sub(neg(sqrt(X0)), sqrt(neg(X0))))))), abs(div(sqrt(X0), div(-0.396, 0.480))))))"
+gpx,III.12.43__nz0.01,0.13720889199206748,0.23437148267161834,0,error,"mul(sqrt(mul(log(X0), div(cos(log(abs(add(add(X1, X0), add(0.552, abs(add(X1, -0.481))))))), inv(sub(add(X1, -0.481), mul(sub(sqrt(mul(log(mul(X0, X0)), sub(add(X1, -0.481), sqrt(0.552)))), inv(X0)), inv(X0))))))), sqrt(sqrt(X0)))"
+gbrt,III.13.18__nz0.01,0.4038659414609346,0.6320650992986027,0,,
+rf,III.13.18__nz0.01,0.40298973402814586,0.6731373442839226,0,,
+gp,III.13.18__nz0.01,0.12848869902576604,0.45801136483116844,0,error,"sub(mul(add(sub(div(mul(X1, X0), add(X1, X3)), sub(sqrt(X3), inv(X3))), sub(X1, -0.482)), div(sqrt(sqrt(sub(inv(sub(0.906, X1)), mul(div(X0, X3), mul(X0, sqrt(X1)))))), inv(add(div(X2, 0.081), sub(X0, 0.605))))), div(sub(sub(inv(sub(sqrt(X1), sub(mul(add(sub(div(mul(X1, X0), add(X1, X3)), sub(sqrt(X1), inv(X3))), sub(X1, -0.482)), sub(div(mul(X1, X0), add(X1, X3)), sub(sqrt(X3), inv(X3)))), mul(X1, X1)))), mul(div(X1, X3), mul(X0, X2))), inv(div(X1, X3))), div(inv(sub(mul(X1, X1), neg(X2))), mul(div(neg(X1), sqrt(X3)), neg(div(0.435, 0.942))))))"
+gpx,III.13.18__nz0.01,0.5684029805673346,1.1067930551420517,0,wrong,"mul(add(mul(inv(0.134), log(abs(abs(mul(abs(exp(X1)), abs(mul(X2, log(neg(exp(X1)))))))))), abs(mul(abs(exp(X1)), abs(log(abs(mul(mul(mul(X2, add(inv(X3), tanh(X0))), add(inv(X3), tanh(X0))), abs(abs(abs(log(abs(mul(mul(X2, add(inv(X3), tanh(X0))), abs(abs(X2))))))))))))))), X0)"
+gbrt,III.14.14__nz0.01,0.6338911248458123,1.005047778592149,0,,
+rf,III.14.14__nz0.01,0.6840156046001549,1.0050315874052456,0,,
+gp,III.14.14__nz0.01,0.38946006294770746,1.0012550474315163,0,wrong,"div(neg(mul(add(sub(log(sub(sub(log(sub(log(sub(sub(log(mul(div(X3, X2), X4)), 0.215), add(X1, log(sqrt(add(X2, X4)))))), add(X1, sqrt(0.385)))), 0.215), add(X1, sqrt(0.385)))), add(X1, sqrt(0.385))), log(mul(div(X3, X2), X4))), mul(X0, X1))), div(mul(div(X3, sqrt(add(X2, X4))), X4), X2))"
+gpx,III.14.14__nz0.01,0.5334184343921177,1.0030682061209726,0,wrong,"sub(cos(neg(sub(div(X3, X2), mul(tan(abs(-0.711)), neg(inv(div(X2, X1))))))), div(neg(sub(exp(X1), X4)), inv(mul(inv(X3), mul(X0, div(X2, X4))))))"
+gbrt,III.15.12__nz0.01,0.9789153537402494,1.0979822746068646,0,,
+rf,III.15.12__nz0.01,0.9307171297126978,0.921020968400639,0,,
+gp,III.15.12__nz0.01,0.9746709564886872,1.1006563436048373,0,error,"add(abs(mul(mul(inv(X1), sub(X0, X2)), sqrt(mul(X0, neg(mul(X0, abs(sub(X0, X1)))))))), sub(log(div(neg(neg(div(sqrt(sub(mul(X0, sub(X0, X1)), div(log(0.051), mul(inv(sqrt(mul(X0, neg(log(div(neg(neg(div(sub(add(log(X2), inv(X0)), inv(-0.628)), add(log(X2), abs(abs(mul(inv(X1), sub(X0, X2)))))))), 0.146)))))), sub(X0, X2))))), add(log(X2), inv(X0))))), 0.146)), -0.691))"
+gpx,III.15.12__nz0.01,1.049335961986312,1.0367287602289754,0,wrong,"sub(sub(sub(add(sub(add(neg(div(sqrt(add(tan(0.986), exp(sin(div(add(X0, abs(X1)), tan(abs(exp(sqrt(X0))))))))), -0.446)), sub(abs(X0), sqrt(X2))), sin(tan(abs(exp(sqrt(X0)))))), sin(div(add(X0, abs(X1)), tan(abs(add(add(tan(0.986), exp(sin(sqrt(X2)))), sub(abs(X0), sqrt(X2)))))))), sin(tan(abs(sqrt(add(tan(0.986), exp(sin(div(add(X0, sin(tan(abs(exp(sqrt(X0)))))), tan(abs(exp(sqrt(X0))))))))))))), sin(tan(abs(exp(sqrt(X0)))))), sin(tan(abs(exp(sin(div(add(X0, abs(X1)), abs(div(0.910, X0)))))))))"
+gbrt,III.15.14__nz0.01,0.3669250799809431,0.6028744299985797,0,,
+rf,III.15.14__nz0.01,0.4593763929747235,0.6558203615941021,0,,
+gp,III.15.14__nz0.01,1.2169601014518778,1.1175093116478843,0,up_to_constant,"sub(X2, X2)"
+gpx,III.15.14__nz0.01,1.2169601014518778,1.1175093116478843,0,up_to_constant,"sub(X2, X2)"
+gbrt,III.15.27__nz0.01,0.3944599473874834,0.4326929127437465,0,,
+rf,III.15.27__nz0.01,0.4488488848752566,0.5175211117682019,0,,
+gp,III.15.27__nz0.01,0.042165066202013025,0.060140257524710763,1,error,"mul(neg(add(add(sqrt(neg(add(add(sqrt(X1), div(X0, X2)), add(div(X0, X2), div(X0, X2))))), sqrt(add(div(X0, X2), sqrt(X0)))), add(sqrt(add(div(X0, X2), div(X0, X2))), div(X0, X2)))), div(sqrt(div(X0, X2)), neg(X1)))"
+gpx,III.15.27__nz0.01,0.02886123206725983,0.024361828126755646,1,error,"add(div(div(add(div(div(X0, X2), sqrt(sqrt(-0.254))), div(X0, X2)), X1), sqrt(sqrt(-0.254))), div(add(div(X0, X2), add(div(X0, X2), div(X0, X2))), X1))"
+gbrt,III.17.37__nz0.01,0.37508806645001674,0.6935692342640474,0,,
+rf,III.17.37__nz0.01,0.38575817585015115,0.8792039124754355,0,,
+gp,III.17.37__nz0.01,0.3879832383047157,1.2403310336061566,0,wrong,"mul(mul(add(mul(X1, add(inv(-0.675), X2)), neg(abs(log(mul(log(add(abs(inv(inv(div(-0.924, -0.449)))), X2)), abs(inv(mul(add(mul(X1, log(X2)), log(abs(abs(inv(mul(add(log(neg(log(X2))), log(abs(inv(neg(log(X2)))))), log(mul(log(sqrt(neg(div(-0.645, div(neg(log(log(log(X2)))), log(log(X2))))))), abs(inv(inv(div(-0.924, -0.449)))))))))))), log(mul(log(sqrt(neg(div(-0.645, div(neg(log(log(log(X2)))), log(log(X2))))))), abs(inv(inv(div(-0.924, -0.449)))))))))))))), log(inv(mul(add(mul(X1, log(X2)), neg(abs(div(-0.645, div(neg(log(log(log(X2)))), log(neg(log(X2)))))))), log(mul(log(neg(log(X2))), abs(inv(inv(div(-0.924, -0.449)))))))))), inv(div(X2, X0)))"
+gpx,III.17.37__nz0.01,0.5241200412171249,0.8936025358208433,0,wrong,"sub(add(cos(neg(X2)), sub(add(log(add(cos(mul(neg(log(X1)), cos(log(mul(neg(log(X1)), cos(X2)))))), add(add(log(tan(X2)), add(log(inv(mul(cos(mul(neg(log(X1)), cos(X2))), cos(div(X1, X2))))), tan(cos(X2)))), tan(cos(X2))))), add(add(log(tan(X2)), add(sin(X1), tan(cos(X2)))), div(X1, X2))), log(inv(mul(cos(mul(neg(log(X1)), cos(X2))), cos(div(X1, X2))))))), log(inv(mul(cos(mul(neg(log(X1)), cos(X2))), cos(div(X1, X2))))))"
+gbrt,III.19.51__nz0.01,0.836803100037052,1.2240393260131126,0,,
+rf,III.19.51__nz0.01,0.805861083756382,0.8957388262399132,0,,
+gp,III.19.51__nz0.01,2.736562054476282,1.270806798550804,0,wrong,"sub(div(neg(abs(div(inv(abs(X2)), add(abs(X3), sub(inv(X0), sub(X0, X4)))))), mul(0.788, X2)), abs(div(inv(add(X3, div(sub(inv(X0), sub(X0, X4)), mul(0.788, X2)))), add(abs(X3), sub(X4, sub(X0, X4))))))"
+gpx,III.19.51__nz0.01,1.01156986598943,0.9610237538263112,0,wrong,"mul(neg(inv(exp(mul(X3, X4)))), abs(inv(add(log(cos(inv(X1))), add(log(cos(div(X1, X3))), inv(X1))))))"
+gbrt,III.21.20__nz0.01,0.33546164382755617,0.544728911250224,0,,
+rf,III.21.20__nz0.01,0.4144561112502263,0.6143075593414655,0,,
+gp,III.21.20__nz0.01,0.1814875802055111,0.2933631386013896,0,wrong,"sub(sqrt(X1), div(add(abs(mul(sub(X1, X3), abs(div(inv(log(-0.269)), inv(sqrt(add(div(X0, X2), add(div(X0, X2), inv(sub(sub(mul(sub(X1, X3), abs(div(inv(inv(log(-0.269))), inv(sqrt(add(div(X0, X2), inv(sub(sub(sub(abs(-0.184), mul(X0, X1)), neg(add(X1, 0.348))), add(X1, X1))))))))), mul(div(0.711, 0.358), add(X1, X0))), add(X1, X1))))))))))), div(mul(div(0.711, 0.358), add(X1, X0)), inv(log(-0.269)))), div(add(sqrt(inv(X0)), inv(sub(mul(X2, X2), inv(sqrt(inv(sub(mul(X2, X2), sub(sqrt(inv(X0)), inv(log(-0.269)))))))))), inv(div(neg(X3), sqrt(X1))))))"
+gpx,III.21.20__nz0.01,0.6244930337023613,0.7513952141464891,0,wrong,"neg(add(log(log(mul(mul(mul(-0.571, X2), X2), X2))), add(log(log(mul(mul(inv(X3), log(add(log(mul(-0.571, log(mul(mul(-0.571, X2), X2)))), add(mul(-0.571, X2), mul(X1, X0))))), X2))), add(log(X1), add(log(add(inv(X3), log(mul(-0.571, log(mul(mul(-0.571, X2), X2)))))), add(log(mul(mul(-0.571, X2), log(mul(mul(-0.571, X2), X2)))), add(log(log(mul(mul(-0.571, X2), X2))), mul(X1, X0))))))))"
+ours,I.6.2a__nz0.01,0.00171,0.00881,1,up_to_constant,0.3997*(exp(-(theta)**2/2)) + -0.0004523*(theta**(3)*exp(-(theta)**2/2)) + 0.000237*(theta**(2)*sin(theta)) + -0.0004106
+ours,I.6.2__nz0.01,0.07652,0.32218,0,approx,0.4963*(Abs(sigma)**(-1/2)*tanh(sigma/theta)) + 0.02645*(Abs(theta)**(-1/2)*exp(-(sigma/theta)**2/2)) + -0.01331*(sqrt(Abs(sigma))*sin(theta)) + 0.01281*(sqrt(Abs(theta))*sin(sigma/theta)) + -0.005348*(Abs(sigma)**(-1/2)*1/(sigma/theta)**2) + 0.001406*(sqrt(Abs(theta))*sin(sigma)) + -0.1564
+ours,I.6.2b__nz0.01,0.34994,0.91657,0,wrong,0.1181*(cos(sigma)) + -0.02669*(Abs(sigma)**(-1/2)*1/(theta/theta1)**2) + -0.01002*(Abs(sigma)**(-1/2)*(theta/theta1)**3) + 0.2816
+ours,I.8.14__nz0.01,1.03685,2.14106,0,wrong,0.1376*(x1*sin(y1/y2)) + 0.0636*(x2*1/(x1/x2)**2) + 0.06321*(x1*exp(x1/x2)) + 0.05116*(x1*1/(y1/y2)**2) + -0.03362*(x1*(x1/x2)**3) + 0.02727*(x2*sin(y1/y2))
+ours,I.10.7__nz0.01,0.00122,0.05572,1,up_to_constant,0.99*(m_0) + 0.9492*(m_0*(v/c)**3) + 0.1195*(1/c*m_0*v*exp(-(v/c)**2))
+ours,I.11.19__nz0.01,0.44023,0.50298,0,wrong,4.731*(x1*y3) + -1.89*(x1**(2)*exp(-(x1/y3)**2/2)) + -1.205*(x1**(2)*exp(-(y2/y3)**2/2)) + 1.07*(x2*x3) + -0.4667*(x1**(2)*1/(y1/y3)) + -0.3581*(y3**(2)) + -0.2959*(x1**(2)*exp(-(x1/x3)**2/2))
+ours,I.12.1__nz0.01,0.0016,0.00336,1,up_to_constant,0.9998*(Nn*mu) + -0.0004451*(Nn*mu**(2)*cos(mu))
+ours,I.12.5__nz0.01,0.00058,0.00051,1,up_to_constant,1*(Ef*q2)
+ours,I.12.11__nz0.01,0.00219,0.00593,1,up_to_constant,1*(B*q*v*sin(theta)) + 0.6457*(Ef*q) + 0.3472*(Ef*q*tanh(theta)) + 0.188*(Ef*q*1/theta*exp(-(theta)**2)) + 0.02642*(Ef*q*theta**(2)*exp(-(theta))) + 0.01071*(1/B*Ef**(2)*q*1/v*log(Abs(theta))) + 0.009156*(B*q*theta**(2)*v*exp(-(theta)**2)) + -0.006107*(1/B*Ef**(2)*q*1/v*1/(theta)) + 0.0008338*(Ef*q*theta**(2)*cos(theta))
+ours,I.13.4__nz0.01,0.0598,0.24531,0,up_to_constant,1.971*(m*u*w*sqrt(Abs(v/u))) + -0.7276*(m*u**(2)*exp(-(u/w)**2)) + -0.354*(m*u*v*cos(v/w)) + -0.1871*(m*u**(2)*log(Abs(v/u))) + -0.05493*(m*w**(2)*exp(-(u/w)**2)) + -0.02796*(m*v**(2)*cos(v/u)) + 0.01008*(m*w**(2)*1/(v/w)**2) + 0.003812*(m*v**(2)*exp(v/w)) + 0.002644*(m*v**(2)*(v/u)**3)
+ours,I.13.12__nz0.01,0.06718,0.77993,0,approx,0.5321*(G*m1*m2*1/r1*log(Abs(r1/r2))) + -0.385*(G*m1**(2)*1/r2*exp(-(r1/r2)**2)) + -0.1335*(G*m2**(2)*1/r2*cos(r1/r2)) + 0.1061*(G*m1*m2*1/r2*sin(r1/r2)) + 0.04705*(G*m1*m2*1/r1*exp(r1/r2)) + 0.01915*(G*m1**(2)*1/r2*log(Abs(m1/m2))) + 0.00655*(G*m1**(2)*1/r1*(m1/m2)**2) + -0.00484*(G*m2**(2)*1/r2*1/(m1/m2)**2)
+ours,I.14.3__nz0.01,0.00064,0.00057,1,up_to_constant,1*(g*m*z)
+ours,I.14.4__nz0.01,0.0006,0.00055,1,up_to_constant,0.5002*(k_spring*x**(2))
+ours,I.15.3x__nz0.01,48.2741,32.6641,0,wrong,2.698e+06*(1/t*1/u*x**(2)*cos(u/c)) + -2.68e+06*(1/t*1/u*x**(2)*exp(-(u/c)**2/2)) + -1.22e+06*(1/t*1/u*x**(2)) + 4.117e+05*(1/t*1/u*x**(2)*exp(-(u/c)**2)) + 4.035e+05*(1/t*1/u*x**(2)*exp(-(u/c))) + 4.035e+05*(1/t*1/u*x**(2)*exp(u/c)) + -1.714e+04*(1/t*1/u*x**(2)*1/(1+(u/c)**2))
+ours,I.15.3t__nz0.01,0.03221,0.13835,1,up_to_constant,-1.74*(1/c*1/t*1/u*x**(2)*exp(-(c/u)**2)) + 0.9916*(t) + -0.4472*(1/c*1/t*1/u*x**(2)*1/(c/u)) + 0.07296*(c**(2)*t**(2)*1/u*1/x*exp(-(c/u)**2)) + 0.03287*(c*t**(2)*1/x*1/(c/u)**2) + -0.02686*(1/c*1/t*1/u*x**(2)*sin(c/u)) + 0.02348*(1/c*x*cos(c/u)) + 0.01198*(1/c*t**(2)*u**(2)*1/x*sin(c/u))
+ours,I.15.1__nz0.01,0.03455,0.08755,1,up_to_constant,0.9257*(1/c*m_0*v**(2)*(v/c)**3) + 0.685*(m_0*v) + 0.5514*(c*m_0*sqrt(Abs(v/c))) + 0.5244*(m_0*v*log(Abs(v/c))) + 0.001593*(c**(2)*m_0*1/v*log(Abs(v/c)))
+ours,I.16.6__nz0.01,0.09688,0.41968,0,approx,0.8771*(sqrt(Abs(c))*sqrt(Abs(v))*tanh(c/v)) + 0.1342*(u*tanh(c/u)) + 0.1058*(sqrt(Abs(c))*sqrt(Abs(v))*sin(c/u)) + 0.08875*(c*sin(c/v)) + -0.03258*(u*sin(c/v)) + 0.03157*(c*1/(v/u)**2) + 0.02536*(u*exp(v/u)) + -0.01374*(v*1/(c/u)**2)
+ours,I.18.4__nz0.01,0.05447,0.36484,0,up_to_constant,1.029*(sqrt(Abs(r1))*sqrt(Abs(r2))) + -0.06768*(m1*1/m2*r1*cos(r1/r2)) + -0.04941*(1/m1*m2*r2*log(Abs(r1/r2))) + 0.04127*(r1**(2)*1/r2*log(Abs(m1/m2))) + 0.02881*(1/r1*r2**(2)*cos(m1/m2)) + -0.01416*(m1*1/m2*r1*cos(m1/m2)) + 0.01158*(m1*1/m2*r1*sin(m1/m2)) + -0.01121*(1/r1*r2**(2)*sin(m1/m2)) + 0.0008954*(1/m1*m2*r1*(r1/r2)**3) + 0.0007959*(1/r1*r2**(2)*1/(r1/r2)**2)
+ours,I.18.12__nz0.01,0.00057,0.00056,1,up_to_constant,0.9994*(F*r*sin(theta))
+ours,I.18.14__nz0.01,0.00135,0.0108,1,up_to_constant,-1.32*(m*r*v*tanh(theta)) + 1.021*(m*r*v*sin(theta)) + 0.8127*(m*r*v) + 0.5519*(m*r*theta**(2)*v*1/(1+(theta)**2)) + -0.2719*(m*r*1/theta*v*exp(-(theta)**2)) + -0.0002703*(m*r*theta**(2)*v*cos(theta))
+ours,I.24.6__nz0.01,0.00131,0.01729,1,up_to_constant,0.1974*(m*omega_0**(2)*x**(2)*exp(omega/omega_0)) + -0.0418*(m*omega*omega_0*x**(2)*exp(-(omega/omega_0)**2)) + -0.02884*(m*omega**(2)*x**(2)*exp(-(omega/omega_0)**2/2)) + -0.005996*(m*omega**(2)*x**(2)*(omega/omega_0)**3) + 0.002342*(m*omega_0**(2)*x**(2)*1/(omega/omega_0)**2)
+ours,I.25.13__nz0.01,8e-05,7e-05,1,up_to_constant,1*(1/C*q)
+ours,I.26.2__nz0.01,0.28255,0.31188,0,wrong,0.9832*(sqrt(Abs(n))*sin(theta2)) + -0.03239
+ours,I.27.6__nz0.01,0.02728,0.08214,1,up_to_constant,0.4051*(d2*Abs(n)**(-1/2)*sqrt(Abs(d1/d2))) + -0.1004*(d2*Abs(n)**(-1/2)*exp(-(n)**2)) + 0.09899*(d1*1/n*exp(-(d1/d2)**2)) + 0.06775*(d1*1/n*cos(n)) + 0.0478*(d1*1/n*cos(d1/d2)) + 0.04452*(d1*Abs(n)**(-1/2)*sin(n)) + -0.009694*(d2*sqrt(Abs(n))*log(Abs(d1/d2))) + -0.009487*(d2*sqrt(Abs(n))*cos(n)) + -0.001887*(d2*Abs(n)**(-1/2)*1/(d1/d2)**2) + -0.0002915*(d1*sqrt(Abs(n))*(d1/d2)**2)
+ours,I.29.4__nz0.01,5e-05,4e-05,1,up_to_constant,1*(1/c*omega)
+ours,I.29.16__nz0.01,0.54654,0.97852,0,wrong,1.573*(sqrt(Abs(x1))*sqrt(Abs(x2))) + -1.446*(1/theta1*1/theta2*x1) + -0.7822*(sqrt(Abs(x1))*sqrt(Abs(x2))*cos(theta1/theta2)) + -0.3296*(sqrt(Abs(x1))*sqrt(Abs(x2))*sin(theta1/theta2)) + 0.1485*(x2*1/(theta1/theta2)**2) + 0.02854*(Abs(theta1)**(-1/2)*x1*(x1/x2)**3)
+ours,I.30.3__nz0.01,0.74786,1.00746,0,wrong,17.43*(Int_0*Abs(n)**(-1/2)*exp(-(theta)**2)) + 0.8012*(Int_0*Abs(n)**(-1/2)*sin(theta)) + -0.5768*(Int_0*Abs(n)**(-1/2)*cos(theta)) + 0.06893*(Int_0*sqrt(Abs(theta))*cos(n)) + -0.04338*(Int_0*sqrt(Abs(n))*1/(theta/n)**2) + 0.007052*(Int_0*sqrt(Abs(n))*exp(theta))
+ours,I.30.5__nz0.01,0.00518,0.03007,1,up_to_constant,0.9922*(1/n*lambd/d) + 0.2233*(1/n**(2)*(lambd/d)**3) + -0.0579*(Abs(n)**(-1/2)*(lambd/d)**3) + 0.009471*(sqrt(Abs(n))*(lambd/d)**3) + -0.002769*(sqrt(Abs(d))*Abs(lambd)**(-1/2)*exp(lambd/d)) + 0.0009963*(1/n*cos(n)) + 0.008046
+ours,I.34.8__nz0.01,0.00115,0.00102,1,up_to_constant,1.001*(B*1/p*q*v)
+ours,I.34.1__nz0.01,0.6962,1.1702,0,wrong,50.13*(omega_0*tanh(c/v)) + -41.47*(1/c*omega_0*v*log(Abs(c/v))) + -12.53*(1/c*omega_0*v*sqrt(Abs(c/v))) + -11.73*(omega_0) + -8.265*(omega_0*sqrt(Abs(c/v))) + 7.276*(1/c*omega_0*v*exp(-(c/v)**2)) + 0.8473*(c*omega_0*1/v*exp(-(c/v)**2/2)) + 0.005104*(c*omega_0*1/v*sin(c/v))
+ours,I.34.14__nz0.01,0.04312,0.05576,1,up_to_constant,9.497*(1/c*omega_0*v*exp(-(c/v)**2)) + -2.424*(c*omega_0*1/v*exp(-(c/v)**2)) + 1.452*(1/c*omega_0*v*sqrt(Abs(c/v))) + 0.5999*(c*omega_0*1/v*exp(-(c/v)**2/2)) + 0.5552*(omega_0*tanh(c/v)) + 0.001041*(c*omega_0*1/v*cos(c/v))
+ours,I.34.27__nz0.01,0.00058,0.00051,1,up_to_constant,0.1592*(h*omega)
+ours,I.37.4__nz0.01,0.15888,2.12619,0,approx,7.319*(I1*cos(delta)) + -5.559*(I1*1/delta*cos(delta)) + 5.52*(I2*cos(delta)) + -2.883*(I2*sqrt(Abs(delta))*cos(delta)) + -2.587*(I1*sqrt(Abs(delta))*cos(delta)) + 2.38*(I2*Abs(delta)**(-1/2)*sin(delta)) + 1.5*(I1*1/delta*log(Abs(I1/I2))) + -0.9503*(sqrt(Abs(I1))*sqrt(Abs(I2))*cos(delta)) + 0.01221*(I2*sqrt(Abs(delta))*exp(delta))
+ours,I.39.1__nz0.01,0.00058,0.00051,1,up_to_constant,1.5*(V*pr)
+ours,I.39.11__nz0.01,0.03509,0.10968,1,up_to_constant,5.41*(V*1/gamma*pr*exp(-(gamma)**2)) + 4.885*(V*pr*1/(1+(gamma)**2)) + -0.03991*(V*pr*sin(gamma)) + -0.01529*(V*pr*cos(gamma))
+ours,I.39.22__nz0.01,0.00149,0.00369,1,up_to_constant,1*(T*1/V*kb*n) + -0.0209*(T*1/V*kb*n**(2)*exp(-(n))) + 0.01754*(T*1/V*kb*n*exp(-(n))) + -0.000776*(T*1/V*kb*n**(2)*cos(n))
+ours,I.40.1__nz0.01,0.96681,0.96818,0,wrong,0.1151*(n_0)
+ours,I.43.16__nz0.01,0.00115,0.00102,1,up_to_constant,1.001*(Volt*1/d*mu_drift*q)
+ours,I.43.31__nz0.01,0.00064,0.00057,1,up_to_constant,1*(T*kb*mob)
+ours,I.43.43__nz0.01,0.00167,0.04385,1,up_to_constant,5.821*(1/A*1/gamma*kb*v*exp(-(gamma)**2)) + 5.226*(1/A*kb*v*1/(1+(gamma)**2)) + -0.1054*(1/A*gamma**(2)*kb*v*exp(-(gamma)**2/2)) + -0.04438*(1/A*kb*v*sin(gamma)) + 0.0006603*(1/A*gamma**(2)*kb*v*cos(gamma))
+ours,I.44.4__nz0.01,0.00174,0.00174,1,up_to_constant,-1.002*(T*kb*n*log(Abs(V1/V2)))
+ours,I.47.23__nz0.01,0.00207,0.00333,1,up_to_constant,0.9988*(sqrt(Abs(pr))*Abs(rho)**(-1/2)*sqrt(Abs(gamma))) + 0.007436*(sqrt(Abs(pr))*Abs(rho)**(-1/2)*exp(-(gamma)**2/2)) + -0.003522*(sqrt(Abs(pr))*Abs(rho)**(-1/2)*cos(gamma)) + -0.00229*(sqrt(Abs(pr))*Abs(rho)**(-1/2)*sin(gamma))
+ours,I.48.2__nz0.01,32.66106,28.11337,0,up_to_constant,-1.799e+06*(c*m*v) + 1.578e+06*(c**(2)*m*sin(v/c)) + 2.203e+05*(c*m*v*exp(v/c)) + -1.733e+05*(m*v**(2)*exp(-(v/c))) + -5.838e+04*(m*v**(2)*exp(-(v/c)**2)) + -4.784e+04*(m*v**(2)*(v/c)**2) + 6203*(c*m*v*sqrt(Abs(v/c)))
+ours,I.50.26__nz0.01,0.77368,0.97311,0,wrong,0.1379*(omega*t*x1*sqrt(Abs(alpha)))
+ours,II.2.42__nz0.01,0.01674,0.11737,1,up_to_constant,-0.5073*(A*T2*1/d*kappa*log(Abs(T1/T2))) + 0.4644*(A*T1*1/d*kappa*exp(-(T1/T2)**2)) + -0.1391*(A*T1*1/d*kappa*sin(T1/T2)) + -0.05195*(A*T1*1/d*kappa*(T1/T2)**2) + -0.03862*(T1**(2)*1/T2*d*kappa*exp(-(T1/T2)**2)) + 0.007911*(T1**(2)*1/T2*d*kappa*cos(T1/T2)) + 0.005434*(T2*d*kappa*exp(-(T1/T2)**2)) + 0.003804*(T2*d*kappa*exp(T1/T2)) + -0.002683*(T1**(2)*1/T2*d*kappa*sin(T1/T2)) + -0.0003517*(1/T1*T2**(2)*d*kappa*1/(T1/T2)**2)
+ours,II.4.23__nz0.01,3e-05,2e-05,1,up_to_constant,0.07958*(1/epsilon*q*1/r)
+ours,II.8.7__nz0.01,9e-05,8e-05,1,up_to_constant,0.04774*(1/d*1/epsilon*q**(2))
+ours,II.8.31__nz0.01,0.0006,0.00055,1,up_to_constant,0.5002*(Ef**(2)*epsilon)
+ours,II.10.9__nz0.01,0.0131,0.04639,1,up_to_constant,0.8334*(chi*1/epsilon*sigma_den*1/(1+(chi)**2)) + 0.2092*(1/chi*1/epsilon*sigma_den*exp(-(chi)**2)) + 0.01253*(1/chi*1/epsilon*sigma_den*cos(chi)) + -0.0003972*(chi**(2)*1/epsilon*sigma_den*cos(chi))
+ours,II.11.17__nz0.01,0.61357,0.80256,0,wrong,2.316*(n_0*theta*exp(-(theta)**2/2)) + 0.05457*(n_0*theta**(2)*cos(theta))
+ours,II.11.20__nz0.01,0.76268,0.88333,0,wrong,1.003*(n_rho*p_d) + -0.3224*(1/Ef*T*kb*n_rho)
+ours,II.11.27__nz0.01,0.01157,0.0801,1,up_to_constant,0.9416*(Ef*alpha*epsilon*n) + 0.5352*(Ef*alpha**(2)*epsilon*n**(2))
+ours,II.11.28__nz0.01,0.01163,0.07454,1,up_to_constant,0.9171*(alpha*n) + 0.558*(alpha**(2)*n**(2)) + 1.005
+ours,II.13.23__nz0.01,0.00122,0.05572,1,up_to_constant,0.99*(rho_c_0) + 0.9492*(rho_c_0*(v/c)**3) + 0.1195*(1/c*rho_c_0*v*exp(-(v/c)**2))
+ours,II.13.34__nz0.01,0.03455,0.08755,1,up_to_constant,0.9257*(1/c*rho_c_0*v**(2)*(v/c)**3) + 0.685*(rho_c_0*v) + 0.5514*(c*rho_c_0*sqrt(Abs(v/c))) + 0.5244*(rho_c_0*v*log(Abs(v/c))) + 0.001593*(c**(2)*rho_c_0*1/v*log(Abs(v/c)))
+ours,II.15.4__nz0.01,0.00029,0.00022,1,up_to_constant,-1*(B*mom*cos(theta))
+ours,II.15.5__nz0.01,0.00029,0.00022,1,up_to_constant,-1*(Ef*p_d*cos(theta))
+ours,II.21.32__nz0.01,0.00519,0.12529,1,up_to_constant,0.2177*(1/epsilon*q*1/r*(v/c)**3) + 0.0797*(1/epsilon*q*1/r*exp(v/c))
+ours,II.24.17__nz0.01,0.02321,0.07392,1,up_to_constant,-1.129*(1/d) + 1.057*(1/c*omega)
+ours,II.27.16__nz0.01,0.00065,0.0006,1,up_to_constant,1*(Ef**(2)*c*epsilon)
+ours,II.27.18__nz0.01,0.0006,0.00055,1,up_to_constant,1*(Ef**(2)*epsilon)
+ours,II.34.2a__nz0.01,0.00045,0.00039,1,up_to_constant,0.1592*(q*1/r*v)
+ours,II.34.2__nz0.01,0.00064,0.00057,1,up_to_constant,0.5002*(q*r*v)
+ours,II.34.11__nz0.01,0.00115,0.00102,1,up_to_constant,0.5004*(B*g_*1/m*q)
+ours,II.34.29a__nz0.01,0.00045,0.00039,1,up_to_constant,0.0796*(h*1/m*q)
+ours,II.34.29b__nz0.01,5e-05,4e-05,1,up_to_constant,6.283*(B*g_*mom*1/(h/Jz))
+ours,II.35.18__nz0.01,0.82263,0.8155,0,wrong,0.3106*(n_0)
+ours,II.35.21__nz0.01,0.16173,0.28021,0,approx,1.04*(mom*n_rho) + -0.2255*(1/B*T*kb*n_rho)
+ours,II.36.38__nz0.01,1.40521,1.35147,0,wrong,-3.149*(c**(2)*epsilon*exp(-(H/M))) + 2.415*(c**(2)*epsilon*1/(1+(H/M)**2)) + 0.09976*(c**(2)*epsilon) + -0.005652*(c**(2)*epsilon*1/(H/M))
+ours,II.37.1__nz0.01,0.00138,0.01223,1,up_to_constant,1.255*(B*chi*mom) + 0.9482*(B*1/chi*mom*sin(chi)) + -0.1124*(B*mom*cos(chi)) + -0.008692*(B*chi**(2)*mom*cos(chi))
+ours,II.38.3__nz0.01,7e-05,6e-05,1,up_to_constant,1*(A*Y*1/(d/x))
+ours,II.38.14__nz0.01,0.00247,0.02014,1,up_to_constant,0.4172*(Y*sigma*1/(1+(sigma)**2)) + 0.1151*(Y*1/sigma*exp(-(sigma)**2)) + -0.0006197*(Y*sigma*sin(sigma))
+ours,III.4.32__nz0.01,0.00062,0.00056,1,up_to_constant,6.285*(T*1/h*kb*1/omega) + 0.02136*(1/T*h*1/kb*omega) + -0.515
+ours,III.4.33__nz0.01,0.00175,0.00513,1,up_to_constant,0.9981*(T*kb) + -0.07779*(h*omega) + 0.001892*(1/T*h**(2)*1/kb*omega**(2)) + 0.000318*(T**(2)*1/h*kb**(2)*1/omega)
+ours,III.7.38__nz0.01,0.00045,0.00039,1,up_to_constant,12.57*(B*1/h*mom)
+ours,III.8.54__nz0.01,1.03461,1.14781,0,wrong,-0.1287*(1/E_n*h*1/t) + 0.6785
+ours,III.9.52__nz0.01,0.85048,1.72613,0,wrong,272.2*(omega*1/omega_0*1/(1+(omega/omega_0)**2)) + -44.89*(1/omega_0*1/t*cos(omega/omega_0)) + 26.08*(1/omega*1/t*tanh(omega/omega_0)) + -7.316*(sqrt(Abs(omega))*sqrt(Abs(t))*sin(omega/omega_0)) + 0.8427*(1/omega*omega_0*1/(omega/omega_0)**2) + 0.3501*(omega**(2)*t**(2)*exp(-(omega/omega_0)**2)) + -0.3289*(1/omega_0*1/t*exp(omega/omega_0)) + -0.1147*(omega_0**(2)*t**(2)*exp(-(omega/omega_0)**2)) + -96.63
+ours,III.10.19__nz0.01,0.02484,0.0933,1,up_to_constant,1.674*(Bz*mom*sqrt(Abs(Bx/Bz))) + 0.3684*(By*mom*exp(-(Bx/By)**2)) + -0.1461*(Bx*mom*cos(Bx/Bz)) + -0.1193*(Bx*mom*cos(By/Bz)) + 0.05914*(1/Bx*By**(2)*mom*log(Abs(By/Bz))) + -0.04841*(1/Bx*Bz**(2)*mom*log(Abs(Bx/By))) + 0.04554*(1/Bx*Bz**(2)*mom*sin(Bx/By)) + 0.0204*(Bx*mom*sin(By/Bz)) + 0.002392*(1/Bx*Bz**(2)*mom*1/(By/Bz)**2) + 0.002076*(Bx*mom*exp(Bx/Bz))
+ours,III.12.43__nz0.01,0.0016,0.00336,1,up_to_constant,0.1591*(h*n) + -7.085e-05*(h*n**(2)*cos(n))
+ours,III.13.18__nz0.01,0.00113,0.00104,1,up_to_constant,12.58*(E_n*d**(2)*1/h*k)
+ours,III.14.14__nz0.01,0.95277,1.00688,0,wrong,2.545*(I_0)
+ours,III.15.12__nz0.01,0.94224,1.08871,0,wrong,8.462*(U*1/d*1/k) + 0.004293*(U*d**(2)*k**(2))
+ours,III.15.27__nz0.01,0.00187,0.00258,1,up_to_constant,6.277*(1/d*alpha/n) + -0.01174*(sqrt(Abs(alpha))*1/d*cos(alpha))
+ours,III.17.37__nz0.01,0.30498,1.32345,0,wrong,-75.99*(Abs(alpha)**(-1/2)*exp(-(theta)**2)) + 15.29*(cos(theta)) + -7.062*(sin(beta/theta)) + -4.992*(sin(alpha/theta)) + 4.982*(exp(-(beta/alpha)**2)) + -1.857*(alpha*sqrt(Abs(beta))) + -1.817*(cos(beta)) + 0.7828*(beta*theta) + -0.202*(Abs(alpha)**(-1/2)*exp(theta)) + 19.92
+ours,III.21.20__nz0.01,0.00115,0.00102,1,up_to_constant,-0.9992*(A_vec*1/m*q*rho_c_0)

@@ -213,11 +213,26 @@ def report(rows, slice_tags):
         for k, v in agg.items():
             timing[k] = float(np.median(v))
 
+    # 本项目自己的单题耗时（从正式基准明细取中位数，口径同源）
+    dp = os.path.join(RES, "detailed_feynman.csv")
+    if os.path.exists(dp):
+        secs = []
+        for r in csv.DictReader(open(dp, encoding="utf-8-sig")):
+            try:
+                nz = float(r["noise"])
+                if abs(nz - NOISE) < 1e-12:
+                    secs.append(float(r["seconds"]))
+            except (TypeError, ValueError, KeyError):
+                continue
+        if secs:
+            timing["ours"] = float(np.median(secs))
+
     L, A = [], None
     A = L.append
     n = len(slice_tags)
     A("# 同类方法对比：gplearn vs 本项目（1%% 噪声档，全部 %d 题）\n" % n)
-    A("三种方法跑在**完全相同**的数据与验收口径上；本项目这一列也**只取这 %d 题**，")
+    A("所有方法跑在**完全相同**的数据与验收口径上；本项目这一列也**只取这 %d 题**，"
+      % n)
     A("保证同题同条件（不是拿全量成绩跟子集比）。\n")
     A("| 方法 | 训练 R²/结构 | 区间内 nRMSE（中位）| 外推 nRMSE（中位）| **双口径通过** | 单题耗时（中位）| 给出公式 |")
     A("|---|---|---|---|---|---|---|")
@@ -256,7 +271,12 @@ def report(rows, slice_tags):
     A("   gplearn 一列按同一切片的全部题算（它每题都会给一条公式——**给得出不等于给得对**）。")
     A("   结构判定里的 `无法解析` 指公式转换/求值失败（例如 log 作用在负数上），")
     A("   不能算对，故如实单列。")
-    A("4. **本项目并非全胜**：结构判定一栏如实给出 gplearn 找对结构的题数，")
+    A("4. **一个反直觉的实测结果：函数字典变大，gplearn 反而更差**——默认函数集结构对 28/97，")
+    A("   扩到 sin/cos/tan/exp/tanh 之后掉到 17/97（通过率 26% → 13%）。")
+    A("   原因不难解释：搜索预算固定（population=1000 × 20 代）时，候选空间变大等于稀释了")
+    A("   每一代的探索效率。**这恰好从反面印证了本项目的设计主张**——先用物理约束（量纲）")
+    A("   把空间砍掉 99%，再把省下的预算用在搜索上，比一味堆函数字典有效。")
+    A("5. **本项目并非全胜**：结构判定一栏如实给出 gplearn 找对结构的题数，")
     A("   两边各自在哪类题上更强，明细见 `results/baseline_gp_scores.csv`。\n")
     A("生成命令：`.venv-baseline/Scripts/python.exe scripts/run_baseline.py --methods gp,gpx --noise 0.01`")
     A("→ `python scripts/score_gp.py`")
