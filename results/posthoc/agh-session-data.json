@@ -1,0 +1,88 @@
+{
+  "session_id": "6501b3a2-515a-4ce2-bce6-6dc59d6a954a",
+  "source": "results/agh-session-data.html",
+  "rounds": [
+    {
+      "round": 1,
+      "problem_id": "I.39.22",
+      "params": {},
+      "units": {
+        "T": "kg*m^2*s^-2",
+        "V": "m^3",
+        "kb": "kg*m^2*s^-2",
+        "n": "kg*m^-3"
+      },
+      "target_unit": "kg^3*m^-2*s^-4",
+      "unit_rows": [
+        {
+          "name": "n",
+          "given": "kg*m^-3",
+          "ref": "1",
+          "ok": false
+        },
+        {
+          "name": "T",
+          "given": "kg*m^2*s^-2",
+          "ref": "K",
+          "ok": false
+        },
+        {
+          "name": "V",
+          "given": "m^3",
+          "ref": "m^3",
+          "ok": true
+        },
+        {
+          "name": "kb",
+          "given": "kg*m^2*s^-2",
+          "ref": "J/K",
+          "ok": false
+        }
+      ],
+      "var_hits": 1,
+      "var_tot": 4,
+      "target_ok": false,
+      "ref_target_unit": "kg/m/s^2",
+      "truth": "n*kb*T/V",
+      "build": {
+        "total": 5888,
+        "kept": 48,
+        "prune": 99.2
+      },
+      "formula": "(1.000131146733463)*(T*1/V*kb*n)",
+      "fit": {
+        "n_terms": 1,
+        "r2": 0.999921
+      },
+      "verify": {
+        "verdict": null,
+        "passed": null
+      },
+      "tool_seq": [
+        "check_units",
+        "build_candidate_library",
+        "check_units",
+        "build_candidate_library",
+        "fit_sparse",
+        "verify_formula",
+        "verify_formula",
+        "verify_formula"
+      ],
+      "honesty": {
+        "claimed_failures": null,
+        "actual_failures": 3,
+        "rejects": 0,
+        "claimed_pass": false,
+        "actual_verdict": null,
+        "flags": []
+      },
+      "score": {
+        "verdict": "up_to_constant",
+        "verdict_label": "差一个常数因子",
+        "recovered": true,
+        "max_rel": 0.00013114673346337823,
+        "r2_extrap": 0.9999999697007035
+      }
+    }
+  ]
+}

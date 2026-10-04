@@ -208,7 +208,7 @@ def parse_round(rec, rnd):
     nxt = [r["start"] for r in rec["rounds"] if r["start"] > rnd["start"]]
     if nxt:
         calls = [c for c in calls if c["at"] < nxt[0]]
-    got = dict(problem_id=None, params={}, units=None, target_unit=None,
+    got = dict(problem_id=None, data_id=None, params={}, units=None, target_unit=None,
                build=None, formula=None, fit=None, verify=None, tool_seq=[],
                failed=0, texts="")
     for c in calls:
@@ -216,6 +216,9 @@ def parse_round(rec, rnd):
         if c.get("status") == "failed":
             got["failed"] += 1
         a = c["args"]
+        # 任何带 data_id 的调用都记下来：从数据文件开始的会话里没有 load_problem
+        if a.get("data_id"):
+            got["data_id"] = a["data_id"]
         if c["tool"] == "load_problem":
             got["problem_id"] = a.get("problem_id")
             got["params"] = {k: a.get(k) for k in ("n_samples", "noise", "seed") if k in a}
@@ -235,6 +238,14 @@ def parse_round(rec, rnd):
         elif c["tool"] == "verify_formula":
             got["verify"] = dict(verdict=c["result"].get("verdict"),
                                  passed=c["result"].get("passed"))
+    # 没有 load_problem 时（例如从 CSV 数据文件开始），从 data_id 反推题目编号：
+    #   <pid>_csv_n200      ← 数据文件路径
+    #   <pid>_n200_nz0.01_s0 ← 常规生成路径
+    if not got["problem_id"] and got["data_id"]:
+        did = got["data_id"]
+        m = re.match(r"^(.+?)_(?:csv_n\d+|n\d+_nz[^_]+_s\d+)$", did)
+        if m:
+            got["problem_id"] = m.group(1)
     # 结论文本 = 该轮里去掉工具调用参数行的剩余文本
     txt = "\n".join(l for l in rnd["text"].split("\n")
                     if not TOOL_RE.match(l.strip()) and not l.strip().startswith('"'))
@@ -274,7 +285,7 @@ def score_session(rec):
         eq = EQ.get(got["problem_id"])
         names = EQ.varnames(eq)
         sc = score_formula(got["formula"], got["problem_id"],
-                           data_id_for(got)) if got["formula"] else dict(
+                           got["data_id"] or data_id_for(got)) if got["formula"] else dict(
             verdict="no_formula", verdict_label="模型未给出可解析公式", recovered=False)
         # 单位准确率
         var_hits = var_tot = 0

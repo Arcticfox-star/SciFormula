@@ -1,0 +1,624 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>9d469c46-1842-49b0-8dc3-21a9f04c6888</title><style>:root{color-scheme:light dark}body{font:14px/1.5 system-ui,sans-serif;max-width:52rem;margin:2rem auto;padding:0 1rem;color:#1c211e;background:#fff}.meta,.minor{color:#69707a;font-size:12px}.meta{border-bottom:1px solid #d6dbd5;margin-bottom:1rem;padding-bottom:.5rem}.node{margin:.7rem 0}.user{background:#f3f5f4;border-radius:6px;padding:.6rem}.assistant{padding:.6rem}.tool{border:1px solid #d6dbd5;border-radius:6px;padding:.4rem .6rem;color:#4d555f}.approval{border-left:3px solid #0e6b54;padding:.4rem .6rem}.content{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.label{font-weight:600}.attachment{display:block}.compaction{text-align:center}@media(prefers-color-scheme:dark){body{color:#e7ece8;background:#151816}.user{background:#242925}.tool{border-color:#454c47;color:#c5ccc7}.meta,.minor{color:#abb3ad}}</style></head><body><header class="meta">9d469c46-1842-49b0-8dc3-21a9f04c6888 · 2026-10-04T12:32:33.581Z · redacted · 36 items</header><main><section class="node user"><div class="label">User · local</div><div class="content">你有一组来自物理系统的观测数据，任务是从中恢复支配它的物理定律公式。
+工作流程（每一步都要基于上一步的返回值决定下一步做什么）：
+1. 用 list_datasets 看看磁盘上有哪些观测数据文件（CSV），
+   然后挑一个变量数 3~5 的记录。
+2. 用 load_dataset 载入它（就用 name=&quot;I.39.22&quot;），得到 data_id 与观测值预览。
+3. 【关键判断，由你完成】目标量的物理单位不会提供。请根据目标量名称、变量名
+   与数据本身所对应的物理语境，推断每个变量与目标量的量纲，并用 check_units
+   校验写法是否合法（它只查写法，查不出物理错误；如果它给了 warnings，先处理 warnings）。
+4. 用 build_candidate_library 建库并做量纲剪枝。这一步同时是对你单位推断的检验：
+   如果 candidate_kept 为 0 或明显偏小，说明这组单位有问题，请重新审读变量名与
+   物理语境、重新推断后再试（不要改数据、不要绕过这一步）。
+5. 用 fit_sparse 拟合（strategy=&quot;omp&quot;）。
+6. 用 verify_formula 做独立验证（它会换一批新种子重新采样，并把区间外推 30%）。
+   拟合分数高不等于公式对，请以外推结果为准。
+7. 最后输出结论，包含四件事：
+   ① 你推断出的每个变量与目标量的单位；
+   ② 最终公式与它用到的项数；
+   ③ 验证指标（区间内与外推的归一化误差，以及判定结论）；
+   ④ 过程中失败过几次、每次为什么失败。
+要求：不要在同一轮里跳过任何一步；每一步的结论都要引用工具返回的真实数字；
+数据来自磁盘上的文件，请在第 2 步报告里顺带说明你读的是哪个文件。</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_list_datasets · completed</summary><div class="content">mcp_sciformula_98791938_list_datasets
+{}
+{
+  &quot;ok&quot;: true,
+  &quot;count&quot;: 100,
+  &quot;directory&quot;: &quot;data\\observations&quot;,
+  &quot;datasets&quot;: [
+    {
+      &quot;name&quot;: &quot;I.10.7&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.10.7.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 4,
+      &quot;columns&quot;: [
+        &quot;m_0&quot;,
+        &quot;v&quot;,
+        &quot;c&quot;,
+        &quot;m&quot;
+      ],
+      &quot;target_column&quot;: &quot;m&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;m_0&quot;,
+        &quot;v&quot;,
+        &quot;c&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.11.19&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.11.19.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 7,
+      &quot;columns&quot;: [
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;x3&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;,
+        &quot;y3&quot;,
+        &quot;A&quot;
+      ],
+      &quot;target_column&quot;: &quot;A&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;x1&quot;,
+        &quot;x2&quot;,
+        &quot;x3&quot;,
+        &quot;y1&quot;,
+        &quot;y2&quot;,
+        &quot;y3&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.12.1&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.12.1.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 3,
+      &quot;columns&quot;: [
+        &quot;mu&quot;,
+        &quot;Nn&quot;,
+        &quot;F&quot;
+      ],
+      &quot;target_column&quot;: &quot;F&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;mu&quot;,
+        &quot;Nn&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.12.11&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.12.11.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 6,
+      &quot;columns&quot;: [
+        &quot;q&quot;,
+        &quot;Ef&quot;,
+        &quot;B&quot;,
+        &quot;v&quot;,
+        &quot;theta&quot;,
+        &quot;F&quot;
+      ],
+      &quot;target_column&quot;: &quot;F&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;q&quot;,
+        &quot;Ef&quot;,
+        &quot;B&quot;,
+        &quot;v&quot;,
+        &quot;theta&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.12.2&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.12.2.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 5,
+      &quot;columns&quot;: [
+        &quot;q1&quot;,
+        &quot;q2&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;,
+        &quot;F&quot;
+      ],
+      &quot;target_column&quot;: &quot;F&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;q1&quot;,
+        &quot;q2&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.12.4&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.12.4.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 4,
+      &quot;columns&quot;: [
+        &quot;q1&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;,
+        &quot;Ef&quot;
+      ],
+      &quot;target_column&quot;: &quot;Ef&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;q1&quot;,
+        &quot;epsilon&quot;,
+        &quot;r&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.12.5&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.12.5.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 3,
+      &quot;columns&quot;: [
+        &quot;q2&quot;,
+        &quot;Ef&quot;,
+        &quot;F&quot;
+      ],
+      &quot;target_column&quot;: &quot;F&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;q2&quot;,
+        &quot;Ef&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.13.12&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.13.12.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 6,
+      &quot;columns&quot;: [
+        &quot;m1&quot;,
+        &quot;m2&quot;,
+        &quot;r1&quot;,
+        &quot;r2&quot;,
+        &quot;G&quot;,
+        &quot;U&quot;
+      ],
+      &quot;target_column&quot;: &quot;U&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;m1&quot;,
+        &quot;m2&quot;,
+        &quot;r1&quot;,
+        &quot;r2&quot;,
+        &quot;G&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.13.4&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.13.4.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 5,
+      &quot;columns&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;,
+        &quot;u&quot;,
+        &quot;w&quot;,
+        &quot;K&quot;
+      ],
+      &quot;target_column&quot;: &quot;K&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;m&quot;,
+        &quot;v&quot;,
+        &quot;u&quot;,
+        &quot;w&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.14.3&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.14.3.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 4,
+      &quot;columns&quot;: [
+        &quot;m&quot;,
+        &quot;g&quot;,
+        &quot;z&quot;,
+        &quot;U&quot;
+      ],
+      &quot;target_column&quot;: &quot;U&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;m&quot;,
+        &quot;g&quot;,
+        &quot;z&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.14.4&quot;,
+      &quot;file&quot;: &quot;data\\observations\\I.14.4.csv&quot;,
+      &quot;n_rows&quot;: 200,
+      &quot;n_columns&quot;: 3,
+      &quot;columns&quot;: [
+        &quot;k_spring&quot;,
+        &quot;x&quot;,
+        &quot;U&quot;
+      ],
+      &quot;target_column&quot;: &quot;U&quot;,
+      &quot;variable_columns&quot;: [
+        &quot;k_spring&quot;,
+        &quot;x&quot;
+      ],
+      &quot;in_library&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;I.15.1&quot;,
+      &quot;file&quot;: &quot;data\\observations\\</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_list_datasets {}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content"></div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_load_dataset · completed</summary><div class="content">mcp_sciformula_98791938_load_dataset
+{&quot;name&quot;:&quot;I.39.22&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;I.39.22_csv_n200&quot;,
+  &quot;mode&quot;: &quot;discovery&quot;,
+  &quot;source&quot;: &quot;csv&quot;,
+  &quot;dataset&quot;: {
+    &quot;name&quot;: &quot;I.39.22&quot;,
+    &quot;file&quot;: &quot;data\\observations\\I.39.22.csv&quot;,
+    &quot;n_rows&quot;: 200
+  },
+  &quot;target&quot;: {
+    &quot;name&quot;: &quot;pr&quot;,
+    &quot;unit&quot;: null
+  },
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;n&quot;,
+      &quot;sampled_range&quot;: [
+        1.010954001,
+        4.988839743
+      ],
+      &quot;sampling&quot;: &quot;来自数据文件列 0&quot;
+    },
+    {
+      &quot;name&quot;: &quot;T&quot;,
+      &quot;sampled_range&quot;: [
+        1.00120276,
+        4.988041172
+      ],
+      &quot;sampling&quot;: &quot;来自数据文件列 1&quot;
+    },
+    {
+      &quot;name&quot;: &quot;V&quot;,
+      &quot;sampled_range&quot;: [
+        1.01959766,
+        4.998005409
+      ],
+      &quot;sampling&quot;: &quot;来自数据文件列 2&quot;
+    },
+    {
+      &quot;name&quot;: &quot;kb&quot;,
+      &quot;sampled_range&quot;: [
+        1.024707315,
+        4.981199214
+      ],
+      &quot;sampling&quot;: &quot;来自数据文件列 3&quot;
+    }
+  ],
+  &quot;observations&quot;: {
+    &quot;n&quot;: 200,
+    &quot;y_mean&quot;: 10.833725154495001,
+    &quot;y_std&quot;: 9.079210344214122,
+    &quot;y_min&quot;: 0.823769599,
+    &quot;y_max&quot;: 45.19150935,
+    &quot;y_preview&quot;: [
+      4.649854077,
+      2.929600497,
+      11.35653128,
+      6.752769353,
+      23.08703194
+    ],
+    &quot;x_preview&quot;: [
+      [
+        3.547846749,
+        2.278726545,
+        1.808672376,
+        1.024707315
+      ],
+      [
+        2.079146855,
+        1.750030863,
+        4.751620435,
+        3.884663144
+      ],
+      [
+        1.163894096,
+        3.690106536,
+        1.379106713,
+        3.706417853
+      ],
+      [
+        1.066110542,
+        1.780429594,
+        1.01959766,
+        3.6276058
+      ],
+      [
+        4.253080957,
+        3.31075157,
+        2.291683215,
+        3.749660009
+      ]
+    ]
+  },
+  &quot;saved&quot;: &quot;D:\\projects\\SciFormula\\.agh_runs\\I.39.22_csv_n200.npz&quot;,
+  &quot;has_reference&quot;: true,
+  &quot;note&quot;: &quot;数据来自磁盘文件。目标量的量纲与各变量的量纲**均未提供**：请根据变量名与列名所对应的物理语境推断它们，再用 check_units 校验写法、用 build_candidate_library 检验推断是否自洽。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_load_dataset {&quot;name&quot;:&quot;I.39.22&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">## 第 1 步：盘点（list_datasets）
+- 目录 `data\observations` 下共 100 个观测 CSV，列数多为 3~7（变量 2~6 个）。
+- 按题意选定 **I.39.22**（4 个自变量 + 1 个目标量，满足 3~5 个变量的要求）。
+
+## 第 2 步：载入数据（load_dataset）
+- 读到的文件：`data\observations\I.39.22.csv`（磁盘上第 2 行显示为 5 列、200 行）。
+- `data_id = &quot;I.39.22_csv_n200&quot;`，已存到 `.agh_runs\I.39.22_csv_n200.npz`。
+- 列：`n, T, V, kb` 为自变量，`pr` 为目标量；观测值预览（y）：4.65, 2.93, 11.36, 6.75, 23.09；x 预览（首行）：`[3.548, 2.279, 1.809, 1.025]`。
+- 采样范围：n∈[1.011, 4.989]、T∈[1.001, 4.988]、V∈[1.020, 4.998]、kb∈[1.025, 4.981]。
+
+## 第 3 步：单位推断（关键判断）
+**物理语境**：变量名集合 `n, T, V, kb, pr` 直接对应 **理想气体状态方程** pV = Nk_B T：
+- `n` = 分子数（粒子计数），**无量纲**；
+- `T` = 温度，单位 **K**；
+- `V` = 体积，单位 **m^3**；
+- `kb` = 玻尔兹曼常数，单位 **J/K = kg*m^2*s^-2*K^-1**；
+- 目标量 `pr` = 压强，单位 **Pa = N/m^2 = kg*m^-1*s^-2**。
+
+量纲核对：`n*kb*T/V` → kg·m²·s⁻²·K⁻¹·K/m³ = kg·m⁻¹·s⁻² = Pa ✓。
+
+用 check_units 校验写法（传 data_id 一并检查变量集合与数据对齐）：
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_check_units · completed</summary><div class="content">mcp_sciformula_98791938_check_units
+{&quot;data_id&quot;:&quot;I.39.22_csv_n200&quot;,&quot;target_unit&quot;:&quot;kg*m^-1*s^-2&quot;,&quot;variables_units&quot;:{&quot;T&quot;:&quot;K&quot;,&quot;V&quot;:&quot;m^3&quot;,&quot;kb&quot;:&quot;kg*m^2*s^-2*K^-1&quot;,&quot;n&quot;:&quot;&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;variables&quot;: [
+    {
+      &quot;name&quot;: &quot;kb&quot;,
+      &quot;input&quot;: &quot;kg*m^2*s^-2*K^-1&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;kg*m^2/s^2/K&quot;,
+      &quot;exponent_form&quot;: &quot;kg^1*m^2*s^-2*K^-1&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;n&quot;,
+      &quot;input&quot;: &quot;&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;1&quot;,
+      &quot;exponent_form&quot;: &quot;1&quot;,
+      &quot;is_dimensionless&quot;: true
+    },
+    {
+      &quot;name&quot;: &quot;T&quot;,
+      &quot;input&quot;: &quot;K&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;K&quot;,
+      &quot;exponent_form&quot;: &quot;K^1&quot;,
+      &quot;is_dimensionless&quot;: false
+    },
+    {
+      &quot;name&quot;: &quot;V&quot;,
+      &quot;input&quot;: &quot;m^3&quot;,
+      &quot;parsed_ok&quot;: true,
+      &quot;normalized&quot;: &quot;m^3&quot;,
+      &quot;exponent_form&quot;: &quot;m^3&quot;,
+      &quot;is_dimensionless&quot;: false
+    }
+  ],
+  &quot;target&quot;: {
+    &quot;input&quot;: &quot;kg*m^-1*s^-2&quot;,
+    &quot;parsed_ok&quot;: true,
+    &quot;normalized&quot;: &quot;kg/m/s^2&quot;,
+    &quot;exponent_form&quot;: &quot;kg^1*m^-1*s^-2&quot;,
+    &quot;is_dimensionless&quot;: false
+  },
+  &quot;warnings&quot;: [],
+  &quot;known_units&quot;: [
+    &quot;1&quot;,
+    &quot;A&quot;,
+    &quot;C&quot;,
+    &quot;F&quot;,
+    &quot;H&quot;,
+    &quot;Hz&quot;,
+    &quot;J&quot;,
+    &quot;K&quot;,
+    &quot;N&quot;,
+    &quot;Pa&quot;,
+    &quot;S&quot;,
+    &quot;T&quot;,
+    &quot;V&quot;,
+    &quot;W&quot;,
+    &quot;Wb&quot;,
+    &quot;cd&quot;,
+    &quot;kg&quot;,
+    &quot;m&quot;,
+    &quot;mol&quot;,
+    &quot;ohm&quot;,
+    &quot;rad&quot;,
+    &quot;s&quot;
+  ],
+  &quot;syntax_hint&quot;: &quot;写法：单位名用 * 连接、/ 表示除、^ 表示幂，且必须是**左结合**，不要写括号——写 W/m/K 而不是 W/(m*K)，写 kg/A/s^2 而不是 kg/(A*s^2)。无量纲写 空字符串 或 \&quot;1\&quot;。&quot;,
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_check_units {&quot;data_id&quot;:&quot;I.39.22_csv_n200&quot;,&quot;target_unit&quot;:&quot;kg*m^-1*s^-2&quot;,&quot;variables_units&quot;:{&quot;T&quot;:&quot;K&quot;,&quot;V&quot;:&quot;m^3&quot;,&quot;kb&quot;:&quot;kg*m^2*s^-2*K^-1&quot;,&quot;n&quot;:&quot;&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">## 第 3 步续：check_units 结果
+- 4 个变量 + 目标量全部 `parsed_ok = true`，**无 warnings、无 notes**。
+- 指数形式核对：`kb → kg^1*m^2*s^-2*K^-1`（即 J/K），`n → 1`（无量纲），`T → K`，`V → m^3`，目标 `pr → kg^1*m^-1*s^-2`（Pa 的写法），全部与理想气体语境一致。
+- 结论：写法合法，进入第 4 步。
+
+## 第 4 步：建候选库 + 量纲剪枝（build_candidate_library）
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_build_candidate_library · completed</summary><div class="content">mcp_sciformula_98791938_build_candidate_library
+{&quot;data_id&quot;:&quot;I.39.22_csv_n200&quot;,&quot;target_unit&quot;:&quot;kg*m^-1*s^-2&quot;,&quot;variables_units&quot;:{&quot;T&quot;:&quot;K&quot;,&quot;V&quot;:&quot;m^3&quot;,&quot;kb&quot;:&quot;kg*m^2*s^-2*K^-1&quot;,&quot;n&quot;:&quot;&quot;}}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_e719a67f168d51ce&quot;,
+  &quot;data_id&quot;: &quot;I.39.22_csv_n200&quot;,
+  &quot;target_dimension&quot;: &quot;kg/m/s^2&quot;,
+  &quot;candidate_total&quot;: 5888,
+  &quot;candidate_kept&quot;: 63,
+  &quot;prune_ratio&quot;: 0.9893,
+  &quot;prune_percent&quot;: 98.9,
+  &quot;usable_columns&quot;: 49,
+  &quot;truncated&quot;: false,
+  &quot;n_dimensionless_bases&quot;: 1,
+  &quot;sample_candidates&quot;: [
+    &quot;T*1/V*kb&quot;,
+    &quot;T*1/V*kb*1/n&quot;,
+    &quot;T*1/V*kb*n&quot;,
+    &quot;T*1/V*kb*(n)**2&quot;,
+    &quot;T*1/V*kb*(n)**3&quot;,
+    &quot;T*1/V*kb*1/(1+(n)**2)&quot;,
+    &quot;T*1/V*kb*1/(n)&quot;,
+    &quot;T*1/V*kb*1/(n)**2&quot;
+  ],
+  &quot;diagnostics&quot;: [
+    &quot;有 14 个候选在数据上求值后数值不健康（非有限值/量级过大），已剔除。&quot;
+  ]
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_build_candidate_library {&quot;data_id&quot;:&quot;I.39.22_csv_n200&quot;,&quot;target_unit&quot;:&quot;kg*m^-1*s^-2&quot;,&quot;variables_units&quot;:{&quot;T&quot;:&quot;K&quot;,&quot;V&quot;:&quot;m^3&quot;,&quot;kb&quot;:&quot;kg*m^2*s^-2*K^-1&quot;,&quot;n&quot;:&quot;&quot;}}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">## 第 4 步续：剪枝结果解读
+- `candidate_total = 5888` → `candidate_kept = 63`（剪枝 98.9%）。
+- 保留数 63，**既不是 0 也不偏小**——说明单位推断物理上自洽：至少 63 个候选项能拼出 Pa 量纲。
+- 样例候选里直接出现 `T*1/V*kb*n`（即 n·kb·T/V），这正是理想气体公式的形式，强烈支持推断。
+- 诊断提示：14 个候选在数据上求值后数值不健康（非有限值/量级过大）已被剔除——这是数据层面（n、V 采样到接近 1 或较大值时组合项溢出）的清理，与单位无关。
+
+## 第 5 步：OMP 稀疏拟合（fit_sparse）
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_fit_sparse · completed</summary><div class="content">mcp_sciformula_98791938_fit_sparse
+{&quot;data_id&quot;:&quot;I.39.22_csv_n200&quot;,&quot;library_id&quot;:&quot;lib_e719a67f168d51ce&quot;,&quot;max_terms&quot;:10,&quot;strategy&quot;:&quot;omp&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;lib_id&quot;: &quot;lib_e719a67f168d51ce&quot;,
+  &quot;data_id&quot;: &quot;I.39.22_csv_n200&quot;,
+  &quot;strategy&quot;: &quot;omp&quot;,
+  &quot;formula&quot;: &quot;(1.000131146733463)*(T*1/V*kb*n)&quot;,
+  &quot;formula_readable&quot;: &quot;1*(T*1/V*kb*n)&quot;,
+  &quot;n_terms&quot;: 1,
+  &quot;selected_terms&quot;: [
+    {
+      &quot;expression&quot;: &quot;T*1/V*kb*n&quot;,
+      &quot;coefficient&quot;: 1.000131146733463
+    }
+  ],
+  &quot;intercept&quot;: 0.0,
+  &quot;r2_fit&quot;: 0.999921,
+  &quot;rss&quot;: 1.294218103101815,
+  &quot;val_rss&quot;: 0.4209261411001693,
+  &quot;notes&quot;: []
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_fit_sparse {&quot;data_id&quot;:&quot;I.39.22_csv_n200&quot;,&quot;library_id&quot;:&quot;lib_e719a67f168d51ce&quot;,&quot;max_terms&quot;:10,&quot;strategy&quot;:&quot;omp&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">## 第 5 步续：拟合结果
+- OMP 选中 **1 项**：`T*1/V*kb*n`，系数 `1.000131146733463`（≈1，物理上就是理想气体公式 pV = Nk_B T 中的比例常数）。
+- 拟合 R² = **0.999921**（RSS = 1.294），验证集 RSS = 0.4209。
+- 公式（全精度，供 verify_formula 用）：`(1.000131146733463)*(T*1/V*kb*n)`。
+
+## 第 6 步：独立验证（verify_formula，换种子 + 外推 30%）
+
+</div></section>
+<details class="node tool"><summary>mcp_sciformula_98791938_verify_formula · completed</summary><div class="content">mcp_sciformula_98791938_verify_formula
+{&quot;data_id&quot;:&quot;I.39.22_csv_n200&quot;,&quot;formula&quot;:&quot;(1.000131146733463)*(T*1/V*kb*n)&quot;}
+{
+  &quot;ok&quot;: true,
+  &quot;data_id&quot;: &quot;I.39.22_csv_n200&quot;,
+  &quot;passed&quot;: true,
+  &quot;verdict&quot;: &quot;passed&quot;,
+  &quot;reason&quot;: &quot;区间内与区间外都通过，可以认为找到了可外推的关系。&quot;,
+  &quot;in_range&quot;: {
+    &quot;tag&quot;: &quot;in_range_resample&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 0.0019103131722018438,
+    &quot;rmse_normalized&quot;: 0.[REDACTED:id],
+    &quot;max_abs_err&quot;: 0.[REDACTED:id],
+    &quot;min_pred&quot;: 1.0103862718080836,
+    &quot;min_obs&quot;: 1.0102537803248253,
+    &quot;sign_violation&quot;: false,
+    &quot;max_rel_err_large&quot;: 0.0001311467334632494,
+    &quot;max_rel_err_small&quot;: 0.00013114673346315572,
+    &quot;small_scale_note&quot;: &quot;真值最小的 5% 区间里有 15 点&quot;
+  },
+  &quot;extrapolation&quot;: {
+    &quot;tag&quot;: &quot;extrapolation&quot;,
+    &quot;ok&quot;: true,
+    &quot;n&quot;: 100,
+    &quot;rmse&quot;: 0.[REDACTED:id],
+    &quot;rmse_normalized&quot;: 0.00017406693114381243,
+    &quot;max_abs_err&quot;: 0.[REDACTED:id],
+    &quot;min_pred&quot;: 0.5759046708607544,
+    &quot;min_obs&quot;: 0.5758291527483387,
+    &quot;sign_violation&quot;: false,
+    &quot;max_rel_err_large&quot;: 0.0001311467334633307,
+    &quot;max_rel_err_small&quot;: 0.00013114673346329933,
+    &quot;small_scale_note&quot;: &quot;真值最小的 5% 区间里有 31 点&quot;
+  },
+  &quot;noise_level&quot;: 0.0,
+  &quot;thresholds&quot;: {
+    &quot;tol_in_range&quot;: 0.05,
+    &quot;tol_extrap&quot;: 0.2
+  },
+  &quot;checks&quot;: {
+    &quot;sign_consistency&quot;: true
+  },
+  &quot;note&quot;: &quot;检验方式：在**全新的采样点**上把公式与参考解逐点对比，并额外在向外扩张 30% 的区间外推区上再比一次。判据是归一化 RMSE（残差 ÷ 观测值标准差）。注意这是与参考解对比的通用化检验，不是与训练数据比——所以小量级处的相对误差要单独看 max_rel_err_small，整体 RMSE 会被大量级点主导而掩盖它。&quot;
+}</div></details>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node approval"><span class="label">Approval · allowed-once</span><div class="content">mcp_sciformula_98791938_verify_formula {&quot;data_id&quot;:&quot;I.39.22_csv_n200&quot;,&quot;formula&quot;:&quot;(1.000131146733463)*(T*1/V*kb*n)&quot;}</div></section>
+<section class="node minor">Context breakdown · 4 sections · 1226 tokens (estimated)</section>
+<section class="node assistant"><div class="label">Assistant</div><div class="content">## 第 6 步续：验证结果
+- 判定 **passed**（区间内与外推均通过）。
+- 区间内（新种子重采 100 点）：归一化 RMSE = **0.000197**（阈值 0.05，通过），max_rel_err_small = 0.000131（最小 5% 那 15 点也没被掩盖）。
+- 外推（区间向外扩张 30%，另采 100 点）：归一化 RMSE = **0.000174**（阈值 0.2，通过），符号一致性检查通过，无 sign_violation。
+- 两区相对误差都≈0.000131，正好等于系数偏离 1 的量（1.000131…−1），说明公式形式精确、只是系数带一点点数值偏差。
+
+---
+
+# 结论
+
+**① 推断出的单位**
+| 量 | 物理含义 | 单位（指数形式） |
+|---|---|---|
+| n | 分子数（粒子数） | 无量纲（`1`） |
+| T | 温度 | K |
+| V | 体积 | m^3 |
+| kb | 玻尔兹曼常数 | kg*m^2*s^-2*K^-1（= J/K） |
+| pr | 压强 | kg*m^-1*s^-2（= Pa） |
+
+语境：变量组合 {n, T, V, kb} + 目标 pr 正是理想气体定律 pV = N·k_B·T 的要素。
+
+**② 最终公式与项数**
+- 公式：`pr = 1.000131146733463 · (n · kb · T / V)`，即可读为 **p ≈ N·k_B·T/V**（理想气体状态方程，系数≈1）。
+- 项数：**1 项**（OMP 在 10 项上限内只选中 1 项，说明该单一项已把残差降到 0.42 量级的 RSS，无需更多项）。
+
+**③ 验证指标**
+- 拟合 R² = 0.999921（RSS 1.294；验证 RSS 0.421）。
+- 区间内归一化 RMSE = **0.000197**（&lt; 0.05 ✓）；外推归一化 RMSE = **0.000174**（&lt; 0.2 ✓）。
+- 判定：**passed**（区间内与外推均通过；符号一致性通过；小量级最大相对误差 0.000131，未见小尺度失效）。
+
+**④ 过程中失败情况**
+- **0 次失败**。整条链路一次通过：check_units 无 warnings；build_candidate_library 保留 63 项（非 0、非偏小），单位推断未被否决；OMP 拟合 R²≈0.9999；verify_formula 直接 passed，未出现 overfit/underfit/implausible，也无需调整单位、策略或 max_terms。（唯一的诊断信息是 14 个候选在数据上数值不健康被剔除，属数据清理，不影响任何步骤结论。）</div></section>
+<section class="node minor">$0.000 (estimated) · inference</section>
+<section class="node minor">$0.000 (estimated) · title</section></main></body></html>

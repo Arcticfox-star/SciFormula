@@ -1,0 +1,84 @@
+{
+  "session_id": "9d469c46-1842-49b0-8dc3-21a9f04c6888",
+  "source": "results/agh-session-data2.html",
+  "rounds": [
+    {
+      "round": 1,
+      "problem_id": "I.39.22",
+      "params": {},
+      "units": {
+        "T": "K",
+        "V": "m^3",
+        "kb": "kg*m^2*s^-2*K^-1",
+        "n": ""
+      },
+      "target_unit": "kg*m^-1*s^-2",
+      "unit_rows": [
+        {
+          "name": "n",
+          "given": "(空)",
+          "ref": "1",
+          "ok": true
+        },
+        {
+          "name": "T",
+          "given": "K",
+          "ref": "K",
+          "ok": true
+        },
+        {
+          "name": "V",
+          "given": "m^3",
+          "ref": "m^3",
+          "ok": true
+        },
+        {
+          "name": "kb",
+          "given": "kg*m^2*s^-2*K^-1",
+          "ref": "J/K",
+          "ok": true
+        }
+      ],
+      "var_hits": 4,
+      "var_tot": 4,
+      "target_ok": true,
+      "ref_target_unit": "kg/m/s^2",
+      "truth": "n*kb*T/V",
+      "build": {
+        "total": 5888,
+        "kept": 63,
+        "prune": 98.9
+      },
+      "formula": "(1.000131146733463)*(T*1/V*kb*n)",
+      "fit": {
+        "n_terms": 1,
+        "r2": 0.999921
+      },
+      "verify": {
+        "verdict": "passed",
+        "passed": true
+      },
+      "tool_seq": [
+        "check_units",
+        "build_candidate_library",
+        "fit_sparse",
+        "verify_formula"
+      ],
+      "honesty": {
+        "claimed_failures": null,
+        "actual_failures": 0,
+        "rejects": 0,
+        "claimed_pass": true,
+        "actual_verdict": "passed",
+        "flags": []
+      },
+      "score": {
+        "verdict": "up_to_constant",
+        "verdict_label": "差一个常数因子",
+        "recovered": true,
+        "max_rel": 0.00013114673346337823,
+        "r2_extrap": 0.9999999697007035
+      }
+    }
+  ]
+}
