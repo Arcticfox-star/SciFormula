@@ -38,8 +38,8 @@
 | I.11.19 | 6/6 | wrong | wrong | 250 |
 | I.12.1 | 1/2 | exact | units_unavailable | — |
 | I.12.11 | 5/5 | approx | approx | 159 |
-| I.12.2 | 3/4 | no_candidates | no_candidates | — |
-| I.12.4 | 2/3 | no_candidates | no_candidates | — |
+| I.12.2 | 3/4 | no_candidates | no_candidates | 0 |
+| I.12.4 | 2/3 | no_candidates | no_candidates | 0 |
 | I.13.12 | 5/5 | approx | approx | 186 |
 | I.13.4 | 4/4 | up_to_constant | up_to_constant | 250 |
 | I.6.2 | 1/2 | approx | units_unavailable | — |
