@@ -13,3 +13,6 @@ results/*.tmp
 # 对照实验用的隔离环境与离线 wheel（体积大、可重装，不进仓库）
 .venv-baseline/
 .baseline_wheels/
+
+# 基线实验的导出数据（可由脚本重新生成）
+results/baseline_input/
