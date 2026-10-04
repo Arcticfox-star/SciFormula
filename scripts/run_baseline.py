@@ -34,7 +34,25 @@ IN = os.path.join(ROOT, "results", "baseline_input")
 PRED = os.path.join(ROOT, "results", "baseline_pred")
 TIMING = os.path.join(ROOT, "results", "baseline_timing.csv")
 
-GP_FUNCTIONS = ("add", "sub", "mul", "div", "sqrt", "log", "abs", "neg", "inv")
+# gplearn 内置函数集；扩展集补上 sin/cos/tan 与自注册的 exp/tanh，
+# 让它的函数字典与本项目的特征库可比——否则比的是"字典大小"而不是"搜索能力"。
+GP_DEFAULT = ("add", "sub", "mul", "div", "sqrt", "log", "abs", "neg", "inv")
+GP_EXT_BUILTIN = ("sin", "cos", "tan")
+
+
+def _gp_custom():
+    """exp / tanh 是 gplearn 内置没有的，需 make_function 注册（带数值保护）。"""
+    import numpy as np
+    from gplearn.functions import make_function
+
+    def _exp(x):
+        return np.exp(np.clip(x, -50.0, 50.0))
+
+    def _tanh(x):
+        return np.tanh(np.clip(x, -50.0, 50.0))
+
+    return [make_function(function=_exp, name="exp", arity=1),
+            make_function(function=_tanh, name="tanh", arity=1)]
 
 
 def make_model(kind, n_vars):
@@ -44,10 +62,13 @@ def make_model(kind, n_vars):
     if kind == "gbrt":
         from sklearn.ensemble import GradientBoostingRegressor
         return GradientBoostingRegressor(random_state=0)
-    if kind == "gp":
+    if kind in ("gp", "gpx"):
         from gplearn.genetic import SymbolicRegressor
+        fset = list(GP_DEFAULT)
+        if kind == "gpx":
+            fset = fset + list(GP_EXT_BUILTIN) + _gp_custom()
         return SymbolicRegressor(population_size=1000, generations=20,
-                                 function_set=GP_FUNCTIONS, random_state=0, n_jobs=1)
+                                 function_set=fset, random_state=0, n_jobs=1)
     raise ValueError(kind)
 
 
@@ -55,11 +76,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--methods", default="rf,gbrt")
     ap.add_argument("--limit", type=int, default=0, help="只跑前 N 组（调试用）")
+    ap.add_argument("--noise", default="", help="只跑某一档噪声（如 0.01）；默认全部")
     a = ap.parse_args()
     methods = [m.strip() for m in a.methods.split(",") if m.strip()]
 
     os.makedirs(PRED, exist_ok=True)
     manifest = json.load(open(os.path.join(IN, "manifest.json"), encoding="utf-8"))
+    if a.noise:
+        manifest = [m for m in manifest if abs(float(m["noise"]) - float(a.noise)) < 1e-12]
     if a.limit:
         manifest = manifest[:a.limit]
     print("基线实验：%d 组数据 × %d 种方法（%s）" % (len(manifest), len(methods), ",".join(methods)))
