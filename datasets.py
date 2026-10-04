@@ -123,7 +123,9 @@ def load_dataset(name, mode=DISCOVERY):
         data_id=data_id, problem_id=dataset_id if known else "",
         name=dataset_id, ref="观测数据文件 %s" % os.path.relpath(path, ROOT),
         target_variable=target, n_samples=int(X.shape[0]),
-        noise=float("nan"), seed=0, mode=mode,
+        # 数据来自文件，没有"我们加的噪声水平"这个概念：写 0.0 并显式标注，
+        # **绝不能写 nan** —— NaN 会让上层回显时产生非法 JSON（详见 agh_tools._json_safe）。
+        noise=0.0, seed=0, mode=mode, noise_note="数据来自文件，噪声水平未知",
         variables=variables,
         source="csv", csv=os.path.relpath(path, ROOT),
         created=time.strftime("%Y-%m-%d %H:%M:%S"),

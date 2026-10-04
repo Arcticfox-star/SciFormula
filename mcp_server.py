@@ -226,6 +226,17 @@ def selftest():
                 out.append(json.loads(ln))
         return out
 
+    def run_raw(messages):
+        """同 run，但返回**原始文本**——严格 JSON 校验必须看字节，不能看已解析的对象。"""
+        real_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+        try:
+            for m in messages:
+                dispatch(m)
+            return sys.stdout.getvalue()
+        finally:
+            sys.stdout = real_stdout
+
     print("=== MCP 协议自检 ===")
     replies = run([
         dict(jsonrpc="2.0", id=1, method="initialize",
@@ -265,9 +276,51 @@ def selftest():
     print("5. 错误路径      → isError=%s，错误信息=%r"
           % (r["isError"], r["structuredContent"].get("error")))
 
+    # 6) 严格 JSON 校验：返回里绝不能出现 NaN / Infinity
+    #    这是一个真 bug 的回归测试：CSV 数据集的 meta 里曾写 noise=NaN，
+    #    verify_formula 回显 noise_level 时就吐出了 `"noise_level": NaN`。
+    #    Python 的 json 宽容地读得进去（所以原来本地自检全绿），
+    #    但浏览器/Node 的 JSON.parse 会拒绝 → AGH 侧表现为
+    #    「服务端 3ms 成功、客户端 60 秒后 Request timed out」。见 agh_tools._json_safe。
+    def _strict(txt):
+        import json as _j
+
+        def _bad(c):
+            raise ValueError("非法 JSON 常量：%s" % c)
+
+        for ln in txt.splitlines():
+            if ln.strip():
+                _j.loads(ln, parse_constant=_bad)
+
+    probe = run_raw([dict(jsonrpc="2.0", id=6, method="tools/call",
+                          params=dict(name="list_datasets", arguments={}))])
+    tail = run_raw([dict(jsonrpc="2.0", id=7, method="tools/call",
+                         params=dict(name="load_dataset", arguments=dict(name="I.39.22")))])
+    # 用上一步的 data_id 走一遍 verify_formula（原先就是它吐出了 NaN）
+    data_id = None
+    try:
+        payload = tail.splitlines()[-1]
+        import json as _j
+        data_id = _j.loads(payload)["result"]["structuredContent"]["data_id"]
+    except Exception:
+        pass
+    third = ""
+    if data_id:
+        third = run_raw([dict(jsonrpc="2.0", id=8, method="tools/call",
+                              params=dict(name="verify_formula",
+                                          arguments=dict(data_id=data_id,
+                                                         formula="(1.0)")))])
+    for nm, txt in (("list_datasets", probe), ("load_dataset", tail), ("verify_formula", third)):
+        if not txt.strip():
+            continue
+        bad = [t for t in ("NaN", "Infinity") if t in txt]
+        _strict(txt)
+        print("6. 严格 JSON      → %-15s %s%s" % (
+            nm, "合法 ✔", ("（出现 %s）" % ",".join(bad) if bad else "")))
+
     # stdout 洁净度：重定向期间业务代码不应往 stdout 写东西
     print()
-    print("=== 全部通过：协议可实现、stdout 洁净、错误可被智能体读到 ===")
+    print("=== 全部通过：协议可实现、stdout 洁净、错误可被智能体读到、返回是严格合法 JSON ===")
     return 0
 
 

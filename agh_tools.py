@@ -268,6 +268,41 @@ _BY_NAME = {d["name"]: d for d in TOOL_DEFS}
 LOG_PATH = os.path.join(P.RUN_DIR, "execution_log.jsonl")
 
 
+def _json_safe(obj):
+    """
+    把工具返回值净化成**严格合法的 JSON**结构。这不是洁癖，是修过的一个真 bug：
+
+    Python 的 json.dumps 默认会写出 `NaN` / `Infinity` —— 那是 Python 的扩展，
+    **标准 JSON 不允许**。Python 自己读得进去，所以本地自检全绿；
+    但浏览器与 Node 的 JSON.parse 会直接抛错。实测后果：
+        AGH 侧看到「服务端 3ms 执行成功」，客户端却 60 秒后报
+        `MCP error -32001: Request timed out` —— 因为响应根本没被解析成功。
+    触发点：CSV 数据集的 meta 里 noise 是 NaN，而 verify_formula 会回显 noise_level。
+
+    顺带一并处理的还有 numpy 标量/数组（json 也不认），以及兜底把不可序列化的
+    对象转成字符串——宁可少给信息，也不能让工具因为序列化问题整条失败。
+    """
+    import math
+    try:
+        import numpy as np
+    except Exception:                                   # numpy 不在也不该崩
+        np = None
+    if isinstance(obj, dict):
+        return {str(k): _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [_json_safe(v) for v in obj]
+    if obj is None or isinstance(obj, (bool, str, int)):
+        return obj
+    if isinstance(obj, float):
+        return obj if math.isfinite(obj) else None     # NaN / ±Inf → null
+    if np is not None:
+        if isinstance(obj, np.generic):
+            return _json_safe(obj.item())
+        if isinstance(obj, np.ndarray):
+            return _json_safe(obj.tolist())
+    return str(obj)
+
+
 def _summarize(name, res):
     """从结果里挑出最关键的数字，便于在日志里一眼看清"""
     if not isinstance(res, dict):
@@ -351,6 +386,9 @@ def run_tool(name, args):
                    hint="检查 problem_id 或变量名是否拼写正确。")
     except Exception as exc:                       # noqa: BLE001 —— 必须兜住，否则智能体会拿到崩溃
         res = dict(ok=False, error="%s: %s" % (type(exc).__name__, exc))
+
+    # 净化：NaN / Inf → null，numpy 类型 → 原生类型（见 _json_safe 的说明）
+    res = _json_safe(res)
 
     ms = (time.time() - t0) * 1000.0
     if not isinstance(res, dict):
