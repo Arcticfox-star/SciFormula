@@ -79,7 +79,7 @@ def add_noise(y_clean, noise, seed):
 # ---------------------------------------------------------------------------
 # 单条实验
 # ---------------------------------------------------------------------------
-def run_one(eq, noise, verbose=False):
+def run_one(eq, noise, verbose=False, units_override=None, target_unit_override=None):
     """
     跑一条方程在一个噪声档下的完整流程，返回一行结果字典。
 
@@ -90,17 +90,43 @@ def run_one(eq, noise, verbose=False):
     现在这里**只按顺序调用 pipeline 的原子能力**——也就是 AGH 智能体运行时
     调用的同一批工具。于是「批量基准评测」和「智能体闭环」共用同一条实现，
     报告里的数字与演示时智能体跑出来的数字必然一致。
+
+    【units_override / target_unit_override 是干什么的】
+    默认（不传）用题库里的**真值单位**，等价于"智能体单位推断完全正确"的理想情况——
+    这是正式基准的口径。传入 `units_override` 后改用给定单位（例如模型在
+    单位推断评测里给出的答案），就能做"单位已知 vs 单位需推断"的对照实验。
+    除单位来源外，其余流程完全一致——这是对照实验有意义的前提。
     """
     t0 = time.time()
     names = EQ.varnames(eq)
-    vars_units = {k: eq["vars"][k] for k in names}
+    vars_units = ({k: units_override[k] for k in names}
+                  if units_override else {k: eq["vars"][k] for k in names})
+    target_unit = target_unit_override if target_unit_override is not None else eq["target_unit"]
 
     # 1) 观测数据（benchmark 模式：额外保存真值，用于打分）
     d = P.load_problem(eq["id"], n_samples=N_TRAIN, noise=noise, seed=SEED, mode=P.BENCHMARK)
     data_id = d["data_id"]
 
-    # 2) 候选库 + 量纲剪枝（此处用真值单位，等价于"智能体推断完全正确"的理想情况）
-    lib = P.build_candidates(data_id, vars_units, eq["target_unit"])
+    # 2) 候选库 + 量纲剪枝（默认用真值单位；传了 units_override 就用给的那组）
+    lib = P.build_candidates(data_id, vars_units, target_unit)
+
+    # 2b) 单位串解析失败 / 变量缺失时 build_candidates 会返回 ok=False。
+    #     在"单位需推断"的对照实验里这是真实结果之一（写法不合法就没法建库），
+    #     如实记一行，不要让整批实验中断。
+    if not lib.get("ok"):
+        return dict(
+            eq_id=eq["id"], eq_name=eq["name"], ref=eq["ref"],
+            target_unit=target_unit or "(无量纲)",
+            n_vars=len(names), noise=noise,
+            cand_total=0, cand_kept=0, prune_ratio=float("nan"), truncated=False,
+            n_cols=0, n_terms=0, val_rss=float("nan"),
+            r2_train=float("nan"), intercept=float("nan"),
+            truth=eq["expr"], pred="(单位串无法解析，未建库)", pred_full="0",
+            verdict="units_invalid", max_rel=float("nan"),
+            ratio=float("nan"), nmse_train=float("nan"),
+            r2_extrap=float("nan"), nmse_extrap=float("nan"),
+            seconds=time.time() - t0,
+        )
 
     # 3) 稀疏回归
     fit = P.fit_sparse(lib["lib_id"], data_id, strategy="omp")

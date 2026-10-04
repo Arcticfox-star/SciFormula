@@ -1,0 +1,109 @@
+{
+  "session_id": "39d31a09-7e75-42d0-934e-911e92cf6e74",
+  "source": "results/agh-session-feynman.html",
+  "rounds": [
+    {
+      "round": 1,
+      "problem_id": "I.13.12",
+      "params": {
+        "n_samples": 200,
+        "noise": 0.05
+      },
+      "units": {
+        "G": "m^3/kg/s^2",
+        "m1": "kg",
+        "m2": "kg",
+        "r1": "m",
+        "r2": "m"
+      },
+      "target_unit": "J",
+      "unit_rows": [
+        {
+          "name": "m1",
+          "given": "kg",
+          "ref": "kg",
+          "ok": true
+        },
+        {
+          "name": "m2",
+          "given": "kg",
+          "ref": "kg",
+          "ok": true
+        },
+        {
+          "name": "r1",
+          "given": "m",
+          "ref": "m",
+          "ok": true
+        },
+        {
+          "name": "r2",
+          "given": "m",
+          "ref": "m",
+          "ok": true
+        },
+        {
+          "name": "G",
+          "given": "m^3/kg/s^2",
+          "ref": "m^3/kg/s^2",
+          "ok": true
+        }
+      ],
+      "var_hits": 5,
+      "var_tot": 5,
+      "target_ok": true,
+      "ref_target_unit": "kg*m^2/s^2",
+      "truth": "G*m1*m2*(1/r2-1/r1)",
+      "build": {
+        "total": 29791,
+        "kept": 186,
+        "prune": 99.4
+      },
+      "formula": "(0.04365884222712996)*(G*m1*m2*1/r1*(r1/r2)**3) + (0.6799988073427388)*(G*m1*m2*1/r1*log(Abs(r1/r2)))",
+      "fit": {
+        "n_terms": 2,
+        "r2": 0.977812
+      },
+      "verify": {
+        "verdict": "overfit",
+        "passed": false
+      },
+      "tool_seq": [
+        "list_problems",
+        "load_problem",
+        "check_units",
+        "check_units",
+        "check_units",
+        "build_candidate_library",
+        "build_candidate_library",
+        "build_candidate_library",
+        "build_candidate_library",
+        "check_units",
+        "list_problems",
+        "load_problem",
+        "check_units",
+        "build_candidate_library",
+        "fit_sparse",
+        "verify_formula",
+        "fit_sparse",
+        "compare_strategies",
+        "verify_formula"
+      ],
+      "honesty": {
+        "claimed_failures": null,
+        "actual_failures": 7,
+        "rejects": 3,
+        "claimed_pass": false,
+        "actual_verdict": "overfit",
+        "flags": []
+      },
+      "score": {
+        "verdict": "wrong",
+        "verdict_label": "错误",
+        "recovered": false,
+        "max_rel": 16.490304540562686,
+        "r2_extrap": 0.8920050611226141
+      }
+    }
+  ]
+}
