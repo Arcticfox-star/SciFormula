@@ -9,3 +9,7 @@ venv/
 
 # 产物里只提交报告与明细表，其余忽略
 results/*.tmp
+
+# 对照实验用的隔离环境与离线 wheel（体积大、可重装，不进仓库）
+.venv-baseline/
+.baseline_wheels/
