@@ -56,6 +56,34 @@ python agh_tools.py call load_problem --json '{"problem_id":"I.12.11","n_samples
 
 ---
 
+### N4　仿真实验台的完整闭环（AGH 驱动仿真 → 发现定律 → 重跑仿真验证）
+
+- **输入**：仿真实验台 `rc_discharge`（RC 放电），跑 60 个参数点、读数带 0.5% 噪声。
+  智能体只知道参数名（R、C、V0）与读数列名（tau），**不知道任何单位、也不知道公式**。
+- **期望**：推断出 `R=ohm、C=F、V0=V、tau=s`；量纲剪枝后只剩正确的那一项；
+  回归出 `≈ R*C`；`verify_formula` 换参数**当场重跑仿真**后判定 passed。
+- **实际**：候选 124 项 → 剪枝后 **1 项**（正是正确答案）；拟合
+  `1.0015396090098025*(C*R)`，R² = 0.999971；验证 passed，
+  参考解来源显示为「仿真实验台当场重跑测得的读数（参数点全部留出、不与训练集重叠）」。
+- **复现**（与 AGH 智能体调用的是同一份实现）：
+
+```bash
+python agh_tools.py call list_simulations
+python agh_tools.py call run_sweep --json '{"scenario":"rc_discharge","n_cases":60,"noise":0.005,"seed":0}'
+python agh_tools.py call load_dataset --json '{"name":"rc_discharge_n60"}'
+python agh_tools.py call check_units --json '{"data_id":"rc_discharge_n60_csv_n60","target_unit":"s","variables_units":{"R":"ohm","C":"F","V0":"V"}}'
+python agh_tools.py call build_candidate_library --json '{"data_id":"rc_discharge_n60_csv_n60","target_unit":"s","variables_units":{"R":"ohm","C":"F","V0":"V"}}'
+python agh_tools.py call fit_sparse --json '{"library_id":"LIB_ID","data_id":"rc_discharge_n60_csv_n60"}'
+python agh_tools.py call verify_formula --json '{"data_id":"rc_discharge_n60_csv_n60","formula":"R*C"}'
+```
+
+（`LIB_ID` 换成上一步返回的真实值；同一输入必然得到同一 `LIB_ID`。）
+
+- **仿真器自身的精度证据**：`python simulator.py --selftest`
+  → 12 个参数点上「测量值 vs 闭式解」最大相对误差 **1.5e-12**。
+- **其余三个场景**（弹簧振子 / 阻尼振子 / 圆轨道天体）同样一次通过，
+  结果表见 `README.md` 的「数值仿真实验台」一节。
+
 ## 二、边界样例
 
 ### B1　单位写法不合法
@@ -146,10 +174,31 @@ python experiment.py I.9.18
 
 ---
 
+### F4　仿真台的目标量落在候选库表达能力之外（不是单位错）
+
+- **输入**：仿真实验台 `kepler_speed`，但把仪器读数当作**环绕速度 v**（目标量纲 m/s），
+  而正确读数是**比动能 ε**（量纲 m²/s²）。
+- **期望**：工具明确报告「目标量的量纲无法由任何候选核拼出」，
+  并给出**两种**可能原因（单位推错 / 幂次集合限制），而不是只归因于"单位错"。
+- **实际**：`cand_kept = 0`；`build_candidate_library` 的提示指出
+  「本库单变量允许 1/2 与 -1/2 次幂，但**三变量及以上的乘积只允许整数幂**，
+  所以 sqrt(G*M/a) 表达不出来，而 G*M/a、G*M/(2*a) 这类整数幂形式可以」，
+  并建议改为测目标量的平方或等价形式（例如测比动能）。
+- **复现**（这条数据本身是合法的，只是换了个目标量来触发边界）：
+
+```bash
+python agh_tools.py call load_dataset --json '{"name":"kepler_speed_n60"}'
+python agh_tools.py call build_candidate_library --json '{"data_id":"kepler_speed_n60_csv_n60","target_unit":"m/s","variables_units":{"M":"kg","a":"m","G":"kg^-1*m^3*s^-2"}}'
+```
+
+- **说明**：这不是 bug，而是**能力边界**——候选库的幂次集合决定了哪些定律能被表达。
+  同一条数据把目标量换成比动能（m²/s²）即可跑通，
+  拟合出 `0.4997*(G*M*1/a)`（真值 `G*M/(2a)`），验证 passed。
+
 ## 附：三类样例的统计口径
 
 | 类别 | 数量 | 出处 |
 |---|---|---|
-| 正常 | 迷你库 20/21 通过双重检验；官方基准三档 54/54/57（确定性修复后口径，见 README） | `results/report.html`、`results/report_feynman.html` |
+| 正常 | 迷你库 20/21 通过双重检验；官方基准三档 54/54/57（确定性修复后口径，见 README）；**仿真实验台 4 个场景 4/4 一次通过** | `results/report.html`、`results/report_feynman.html`、README「数值仿真实验台」一节 |
 | 边界 | 2 条可离线复现 + 1 条 AGH 会话证据 | 本文 B1~B3 |
-| 失败 | P19（表达力边界）、负动能拦截（回归测试）、官方 15 题无解 | 本文 F1~F3 |
+| 失败 | P19（表达力边界）、负动能拦截（回归测试）、官方 15 题无解、仿真台目标量超表达力 | 本文 F1~F4 |

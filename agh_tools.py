@@ -38,6 +38,7 @@ import time
 
 import datasets as DS
 import pipeline as P
+import simulator as SIM
 
 
 # ---------------------------------------------------------------------------
@@ -63,8 +64,10 @@ TOOL_DEFS = [
             "载入一个数据文件（CSV），返回变量名、采样范围、观测值统计与预览，"
             "以及后续步骤要用的 data_id。"
             "与 load_problem 一样**不返回真值公式与单位**——目标量的量纲需要你根据"
-            "列名与物理语境自行推断；若该数据集对应官方题库中的题目，"
-            "独立验证（verify_formula）可用，否则只能用留出法自行检验。"),
+            "列名与物理语境自行推断。"
+            "返回里的 verification 字段说明独立验证能不能做："
+            "reference=有内置参考解；simulation_rerun=数据来自仿真实验台，"
+            "验证时会换一组参数**当场重跑仿真**比对读数；null=没有参考解，只能用留出法自检。"),
         inputSchema=dict(
             type="object",
             properties=dict(
@@ -73,6 +76,67 @@ TOOL_DEFS = [
             ),
             required=["name"], additionalProperties=False),
         handler=lambda a: DS.load_dataset(a["name"]),
+    ),
+
+    dict(
+        name="list_simulations",
+        description=(
+            "列出**可驱动的数值仿真实验台**：场景编号、你能设定的参数、以及仪器给出的读数量。"
+            "这些实验台用四阶龙格-库塔（RK4）数值积分求解物理过程，"
+            "读数来自对积分轨迹的后处理（过零检测、峰值包络拟合、对数线性回归），"
+            "**不是把我们写好的公式直接算出来**。"
+            "和真实实验一样：参数由你设定、读数由仪器给出，"
+            "而且**不提供任何单位**——量纲要你自己推断。"
+            "用法：先用本工具挑场景 → 再用 run_sweep 跑一批实验生成数据集"
+            "（或 run_simulation 只跑一次看读数）。"),
+        inputSchema=dict(type="object", properties=dict(), additionalProperties=False),
+        handler=lambda a: SIM.list_scenarios(),
+    ),
+
+    dict(
+        name="run_simulation",
+        description=(
+            "驱动仿真实验台**跑一次**：给定场景与参数，返回整段过程的时间序列"
+            "（预览 + 落盘的完整 CSV）以及仪器读数。"
+            "用来先看清「这个实验台测什么、读数怎么随参数变」。"
+            "注意：**一次实验只能得到一个数据点**，要做定律发现请用 run_sweep 跑一批。"
+            "参数不传则用默认值；参数名写错会明确报错，不会静默兜底。"),
+        inputSchema=dict(
+            type="object",
+            properties=dict(
+                scenario=dict(type="string",
+                              description="list_simulations 返回的场景编号，例如 rc_discharge"),
+                params=dict(type="object",
+                            description="参数名 → 数值，例如 {\"R\": 2200, \"C\": 4.7e-4}；不传用默认值"),
+                preview_points=dict(type="integer", default=400,
+                                    description="返回的时间序列预览点数，默认 400"),
+            ),
+            required=["scenario"], additionalProperties=False),
+        handler=lambda a: SIM.run_simulation(a["scenario"], a.get("params"),
+                                             a.get("preview_points", 400)),
+    ),
+
+    dict(
+        name="run_sweep",
+        description=(
+            "在仿真实验台上**跑一批实验**：每个参数点跑一次仿真、记录仪器读数，"
+            "最后把「参数 → 读数」落盘成一个数据集（与观测数据文件同格式，"
+            "**只有参数取值与读数：没有单位、没有真值公式**）。"
+            "返回数据集名与预览——接着用 load_dataset 载入它，"
+            "就能走完整的「推断单位 → 量纲剪枝 → 稀疏拟合 → 独立验证」流程。"
+            "这是把仿真环境接进发现流程的入口。"),
+        inputSchema=dict(
+            type="object",
+            properties=dict(
+                scenario=dict(type="string", description="list_simulations 返回的场景编号"),
+                n_cases=dict(type="integer", default=80, description="跑多少个参数点，默认 80"),
+                noise=dict(type="number", default=0.005,
+                           description="仪器读数的相对噪声（对数正态），默认 0.005 表示 0.5%"),
+                seed=dict(type="integer", default=0, description="随机种子，决定取哪些参数点"),
+            ),
+            required=["scenario"], additionalProperties=False),
+        handler=lambda a: SIM.run_sweep(a["scenario"], n_cases=a.get("n_cases", 80),
+                                        noise=a.get("noise", 0.005), seed=a.get("seed", 0)),
     ),
     dict(
         name="list_problems",
@@ -205,7 +269,10 @@ TOOL_DEFS = [
             "这个数字大就说明公式在小量级处不可信；② 符号合理性检查会直接拦下"
             "「观测恒正、公式却预测出负值」这类与数据直接矛盾的解。"
             "若返回 overfit / underfit / implausible，应由你决定下一步："
-            "改单位、换策略、调整 max_terms。"),
+            "改单位、换策略、调整 max_terms。"
+            "**参考解从哪来**：若数据来自官方题库，参考解是题库里的闭式公式；"
+            "若数据来自仿真实验台（run_sweep 生成），验证会**换一组留出的参数"
+            "当场重新跑一次仿真**，比对仿真当刻测得的读数——返回里的 reference 字段会写明本次用的哪一种。"),
         inputSchema=dict(
             type="object",
             properties=dict(
@@ -319,7 +386,17 @@ def _summarize(name, res):
         return dict(n_terms=res.get("n_terms"), formula=res.get("formula_readable"),
                     r2_fit=res.get("r2_fit"))
     if name == "verify_formula":
-        return dict(passed=res.get("passed"), verdict=res.get("verdict"))
+        return dict(passed=res.get("passed"), verdict=res.get("verdict"),
+                    reference=res.get("reference"))
+    if name == "list_simulations":
+        return dict(count=res.get("count"))
+    if name == "run_simulation":
+        return dict(scenario=res.get("scenario"),
+                    reading=(res.get("measured") or {}).get("value"),
+                    n_steps=res.get("n_steps"))
+    if name == "run_sweep":
+        return dict(scenario=res.get("scenario"), dataset=res.get("dataset"),
+                    n_cases=res.get("n_cases"))
     if name == "compare_strategies":
         return dict(rows=[dict(s=x["strategy"], k=x["n_terms"]) for x in res.get("comparison", [])])
     if name == "score_prediction":

@@ -17,3 +17,6 @@ results/*.tmp
 # 基线实验的导出数据（可由脚本重新生成）
 results/baseline_input/
 results/baseline_pred/
+
+# 仿真台单次运行的时间序列（体积大，可由脚本随时重跑）
+data/simulations/runs/

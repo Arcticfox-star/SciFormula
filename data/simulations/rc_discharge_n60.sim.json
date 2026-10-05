@@ -1,0 +1,32 @@
+{
+  "dataset": "rc_discharge_n60",
+  "source": "simulation",
+  "scenario": "rc_discharge",
+  "scenario_title": "RC 放电 · 测时间常数",
+  "target_name": "tau",
+  "target_unit": "s",
+  "parameters": [
+    {
+      "name": "R",
+      "unit": "ohm",
+      "lo": 100.0,
+      "hi": 10000.0
+    },
+    {
+      "name": "C",
+      "unit": "F",
+      "lo": 1e-06,
+      "hi": 0.001
+    },
+    {
+      "name": "V0",
+      "unit": "V",
+      "lo": 1.0,
+      "hi": 12.0
+    }
+  ],
+  "noise": 0.005,
+  "seed": 0,
+  "n_cases": 60,
+  "created": "2026-10-05 17:17:27"
+}

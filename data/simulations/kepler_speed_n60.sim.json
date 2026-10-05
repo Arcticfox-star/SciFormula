@@ -1,0 +1,32 @@
+{
+  "dataset": "kepler_speed_n60",
+  "source": "simulation",
+  "scenario": "kepler_speed",
+  "scenario_title": "圆轨道天体 · 测比动能",
+  "target_name": "eps",
+  "target_unit": "m^2/s^2",
+  "parameters": [
+    {
+      "name": "M",
+      "unit": "kg",
+      "lo": 5e+21,
+      "hi": 5e+23
+    },
+    {
+      "name": "a",
+      "unit": "m",
+      "lo": 1000000.0,
+      "hi": 100000000.0
+    },
+    {
+      "name": "G",
+      "unit": "kg^-1*m^3*s^-2",
+      "lo": 3e-11,
+      "hi": 1.5e-10
+    }
+  ],
+  "noise": 0.005,
+  "seed": 0,
+  "n_cases": 60,
+  "created": "2026-10-05 17:17:59"
+}

@@ -361,9 +361,15 @@ def build_candidates(data_id, variables_units, target_unit, max_terms=250):
 
     diagnostics, hint = [], None
     if st["kept"] == 0:
-        hint = ("剪枝后一个候选项都不剩，说明这组单位让目标量「无法由任何候选项拼出」。"
-                "最常见的原因是目标量的量纲推错了，或某个变量的量纲推错了。"
-                "建议重新审读变量名与物理语境，再试一组（check_units 只能查写法，查不出这种物理错误）。")
+        hint = ("剪枝后一个候选项都不剩，说明在这组单位下，**目标量的量纲无法由任何候选核拼出**。"
+                "有两个可能："
+                "① 目标量或某个变量的量纲推错了（最常见）；"
+                "② 单位没问题，但目标量纲落在候选库的幂次集合之外——"
+                "本库单变量允许 1/2 与 -1/2 次幂，但**三变量及以上的乘积只允许整数幂**，"
+                "所以像 sqrt(G*M/a)（三个变量都是半整数幂）表达不出来，"
+                "而 G*M/a、G*M/(2*a) 这类整数幂形式可以。"
+                "建议：先重审变量名与物理语境、核对单位；若确信单位无误，"
+                "可考虑改为测目标量的平方或等价形式（例如测比动能而不是测速度）。")
     elif st["kept"] < 5:
         hint = ("剪枝后候选只剩 %d 项，数量偏少。若后续拟合效果差，可以怀疑单位推断有误；"
                 "若拟合很好也要警惕：候选太少可能是碰巧。"
@@ -478,6 +484,45 @@ def fit_sparse(lib_id, data_id, strategy="omp", max_terms=10, threshold=0.05):
 # ---------------------------------------------------------------------------
 # 能力 6：独立验证
 # ---------------------------------------------------------------------------
+def _lib_reference(eq, names, n_samples, seed, expand):
+    """参考解来自内置题库的闭式公式：在全新采样点上求值。"""
+    Xi = sample_X(eq, n_samples, seed, expand=0.0)
+    Xe = sample_X(eq, n_samples, seed, expand=float(expand))
+    return (Xi, Xe, (lambda Xn: evaluate(eq["expr"], Xn, names)),
+            "内置题库的参考解（闭式公式）")
+
+
+def _sim_reference(meta, names, n_samples, seed, expand):
+    """
+    参考解来自**当场重新跑仿真**。
+
+    这是本项目里「独立验证」最干净的形式：验证用的参数点不在训练集里，
+    参考事实也不是任何存下来的答案，而是**重新驱动一次仿真环境、由测量函数给出的读数**。
+    语义上与题库路径完全一致（都是"换一批新点、与外部事实逐点比对"），
+    只是外部事实的来源从"我们存下来的闭式公式"换成了"仿真当刻跑出来的实验读数"。
+    """
+    import simulator as SIM                        # 延迟导入，避免模块环依赖
+    sim = meta["simulation"]
+    sid = sim["scenario"]
+    pnames = [q["name"] for q in sim["parameters"]]
+
+    def _points(exp):
+        cases = SIM.sample_params(sid, n_samples, seed, expand=exp)
+        return np.asarray([[c[k] for k in pnames] for c in cases], dtype=float)
+
+    def _truth(Xp):
+        arr = np.asarray(Xp, dtype=float).reshape(-1, len(pnames))
+        vals = []
+        for i, row in enumerate(arr):
+            v, _ = SIM.measure_case(sid, dict(zip(pnames, row)),
+                                    seed=seed * 131 + i, noise=0.0)
+            vals.append(v)
+        return np.asarray(vals, dtype=float)
+
+    return (_points(0.0), _points(float(expand)), _truth,
+            "仿真实验台当场重跑测得的读数（场景 %s，参数点全部留出、不与训练集重叠）" % sid)
+
+
 def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
                    tol_in_range=0.05, tol_extrap=0.20):
     """
@@ -502,20 +547,30 @@ def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
     X, y, meta = _load_data(data_id)
     names = [v["name"] for v in meta["variables"]]
     pid = meta.get("problem_id") or ""
-    try:
-        eq = EQ.get(pid)
-    except Exception:
-        return dict(ok=False, error="这批数据没有可用的参考解，无法做独立验证",
-                    hint=("独立验证的做法是「换一批新采样点、与参考解逐点比对」，"
-                          "所以它需要参考解——本项目里只有官方基准题（含磁盘上的观测数据文件）"
-                          "与仿真实验附带参考解。若是完全外部的测量数据，请改用留出法："
-                          "把已有数据一分为二，一份拟合、一份检验；但要如实说明，"
-                          "那样验的是插值能力，不是外推能力。"))
+    is_sim = (meta.get("source") or "") == "simulation"
+
+    if is_sim:
+        # 数据来自仿真实验台：参考解 = **当场重跑一次仿真**测出的读数（不查任何存储答案）
+        Xi, Xe, truth_fn, ref_note = _sim_reference(
+            meta, names, int(n_samples), int(meta["seed"]) + int(seed_offset), float(expand))
+    else:
+        try:
+            eq = EQ.get(pid)
+        except Exception:
+            return dict(ok=False, error="这批数据没有可用的参考解，无法做独立验证",
+                        hint=("独立验证的做法是「换一批新采样点、与参考解逐点比对」，"
+                              "所以它需要参考解——本项目里官方基准题（含磁盘上的观测数据文件）"
+                              "与仿真实验台（用 run_sweep 生成的数据集）都带参考解。"
+                              "若是完全外部的测量数据，请改用留出法："
+                              "把已有数据一分为二，一份拟合、一份检验；但要如实说明，"
+                              "那样验的是插值能力，不是外推能力。"))
+        Xi, Xe, truth_fn, ref_note = _lib_reference(
+            eq, names, int(n_samples), int(meta["seed"]) + int(seed_offset), float(expand))
     noise = float(meta["noise"])
 
     def _score(Xn, tag):
         try:
-            yn = evaluate(eq["expr"], Xn, names)
+            yn = truth_fn(Xn)
             pred = evaluate(formula, Xn, names)
         except Exception as exc:
             return dict(tag=tag, ok=False, error=str(exc))
@@ -558,12 +613,10 @@ def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
                     max_rel_err_small=_maxrel(small),
                     small_scale_note=("真值最小的 5%% 区间里有 %d 点" % int(small.sum())))
 
-    # ① 训练区间内、新种子重采
-    Xi = sample_X(eq, int(n_samples), int(meta["seed"]) + int(seed_offset), expand=0.0)
+    # ① 训练区间内、新种子重采（参考解由 _lib_reference / _sim_reference 提供）
     s_in = _score(Xi, "in_range_resample")
 
     # ② 区间外推
-    Xe = sample_X(eq, int(n_samples), int(meta["seed"]) + int(seed_offset), expand=float(expand))
     s_ex = _score(Xe, "extrapolation")
 
     passes_in = bool(s_in.get("ok") and s_in["rmse_normalized"] <= tol_in_range)
@@ -599,6 +652,7 @@ def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
     out = dict(ok=True, data_id=data_id, passed=passed, verdict=verdict, reason=reason,
                in_range=s_in, extrapolation=s_ex,
                noise_level=noise,
+               reference=ref_note,
                thresholds=dict(tol_in_range=tol_in_range, tol_extrap=tol_extrap),
                checks=dict(sign_consistency=not violates_sign),
                note=("检验方式：在**全新的采样点**上把公式与参考解逐点对比，并额外在向外扩张 "
@@ -606,9 +660,10 @@ def verify_formula(formula, data_id, expand=0.3, n_samples=100, seed_offset=7,
                      "注意这是与参考解对比的通用化检验，不是与训练数据比——"
                      "所以小量级处的相对误差要单独看 max_rel_err_small，"
                      "整体 RMSE 会被大量级点主导而掩盖它。"
-                     % (100 * float(expand))))
+                     "本次参考解来源：%s。"
+                     % (100 * float(expand), ref_note)))
 
-    if meta.get("mode") == BENCHMARK:
+    if meta.get("mode") == BENCHMARK and not is_sim:
         ref = meta["reference"]["expr"]
         out["against_truth"] = dict(
             nmse_train=round(float(nmse(formula, ref, X, names)), 8),

@@ -1,0 +1,32 @@
+{
+  "dataset": "spring_period_n60",
+  "source": "simulation",
+  "scenario": "spring_period",
+  "scenario_title": "弹簧振子 · 测振动周期",
+  "target_name": "T",
+  "target_unit": "s",
+  "parameters": [
+    {
+      "name": "m",
+      "unit": "kg",
+      "lo": 0.2,
+      "hi": 2.0
+    },
+    {
+      "name": "k",
+      "unit": "kg/s^2",
+      "lo": 2.0,
+      "hi": 20.0
+    },
+    {
+      "name": "A",
+      "unit": "m",
+      "lo": 0.01,
+      "hi": 0.5
+    }
+  ],
+  "noise": 0.005,
+  "seed": 0,
+  "n_cases": 60,
+  "created": "2026-10-05 17:17:35"
+}

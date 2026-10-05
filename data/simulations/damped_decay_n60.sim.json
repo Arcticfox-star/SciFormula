@@ -1,0 +1,38 @@
+{
+  "dataset": "damped_decay_n60",
+  "source": "simulation",
+  "scenario": "damped_decay",
+  "scenario_title": "阻尼振子 · 测包络衰减常数",
+  "target_name": "gamma",
+  "target_unit": "1/s",
+  "parameters": [
+    {
+      "name": "m",
+      "unit": "kg",
+      "lo": 0.2,
+      "hi": 2.0
+    },
+    {
+      "name": "k",
+      "unit": "kg/s^2",
+      "lo": 2.0,
+      "hi": 20.0
+    },
+    {
+      "name": "c",
+      "unit": "kg/s",
+      "lo": 0.01,
+      "hi": 0.15
+    },
+    {
+      "name": "A",
+      "unit": "m",
+      "lo": 0.01,
+      "hi": 0.5
+    }
+  ],
+  "noise": 0.005,
+  "seed": 0,
+  "n_cases": 60,
+  "created": "2026-10-05 17:17:44"
+}

@@ -4,7 +4,8 @@
 #   · 行为 sha256sum 兼容格式（`sha256sum -c results/EVIDENCE.sha256` 可直接用）
 #   · 也可用项目自带脚本核对：python verify_evidence.py
 #
-# 生成时间（UTC）：2026-10-04T12:35Z（北京时间 2026-10-04 20:35）
+# 生成时间（UTC）：2026-10-05T09:1xZ（北京时间 2026-10-05 约 17:1x）
+# 本次重签原因：有意修改了 docs/test-cases.md（新增仿真实验台的正常样例 N4 与失败样例 F4）。
 # 生成方式：sha256sum results/... docs/...（AGH 官方导出 + 自动生成的报告/摘要/评分卡）
 #
 # ⚠️ 这六个 agh-session-*.html 是 AGH 官方导出的原件。
@@ -30,4 +31,4 @@ cd3aa2e43d89ec2edd5294b6cda6f8ca5c3adc7bcaf7e950c0f912f57e0b3a9f  results/report
 04feeedb14dcb824457dcc575acf1dbef3c89e2f4d86f01243b26ccee9a2c234  results/detailed_feynman.csv
 d3c479cceba296ba984dd94512e35e6aea3719a5723638f834b627656f0ece9e  results/unit_infer_report.md
 4b39e0c400f900f0207d0a9d0817ee2d4ff69517ba0ee10641dbe6b6bef6a432  results/unit_infer_answers.json
-d1f3fa0958eefd0a14e68392fe4fdd57e5ee1d5d5244654747e64383dab0fc0d  docs/test-cases.md
+9f9907b6f7b5a2db8ffc5f8f8dedec99405ce0555ea1e303156f55031597d9ca  docs/test-cases.md

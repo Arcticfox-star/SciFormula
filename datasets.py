@@ -32,24 +32,43 @@ from pipeline import RUN_DIR, _ensure_dir
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT, "data", "observations")
+# 仿真实验台跑出来的数据集也放在同一个"可被 AGH 读取"的层面里：
+# 它们与观测 CSV 同格式（只有参数取值与读数），所以走同一套 load_dataset 流程。
+SIM_DIR = os.path.join(ROOT, "data", "simulations")
+DATA_DIRS = (DATA_DIR, SIM_DIR)
 
 DISCOVERY = "discovery"
 
 
 def _csv_path(name):
-    """按数据集名找文件；也接受直接给文件名。"""
+    """按数据集名找文件；也接受直接给文件名。观测数据与仿真数据两个目录都找。"""
     name = (name or "").strip()
     if not name:
         raise ValueError("数据集名不能为空")
     if not name.lower().endswith(".csv"):
         name += ".csv"
-    path = os.path.join(DATA_DIR, name)
-    if not os.path.exists(path):
+    for d in DATA_DIRS:
+        path = os.path.join(d, name)
+        if not os.path.exists(path):
+            continue
         # 防止用 ../ 读到别处
-        raise FileNotFoundError("找不到数据集 %s" % name)
-    if os.path.dirname(os.path.realpath(path)) != os.path.realpath(DATA_DIR):
-        raise ValueError("数据集必须位于 %s 之内" % os.path.relpath(DATA_DIR, ROOT))
-    return path
+        if os.path.dirname(os.path.realpath(path)) != os.path.realpath(d):
+            raise ValueError("数据集必须位于 %s 之内" % os.path.relpath(d, ROOT))
+        return path
+    raise FileNotFoundError("找不到数据集 %s（已搜索 %s）"
+                           % (name, " 与 ".join(os.path.relpath(d, ROOT) for d in DATA_DIRS)))
+
+
+def _sidecar(path):
+    """仿真数据集带一个 .sim.json 边车（记录场景与取值范围，供验证环节重跑仿真用）。"""
+    p = os.path.splitext(path)[0] + ".sim.json"
+    if not os.path.exists(p):
+        return None
+    try:
+        with open(p, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
 
 
 def list_datasets():
@@ -59,27 +78,36 @@ def list_datasets():
     只报告"有什么数据"，不报告"答案是什么"——文件名与列名里不含公式与单位。
     """
     items = []
-    if os.path.isdir(DATA_DIR):
-        for fn in sorted(os.listdir(DATA_DIR)):
+    for d in DATA_DIRS:
+        if not os.path.isdir(d):
+            continue
+        for fn in sorted(os.listdir(d)):
             if not fn.lower().endswith(".csv"):
                 continue
-            path = os.path.join(DATA_DIR, fn)
+            path = os.path.join(d, fn)
             try:
                 with open(path, encoding="utf-8") as f:
                     header = next(csv.reader(f))
                 n_rows = sum(1 for _ in open(path, encoding="utf-8")) - 1
             except Exception:
                 continue
+            side = _sidecar(path)
             items.append(dict(name=fn[:-4], file=os.path.relpath(path, ROOT),
+                              source="simulation" if side else "observation",
+                              scenario=(side or {}).get("scenario"),
                               n_rows=n_rows, n_columns=len(header),
                               columns=header,
                               target_column=header[-1],
                               variable_columns=header[:-1],
                               in_library=fn[:-4] in set(e["id"] for e in EQ.EQUATIONS)))
-    return dict(ok=True, count=len(items), directory=os.path.relpath(DATA_DIR, ROOT),
+    return dict(ok=True, count=len(items),
+                directory=" 与 ".join(os.path.relpath(d, ROOT) for d in DATA_DIRS),
+                n_observation=sum(1 for it in items if it["source"] == "observation"),
+                n_simulation=sum(1 for it in items if it["source"] == "simulation"),
                 datasets=items,
                 note=("这些是**观测数据文件**：每行一次采样，只含变量取值与目标量观测值，"
-                      "不含真值公式、不含单位。用 load_dataset 载入后即可开始推断。"))
+                      "不含真值公式、不含单位。用 load_dataset 载入后即可开始推断。"
+                      "其中 source=simulation 的那些是**仿真实验台**跑出来的（run_sweep 生成）。"))
 
 
 def load_dataset(name, mode=DISCOVERY):
@@ -106,12 +134,15 @@ def load_dataset(name, mode=DISCOVERY):
     _ensure_dir()
     np.savez(os.path.join(RUN_DIR, data_id + ".npz"), X=X, y=y)
 
-    # 官方题库里的题名 → 附带参考解（只有验证/评分环节读它，工具不返回）
+    # 两类参考解来源：
+    #   ① 官方题库里的同名题 → 附闭式公式
+    #   ② 仿真实验台的边车   → 验证时**当场重跑仿真**（边车里没有真值公式）
     known = None
     try:
         known = EQ.get(dataset_id)
     except Exception:
         known = None
+    side = _sidecar(path)
 
     variables = []
     for i, nm in enumerate(var_names):
@@ -125,22 +156,38 @@ def load_dataset(name, mode=DISCOVERY):
         target_variable=target, n_samples=int(X.shape[0]),
         # 数据来自文件，没有"我们加的噪声水平"这个概念：写 0.0 并显式标注，
         # **绝不能写 nan** —— NaN 会让上层回显时产生非法 JSON（详见 agh_tools._json_safe）。
-        noise=0.0, seed=0, mode=mode, noise_note="数据来自文件，噪声水平未知",
+        noise=0.0, seed=(int(side["seed"]) + 1) if side else 0, mode=mode,
+        noise_note="数据来自文件，噪声水平未知",
         variables=variables,
-        source="csv", csv=os.path.relpath(path, ROOT),
+        source="simulation" if side else "csv",
+        csv=os.path.relpath(path, ROOT),
         created=time.strftime("%Y-%m-%d %H:%M:%S"),
     )
     if known is not None:
         meta["reference"] = dict(expr=known["expr"], target_unit=known["target_unit"],
                                  variables_units={k: known["vars"][k]
                                                   for k in EQ.varnames(known)})
+    if side is not None:
+        meta["simulation"] = side
     with open(os.path.join(RUN_DIR, data_id + ".meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
 
+    if known is not None:
+        verify_hint = ""
+    elif side is not None:
+        verify_hint = ("注意：这批数据来自**仿真实验台**（场景 %s）。独立验证时会"
+                       "**换一组参数当场重跑仿真**，比对的是仿真当刻测得的读数——"
+                       "所以 verify_formula 可用，而且它不依赖任何存储的答案。"
+                       % side.get("scenario"))
+    else:
+        verify_hint = ("注意：该数据集既不在官方题库内、也不是仿真实验台产出的，"
+                       "没有参考解，独立验证环节将无法进行。")
+
     k = min(5, len(y))
     return dict(
-        ok=True, data_id=data_id, mode=mode, source="csv",
-        dataset=dict(name=dataset_id, file=meta["csv"], n_rows=int(X.shape[0])),
+        ok=True, data_id=data_id, mode=mode, source="simulation" if side else "csv",
+        dataset=dict(name=dataset_id, file=meta["csv"], n_rows=int(X.shape[0]),
+                     scenario=(side or {}).get("scenario")),
         target=dict(name=target, unit=None),
         variables=variables,
         observations=dict(
@@ -151,10 +198,10 @@ def load_dataset(name, mode=DISCOVERY):
             x_preview=[[float(v) for v in row] for row in X[:k]],
         ),
         saved=os.path.join(RUN_DIR, data_id + ".npz"),
-        has_reference=bool(known is not None),
+        has_reference=bool(known is not None or side is not None),
+        verification=("reference" if known is not None
+                      else ("simulation_rerun" if side is not None else None)),
         note=("数据来自磁盘文件。目标量的量纲与各变量的量纲**均未提供**："
               "请根据变量名与列名所对应的物理语境推断它们，再用 check_units 校验写法、"
-              "用 build_candidate_library 检验推断是否自洽。"
-              + ("" if known is not None else
-                 "注意：该数据集不在官方题库内，没有参考解，独立验证环节将无法进行。")),
+              "用 build_candidate_library 检验推断是否自洽。" + verify_hint),
     )

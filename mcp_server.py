@@ -318,6 +318,58 @@ def selftest():
         print("6. 严格 JSON      → %-15s %s%s" % (
             nm, "合法 ✔", ("（出现 %s）" % ",".join(bad) if bad else "")))
 
+    # 7) 仿真链路回归：list_simulations → run_sweep → load_dataset → verify_formula
+    #    专门覆盖"仿真实验台"这条路径（它引入了新的返回结构），
+    #    并且**同样做严格 JSON 校验**——新路径最容易带出非法常量。
+    #    自检产物（数据集文件与运行副本）用完即删，避免污染数据目录。
+    junk = []
+    try:
+        raw_ls = run_raw([dict(jsonrpc="2.0", id=9, method="tools/call",
+                               params=dict(name="list_simulations", arguments={}))])
+        _strict(raw_ls)
+        n_sim = json.loads(raw_ls.splitlines()[-1])["result"]["structuredContent"]["count"]
+
+        raw_sw = run_raw([dict(jsonrpc="2.0", id=10, method="tools/call",
+                               params=dict(name="run_sweep",
+                                           arguments=dict(scenario="rc_discharge",
+                                                          n_cases=12)))])
+        _strict(raw_sw)
+        sw = json.loads(raw_sw.splitlines()[-1])["result"]["structuredContent"]
+        dsname = sw["dataset"]
+
+        raw_ld = run_raw([dict(jsonrpc="2.0", id=11, method="tools/call",
+                               params=dict(name="load_dataset",
+                                           arguments=dict(name=dsname)))])
+        _strict(raw_ld)
+        ld = json.loads(raw_ld.splitlines()[-1])["result"]["structuredContent"]
+
+        raw_vf = run_raw([dict(jsonrpc="2.0", id=12, method="tools/call",
+                               params=dict(name="verify_formula",
+                                           arguments=dict(data_id=ld["data_id"],
+                                                          formula="R*C")))])
+        _strict(raw_vf)
+        vf = json.loads(raw_vf.splitlines()[-1])["result"]["structuredContent"]
+
+        print("7. 仿真链路      → %d 个实验台；%s 跑 12 例 → %s；"
+              "验证判定=%s（参考解：%s）"
+              % (n_sim, sw["scenario"], ld["data_id"], vf.get("verdict"),
+                 "重跑仿真" if "仿真" in str(vf.get("reference")) else vf.get("reference")))
+        root = os.path.dirname(os.path.abspath(__file__))
+        junk = [os.path.join(root, "data", "simulations", dsname + ext)
+                for ext in (".csv", ".sim.json")]
+        junk += [os.path.join(root, ".agh_runs", ld["data_id"] + ext)
+                 for ext in (".npz", ".meta.json")]
+    except Exception as exc:                       # noqa: BLE001
+        print("7. 仿真链路      → 未通过：%s" % exc)
+        raise
+    finally:
+        for p in junk:                             # 只删本次自检刚生成的产物
+            try:
+                if os.path.exists(p):
+                    os.remove(p)
+            except OSError:
+                pass
+
     # stdout 洁净度：重定向期间业务代码不应往 stdout 写东西
     print()
     print("=== 全部通过：协议可实现、stdout 洁净、错误可被智能体读到、返回是严格合法 JSON ===")
