@@ -291,7 +291,12 @@ def sample_data(eq, n=100, noise=0.0, seed=0):
 
 
 def make_truth_expr(eq):
-    """把真值公式转成 sympy 表达式，供符号等价判定使用"""
+    """把真值公式转成 sympy 表达式（保留给将来的符号层比较用）。
+
+    注意：当前**没有任何地方调用它**。本项目判定"候选公式是不是真值公式"用的是
+    equivalence.classify —— 那是**数值等价判定**（撒点比对），不是符号等价证明。
+    这条边界写在 equivalence.py 的模块说明与 README「关于「形式化」」一节里。
+    """
     import sympy as sp
     names = varnames(eq)
     syms = sp.symbols(names)
