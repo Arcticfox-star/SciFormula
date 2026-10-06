@@ -747,7 +747,7 @@ python verify_evidence.py --strict # 连换行符差异也不容忍
 | **不可变证据** | `results/EVIDENCE.sha256` | 逐字节一致 | AGH 官方导出、会话轨迹摘要、评分卡、测试样例，以及**评分卡的判定输入固定副本**（`results/posthoc/data/*.npz`）——生成后就不该再变 |
 | **生成快照** | `results/SNAPSHOTS.sha256` | 按**规范形式**比对 | `detailed*.csv` 含每条耗时列、`report*.html` 页脚含生成时间，**任何人重跑都会不同**；把这两处抹掉再比，数字与结论仍逐字节受保护 |
 
-三条如实说明：
+四条如实说明：
 
 1. **换行符差异不算异常**（但会显式打印成 `OK(换行)`，不掩盖）。
    仓库根目录的 `.gitattributes` 已把文本文件统一成 LF，AGH 官方导出按非文本处理、
