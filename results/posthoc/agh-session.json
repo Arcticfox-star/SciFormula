@@ -1,6 +1,6 @@
 {
   "session_id": "161ea3fb-7f17-4a89-9ba7-d6c70d46c6be",
-  "source": "results/agh-session.html",
+  "source": "results\\agh-session.html",
   "rounds": [
     {
       "round": 1,
@@ -58,7 +58,9 @@
       "score": {
         "verdict": "no_formula",
         "verdict_label": "模型未给出可解析公式",
-        "recovered": false
+        "recovered": false,
+        "scorable": true,
+        "data_source": null
       }
     },
     {
@@ -129,6 +131,8 @@
         "verdict": "approx",
         "verdict_label": "近似恢复",
         "recovered": true,
+        "scorable": true,
+        "data_source": "pinned",
         "max_rel": 0.6231033240352059,
         "r2_extrap": 0.9999850298738134
       }
@@ -197,9 +201,13 @@
         "flags": []
       },
       "score": {
-        "verdict": "no_formula",
-        "verdict_label": "无可判公式",
-        "recovered": false
+        "verdict": "approx",
+        "verdict_label": "近似恢复",
+        "recovered": true,
+        "scorable": true,
+        "data_source": "pinned",
+        "max_rel": 1.082177203388207,
+        "r2_extrap": 0.999982998652881
       }
     }
   ]

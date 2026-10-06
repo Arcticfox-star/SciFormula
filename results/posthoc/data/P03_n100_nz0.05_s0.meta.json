@@ -1,0 +1,38 @@
+{
+  "data_id": "P03_n100_nz0.05_s0",
+  "problem_id": "P03",
+  "name": "动能",
+  "ref": "经典力学",
+  "target_variable": "energy",
+  "n_samples": 100,
+  "noise": 0.05,
+  "seed": 0,
+  "mode": "discovery",
+  "variables": [
+    {
+      "name": "m",
+      "sampled_range": [
+        0.5,
+        10.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "v",
+      "sampled_range": [
+        0.5,
+        20.0
+      ],
+      "sampling": "linear"
+    }
+  ],
+  "created": "2026-10-03 21:09:11",
+  "reference": {
+    "expr": "m*v**2/2",
+    "target_unit": "J",
+    "variables_units": {
+      "m": "kg",
+      "v": "m/s"
+    }
+  }
+}

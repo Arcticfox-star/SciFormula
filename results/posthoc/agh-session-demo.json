@@ -1,6 +1,6 @@
 {
   "session_id": "438d81fd-c1b5-4efc-b739-d238864a3d3a",
-  "source": "results/agh-session-demo.html",
+  "source": "results\\agh-session-demo.html",
   "rounds": [
     {
       "round": 1,
@@ -84,6 +84,8 @@
         "verdict": "up_to_constant",
         "verdict_label": "差一个常数因子",
         "recovered": true,
+        "scorable": true,
+        "data_source": "pinned",
         "max_rel": 0.00013114673118883572,
         "r2_extrap": 0.9999999697007045
       }
@@ -183,6 +185,8 @@
         "verdict": "up_to_constant",
         "verdict_label": "差一个常数因子",
         "recovered": true,
+        "scorable": true,
+        "data_source": "pinned",
         "max_rel": 0.0007665007923237963,
         "r2_extrap": 0.9999989186641527
       }

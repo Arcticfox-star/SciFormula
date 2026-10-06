@@ -1,0 +1,38 @@
+{
+  "data_id": "P20_n100_nz0.05_s0",
+  "problem_id": "P20",
+  "name": "指数衰减",
+  "ref": "经典",
+  "target_variable": "decay",
+  "n_samples": 100,
+  "noise": 0.05,
+  "seed": 0,
+  "mode": "discovery",
+  "variables": [
+    {
+      "name": "t",
+      "sampled_range": [
+        0.5,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "tau",
+      "sampled_range": [
+        0.5,
+        2.0
+      ],
+      "sampling": "linear"
+    }
+  ],
+  "created": "2026-10-06 19:30:56",
+  "reference": {
+    "expr": "exp(-t/tau)",
+    "target_unit": "",
+    "variables_units": {
+      "t": "s",
+      "tau": "s"
+    }
+  }
+}

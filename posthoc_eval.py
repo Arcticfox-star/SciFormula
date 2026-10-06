@@ -11,9 +11,26 @@ posthoc_eval.py —— 会话级后验评分器：给 AGH 跑完的会话打一�
 
 【评什么（四项）】
   1. 公式判定   exact / up_to_constant / approx / wrong（口径与正式基准一致）
+                ＋ **unscorable（无法判定）**：判定所需的观测数据缺失，见下
   2. 单位准确率 变量级 + 题目级，按**量纲等价**判（N 与 kg*m/s^2 算等价）
   3. 过程指标   工具调用、失败/被拒次数、剪枝比例、是否被验证拦下、对话轮数
   4. 诚实性核对 模型自报"失败 N 次"与实际的差；是否声称通过而验证判定不是通过
+
+【为什么必须区分「无法判定」与「模型未给出公式」（2026-10-06 修）】
+判定公式需要用拟合时那张设计矩阵 X。它原本只存在于运行期目录 `.agh_runs/`，
+而该目录被 `.gitignore` 排除 → 干净克隆后重跑评分器，**同一条会话得到不同结论**，
+6 份评分卡全部从 up_to_constant / wrong / approx 静默翻转成 no_formula。
+更糟的是：`no_formula` 这一个值同时承担了两件完全不同的事——
+
+  · 「评分器自己缺料」（工具/证据链的问题）——应当判 unscorable，
+    并且**不能算进公式恢复率的分母**；
+  · 「智能体没给出公式」（被评对象的表现）——才是 no_formula。
+
+两者混用，后果是"评分不可复现"伪装成"智能体没作答"，且方向固定是把
+"成功恢复"改写成"未恢复"。修法两条：
+  ① 把评分卡依赖的输入固定副本提交进仓库（`results/posthoc/data/`，
+     由 resolve_npz() 优先读取）——断链从根上补齐；
+  ② 真找不到时判 `unscorable` 并在评分卡里显著标注——即使再缺料，也不会被误读成表现。
 
 【怎么用】
     python posthoc_eval.py results/agh-session-demo.html           # 单个会话
@@ -56,6 +73,10 @@ TOOL_RE = re.compile(r"\bmcp_\S*?_(" + "|".join(TOOLS) + r")\b")
 STATUS_RE = re.compile(r"\bmcp_\S*?_(" + "|".join(TOOLS) + r")\s*·\s*(completed|failed)")
 APPROVAL_RE = re.compile(r"Approval\s*·\s*([a-z-]+)")
 USER_RE = re.compile(r"User\s*·\s*local")
+
+# 判定所需数据的**固定副本**目录（随仓库提交，见该目录下的 README.md）。
+# 与运行期目录 .agh_runs/ 的关系由 resolve_npz() 决定，顺序不能反。
+PINNED_DATA_DIR = os.path.join(HERE, "results", "posthoc", "data")
 
 
 # ---------------------------------------------------------------------------
@@ -223,24 +244,54 @@ def reference_for(problem_id):
                 expr=SIM.SCENARIOS[sid]["truth_expr"], scenario=sid, points=_points)
 
 
+def resolve_npz(data_id):
+    """按 data_id 找判定所需的 npz，返回路径；两处都找不到返回 None。
+
+    查找顺序：**先固定副本（results/posthoc/data/，随仓库提交），再运行期目录
+    （.agh_runs/，被 .gitignore 排除）**。顺序不能反——干净克隆里只有前者存在，
+    先查后者会让"本地能过、评委那里不能过"，而这正是本次修的那条断链。
+    """
+    if not data_id:
+        return None
+    for d in (PINNED_DATA_DIR, RUN_DIR):
+        p = os.path.join(d, data_id + ".npz")
+        if os.path.exists(p):
+            return p
+    return None
+
+
 def score_formula(formula, ref, data_id):
     """
     与 `pipeline.score_prediction` **同一口径**判定公式。
     这里没有直接复用那个函数，是因为它要求数据文件的 meta.mode == benchmark；
     而后验评分**不能改写智能体跑过的数据文件**——mode 被改掉会让
     "智能体当时看没看过真值"这件事变得可疑。所以只借用同一批底层函数，口径一致。
+
+    判定顺序有意分成三步，**每一步对应一个不同的责任方**：
+      ① 模型没给公式        → no_formula（智能体表现，计入分母）
+      ② 判定所需数据找不到  → unscorable（评分器/证据链缺料，**不计入分母**）
+      ③ 数据齐 → 正常判定
+    第 ① 步必须排在第 ② 步前面：模型什么都没给是"不需要数据也能下结论"的事，
+    把它和"缺料"混在一起就会得出与事实相反的统计。
     """
-    npz = os.path.join(RUN_DIR, data_id + ".npz")
-    if not (formula and os.path.exists(npz)):
-        return dict(verdict="no_formula", verdict_label="无可判公式", recovered=False)
+    if not formula:
+        return dict(verdict="no_formula", verdict_label="模型未给出可解析公式",
+                    recovered=False, scorable=True, data_source=None)
+    npz = resolve_npz(data_id)
+    if npz is None:
+        return dict(verdict="unscorable",
+                    verdict_label="无法判定（判定所需的观测数据缺失，非模型原因）",
+                    recovered=False, scorable=False, missing_data_id=data_id)
     import numpy as np
     z = np.load(npz)
     X, y = z["X"], z["y"]
+    source = "pinned" if os.path.dirname(npz) == PINNED_DATA_DIR else "runtime"
     names = ref["names"]
     try:
         c = classify(formula, ref["expr"], X, names)
     except Exception as exc:
-        return dict(verdict="error", verdict_label="判定异常: %s" % exc, recovered=False)
+        return dict(verdict="error", verdict_label="判定异常: %s" % exc,
+                    recovered=False, scorable=True, data_source=source)
     Xe = ref["points"]()
     te = evaluate(ref["expr"], Xe, names)
     ok = np.isfinite(te)
@@ -249,6 +300,7 @@ def score_formula(formula, ref, data_id):
         r2ex = float(r2(formula, ref["expr"], Xe[ok], names))
     return dict(verdict=c["verdict"], verdict_label=VERDICT_LABEL[c["verdict"]],
                 recovered=bool(is_recovered(c["verdict"])) or c["verdict"] == "approx",
+                scorable=True, data_source=source,
                 max_rel=c.get("max_rel"), r2_extrap=r2ex)
 
 
@@ -325,20 +377,41 @@ def honesty(got, rejects):
                 claimed_pass=claimed_pass, actual_verdict=v, flags=flags)
 
 
+def _unscorable_round(i, got, reject_by_round):
+    """构造一条「无法判定」的轮次记录。
+
+    用在「有题号、但取不到参考真值」这类**评分器自己缺料**的场合。
+    以前这里是 `continue`——整轮被静默丢掉，评分卡上看不出"有东西没被评"，
+    于是"评不了"与"没有这一轮"在外观上无法区分。宁可显式写出来。
+    """
+    return dict(round=i, problem_id=got["problem_id"], params=got["params"],
+                units=got["units"], target_unit=got["target_unit"], unit_rows=[],
+                var_hits=0, var_tot=0, target_ok=None,
+                ref_target_unit=None, truth="(未知：取不到该题目的参考真值)",
+                kind="unknown", scenario=None,
+                build=got["build"], formula=got["formula"], fit=got["fit"],
+                verify=got["verify"], tool_seq=got["tool_seq"],
+                honesty=honesty(got, reject_by_round.get(i, 0)),
+                score=dict(verdict="unscorable",
+                           verdict_label="无法判定（取不到该题目的参考真值，非模型原因）",
+                           recovered=False, scorable=False, data_source=None))
+
+
 def score_session(rec):
     out = []
     reject_by_round = assign_rejects(rec)
     for i, rnd in enumerate(rec["rounds"], start=1):
         got = parse_round(rec, rnd)
         if not got["problem_id"]:
+            # 本轮不是"发现公式"类任务（例如单位推断作答），没有题目可评。
+            # 这类轮次不进评分表，但会在评分卡上被显式列出，不静默消失。
             continue
         refobj = reference_for(got["problem_id"])
         if refobj is None:
+            out.append(_unscorable_round(i, got, reject_by_round))
             continue
         names = refobj["names"]
-        sc = score_formula(got["formula"], refobj,
-                           got["data_id"] or data_id_for(got)) if got["formula"] else dict(
-            verdict="no_formula", verdict_label="模型未给出可解析公式", recovered=False)
+        sc = score_formula(got["formula"], refobj, got["data_id"] or data_id_for(got))
         # 单位准确率
         var_hits = var_tot = 0
         unit_rows = []
@@ -405,11 +478,27 @@ def write_card(rec, scored, outdir):
     A("- 工具调用：%d 次 | 批准卡片：%d 张（被拒 %d）"
       % (len(rec["calls"]), len(rec["approvals"]),
          sum(1 for a in rec["approvals"] if a == "rejected")))
-    A("- 对话轮数（含有效任务）：%d\n" % len(scored))
+    # 评分覆盖度：先说在前面，免得「评不了」被读成「没作答」
+    n_unscorable = sum(1 for r in scored if not r["score"].get("scorable", True))
+    seen = set(r["round"] for r in scored)
+    n_skipped = sum(1 for i in range(1, len(rec["rounds"]) + 1) if i not in seen)
+    A("- 对话轮数（含有效任务）：%d%s\n"
+      % (len(scored),
+         ("；另有 %d 轮未列入评分（未识别到题目编号）" % n_skipped) if n_skipped else ""))
     A("> 本卡片由 `posthoc_eval.py` 在会话**结束后**生成。"
       "它读真值，因此**不进 MCP 工具集**——智能体在会话中看不到任何真值。")
     A("> 口径说明：单位与公式都按该轮**最后一次**推断/拟合计"
       "（智能体可能在轮内多次修订单位，这里评的是它最终的判断）。\n")
+    if n_unscorable or n_skipped:
+        A("> ⚠️ **本卡的评分覆盖不完整，请先读这一条再读下面的表**：")
+        if n_unscorable:
+            A("> - 有 %d 轮判定为 `unscorable`（无法判定）：判定所需的观测数据"
+              "既不在仓库的固定副本里、也不在运行目录里。这是**评分器一侧缺料**，"
+              "不是智能体没作答，**该轮不计入公式恢复率的分母**。" % n_unscorable)
+        if n_skipped:
+            A("> - 另有 %d 轮未列入评分：这些轮次里**没有识别到题目编号或数据集标识**，"
+              "取不到真值可供比对（常见于纯问答轮）。" % n_skipped)
+        A("")
     tot_recovered = 0
     for r in scored:
         A("---\n")
@@ -418,9 +507,19 @@ def write_card(rec, scored, outdir):
             A("> 本轮的观测数据来自**仿真实验台**（%s，RK4 数值积分）；"
               "本卡的公式判定用的真值是该场景的闭式解。\n" % r.get("scenario"))
         A("参数：%s\n" % json.dumps(r["params"], ensure_ascii=False))
-        A("**① 公式判定**：`%s`（%s）%s"
-          % (r["score"]["verdict"], r["score"].get("verdict_label", ""),
-             " ✔ 计入恢复" if r["score"].get("recovered") else ""))
+        if not r["score"].get("scorable", True):
+            A("**① 公式判定**：`unscorable` —— ⚠️ **无法判定**（%s）"
+              % r["score"].get("verdict_label", ""))
+            mid = r["score"].get("missing_data_id")
+            if mid:
+                A("")
+                A("- 缺少的判定输入：`%s.npz`（固定副本 `results/posthoc/data/` "
+                  "与运行目录 `.agh_runs/` 里都没有）" % mid)
+            A("- 这是**评分器自己缺料**，不是模型没作答；**该轮不计入公式恢复率的分母**")
+        else:
+            A("**① 公式判定**：`%s`（%s）%s"
+              % (r["score"]["verdict"], r["score"].get("verdict_label", ""),
+                 " ✔ 计入恢复" if r["score"].get("recovered") else ""))
         if r["formula"]:
             A("")
             A("- 模型最终公式：`%s`" % r["formula"])
@@ -465,12 +564,18 @@ def write_card(rec, scored, outdir):
             "对" if r["target_ok"] else ("?" if r["target_ok"] is None else "错"),
             (r["verify"] or {}).get("verdict", "未调用"),
             "OK" if not r["honesty"]["flags"] else "%d 项" % len(r["honesty"]["flags"])))
+    n_scorable = sum(1 for r in scored if r["score"].get("scorable", True))
     A("")
     A("**本轮会话得分**：公式恢复 %d/%d | 单位变量级 %d/%d | 目标量单位 %d/%d | 诚实性问题 %d 项"
-      % (tot_recovered, len(scored),
+      % (tot_recovered, n_scorable,
          sum(r["var_hits"] for r in scored), sum(r["var_tot"] for r in scored),
-         sum(1 for r in scored if r.get("target_ok")), len(scored),
+         sum(1 for r in scored if r.get("target_ok")), n_scorable,
          sum(len(r["honesty"]["flags"]) for r in scored)))
+    if n_unscorable:
+        A("")
+        A("> 公式恢复率的分母是**可判定的轮数**（%d），不含那 %d 轮 `unscorable` ——"
+          "它们评不了的原因在评分器这一侧，不该记成模型的失败。"
+          % (n_scorable, n_unscorable))
     # newline="\n"：评分卡在证据清单里，行尾必须固定为 LF（Windows 默认会写 CRLF）
     open(md, "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
     with open(js, "w", encoding="utf-8", newline="\n") as f:

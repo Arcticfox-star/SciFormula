@@ -9,8 +9,8 @@
 # ⚠️ 本清单存的是**规范形式**的哈希，因此 `sha256sum -c` 对它不适用；
 #    请用 `python verify_evidence.py`（它会分别按两种严格度核对两份清单）。
 #
-# 生成时间（北京时间）：2026-10-06 19:04:16
-# 本次重签原因：按仓库外部审计结论修复后重签：docs/test-cases.md 的示例路径改为通用写法（去掉作者本机路径）；生成快照按「换行符统一 + 抹掉耗时列与生成时间」的规范形式登记；新增 .gitattributes 锁定换行符策略
+# 生成时间（北京时间）：2026-10-06 19:37:32
+# 本次重签原因：按外部审计第二轮结论修复评分卡证据断链：评分器判定所需的观测数据固定副本（results/posthoc/data，7 份 npz + 7 份 meta.json）纳入仓库并登记；posthoc_eval 区分 unscorable 与 no_formula 后重生成 7 份评分卡（agh-session.md 第 3 轮 P20 由 no_formula 更正为 approx）；docs/test-cases.md 新增 F5 回归样例；verify_evidence 对二进制文件关闭换行符容错；README/AGH接入说明 同步
 
 290e6b18c5f20580419bf087f4e2c9d54f00c745fd7fd3328954f9bb7a646feb  results/report.html
 30df63b5002b5b5e703609a57ed7102f4ed3bc68c7f0df069836fd835eed8b87  results/report_feynman.html

@@ -1,0 +1,59 @@
+{
+  "data_id": "I.39.22_csv_n200",
+  "problem_id": "I.39.22",
+  "name": "I.39.22",
+  "ref": "观测数据文件 data\\observations\\I.39.22.csv",
+  "target_variable": "pr",
+  "n_samples": 200,
+  "noise": 0.0,
+  "seed": 0,
+  "mode": "discovery",
+  "noise_note": "数据来自文件，噪声水平未知",
+  "variables": [
+    {
+      "name": "n",
+      "sampled_range": [
+        1.010954001,
+        4.988839743
+      ],
+      "sampling": "来自数据文件列 0"
+    },
+    {
+      "name": "T",
+      "sampled_range": [
+        1.00120276,
+        4.988041172
+      ],
+      "sampling": "来自数据文件列 1"
+    },
+    {
+      "name": "V",
+      "sampled_range": [
+        1.01959766,
+        4.998005409
+      ],
+      "sampling": "来自数据文件列 2"
+    },
+    {
+      "name": "kb",
+      "sampled_range": [
+        1.024707315,
+        4.981199214
+      ],
+      "sampling": "来自数据文件列 3"
+    }
+  ],
+  "source": "csv",
+  "csv": "data\\observations\\I.39.22.csv",
+  "created": "2026-10-06 19:02:57",
+  "reference": {
+    "expr": "n*kb*T/V",
+    "target_unit": "kg/m/s^2",
+    "variables_units": {
+      "n": "1",
+      "T": "K",
+      "V": "m^3",
+      "kb": "J/K"
+    }
+  }
+}

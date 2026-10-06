@@ -1,0 +1,65 @@
+{
+  "data_id": "I.13.12_n200_nz0.05_s0",
+  "problem_id": "I.13.12",
+  "name": "I.13.12",
+  "ref": "Feynman I.13.12",
+  "target_variable": "U",
+  "n_samples": 200,
+  "noise": 0.05,
+  "seed": 0,
+  "mode": "discovery",
+  "variables": [
+    {
+      "name": "m1",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "m2",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "r1",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "r2",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "G",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    }
+  ],
+  "created": "2026-10-03 22:09:30",
+  "reference": {
+    "expr": "G*m1*m2*(1/r2-1/r1)",
+    "target_unit": "kg*m^2/s^2",
+    "variables_units": {
+      "m1": "kg",
+      "m2": "kg",
+      "r1": "m",
+      "r2": "m",
+      "G": "m^3/kg/s^2"
+    }
+  }
+}

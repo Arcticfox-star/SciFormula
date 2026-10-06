@@ -1,0 +1,56 @@
+{
+  "data_id": "I.34.8_n200_nz0.01_s0",
+  "problem_id": "I.34.8",
+  "name": "I.34.8",
+  "ref": "Feynman I.34.8",
+  "target_variable": "omega",
+  "n_samples": 200,
+  "noise": 0.01,
+  "seed": 0,
+  "mode": "discovery",
+  "variables": [
+    {
+      "name": "q",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "v",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "B",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "p",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    }
+  ],
+  "created": "2026-10-03 23:49:52",
+  "reference": {
+    "expr": "q*v*B/p",
+    "target_unit": "1/s",
+    "variables_units": {
+      "q": "C",
+      "v": "m/s",
+      "B": "T",
+      "p": "kg*m/s"
+    }
+  }
+}

@@ -308,8 +308,8 @@ agh mcp reconnect sciformula --expected-revision REVISION
 | 关键配置 | MCP 服务定义（`mcp get` 的输出）、`mcp tools` 的工具清单 |
 | 专业验证结果 | `results/report.html` + `results/report_feynman.html` + `verify_formula` 的判定输出 |
 | 失败类测试样例 | `docs/test-cases.md` 三类齐全；官方题会话里 `verify_formula` 判 overfit 拦截高分假公式是现场案例 |
-| 证据未被改动 | `results/EVIDENCE.sha256`（sha256 清单）+ `python verify_evidence.py` 一键核对，证明上述文件与官方原件逐字节相同 |
-| 会话级评分 | `python posthoc_eval.py results/agh-session-*.html` → `results/posthoc/*.md` 评分卡（公式判定 / 单位准确率 / 过程指标 / 诚实性与完整性核对）。**评分器在会话外运行、不进工具集**——它要读真值，进了工具集就等于把答案给智能体 |
+| 证据未被改动 | `results/EVIDENCE.sha256`（sha256 清单）+ `python verify_evidence.py` 一键核对，证明上述文件与官方原件逐字节相同（清单含 36 项：官方导出、轨迹摘要、评分卡、判定输入固定副本、测试样例）|
+| 会话级评分 | `python posthoc_eval.py results/agh-session-*.html` → `results/posthoc/*.md` 评分卡（公式判定 / 单位准确率 / 过程指标 / 诚实性与完整性核对）。**评分器在会话外运行、不进工具集**——它要读真值，进了工具集就等于把答案给智能体。评分卡判定要用拟合时的设计矩阵，其**固定副本**在 `results/posthoc/data/`（随仓库提交，见该目录 README）；真缺料时判 `unscorable` 并排除在恢复率分母之外，不与「模型没作答」混用 |
 
 ---
 

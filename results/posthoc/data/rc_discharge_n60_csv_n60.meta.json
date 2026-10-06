@@ -1,0 +1,73 @@
+{
+  "data_id": "rc_discharge_n60_csv_n60",
+  "problem_id": "",
+  "name": "rc_discharge_n60",
+  "ref": "观测数据文件 data\\simulations\\rc_discharge_n60.csv",
+  "target_variable": "tau",
+  "n_samples": 60,
+  "noise": 0.0,
+  "seed": 1,
+  "mode": "discovery",
+  "noise_note": "数据来自文件，噪声水平未知",
+  "variables": [
+    {
+      "name": "R",
+      "sampled_range": [
+        104.690945386,
+        9768.65330051
+      ],
+      "sampling": "来自数据文件列 0"
+    },
+    {
+      "name": "C",
+      "sampled_range": [
+        1.26112090812e-06,
+        0.000878183191063
+      ],
+      "sampling": "来自数据文件列 1"
+    },
+    {
+      "name": "V0",
+      "sampled_range": [
+        1.00682812334,
+        11.9170911483
+      ],
+      "sampling": "来自数据文件列 2"
+    }
+  ],
+  "source": "simulation",
+  "csv": "data\\simulations\\rc_discharge_n60.csv",
+  "created": "2026-10-06 13:21:58",
+  "simulation": {
+    "dataset": "rc_discharge_n60",
+    "source": "simulation",
+    "scenario": "rc_discharge",
+    "scenario_title": "RC 放电 · 测时间常数",
+    "target_name": "tau",
+    "target_unit": "s",
+    "parameters": [
+      {
+        "name": "R",
+        "unit": "ohm",
+        "lo": 100.0,
+        "hi": 10000.0
+      },
+      {
+        "name": "C",
+        "unit": "F",
+        "lo": 1e-06,
+        "hi": 0.001
+      },
+      {
+        "name": "V0",
+        "unit": "V",
+        "lo": 1.0,
+        "hi": 12.0
+      }
+    ],
+    "noise": 0.005,
+    "seed": 0,
+    "n_cases": 60,
+    "created": "2026-10-06 13:21:55"
+  }
+}

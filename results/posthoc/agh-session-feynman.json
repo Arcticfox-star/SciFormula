@@ -1,6 +1,6 @@
 {
   "session_id": "39d31a09-7e75-42d0-934e-911e92cf6e74",
-  "source": "results/agh-session-feynman.html",
+  "source": "results\\agh-session-feynman.html",
   "rounds": [
     {
       "round": 1,
@@ -103,6 +103,8 @@
         "verdict": "wrong",
         "verdict_label": "错误",
         "recovered": false,
+        "scorable": true,
+        "data_source": "pinned",
         "max_rel": 16.490304540562686,
         "r2_extrap": 0.8920050611226141
       }

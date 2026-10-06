@@ -8,8 +8,10 @@
 【为什么分两份清单】（2026-10-06，由一次仓库外部审计推动）
 清单保护的是「证据没被人动过」这件事。但项目里有两种东西性质完全不同：
 
-  ① 不可变证据 —— 官方导出、轨迹摘要、评分卡、测试样例。
-     它们一旦生成就不该再变，所以要求**逐字节**一致（容忍换行符，见 verify_evidence.py）。
+  ① 不可变证据 —— 官方导出、轨迹摘要、评分卡、测试样例
+     ＋ 评分卡的**判定输入固定副本**（`results/posthoc/data/*.npz` 及其 `.meta.json`）。
+     它们一旦生成就不该再变，所以要求**逐字节**一致（容忍换行符，见 verify_evidence.py；
+     二进制文件不做这层容忍）。
 
   ② 生成快照 —— 基准报告与明细表。
      `detailed*.csv` 有每条耗时列、`report*.html` 页脚有生成时间，
@@ -63,6 +65,26 @@ EVIDENCE = [
     "results/unit_infer_answers.json",
     # 测试样例文档
     "docs/test-cases.md",
+    # 评分器的判定输入固定副本（2026-10-06 新增）
+    # 【为什么必须进清单】posthoc_eval 判定公式要用拟合时的设计矩阵 X，
+    # 它原本只存在于被 .gitignore 排除的 .agh_runs/ → 干净克隆后 6 份评分卡
+    # 会静默翻转成 "no_formula"。把副本固定进仓库后，评分卡在任何人的机器上
+    # 都能复现。既然"评分卡可复现"是这里承诺的事，这几份输入就必须同样受保护——
+    # 否则改一个字节就能悄悄改掉评分结论。
+    "results/posthoc/data/I.39.22_csv_n200.npz",
+    "results/posthoc/data/I.39.22_csv_n200.meta.json",
+    "results/posthoc/data/I.39.22_n200_nz0.01_s0.npz",
+    "results/posthoc/data/I.39.22_n200_nz0.01_s0.meta.json",
+    "results/posthoc/data/I.34.8_n200_nz0.01_s0.npz",
+    "results/posthoc/data/I.34.8_n200_nz0.01_s0.meta.json",
+    "results/posthoc/data/I.13.12_n200_nz0.05_s0.npz",
+    "results/posthoc/data/I.13.12_n200_nz0.05_s0.meta.json",
+    "results/posthoc/data/P03_n100_nz0.05_s0.npz",
+    "results/posthoc/data/P03_n100_nz0.05_s0.meta.json",
+    "results/posthoc/data/P20_n100_nz0.05_s0.npz",
+    "results/posthoc/data/P20_n100_nz0.05_s0.meta.json",
+    "results/posthoc/data/rc_discharge_n60_csv_n60.npz",
+    "results/posthoc/data/rc_discharge_n60_csv_n60.meta.json",
 ]
 
 # ② 生成快照：按规范形式比对（换行符统一 + 抹掉耗时列/生成时间）

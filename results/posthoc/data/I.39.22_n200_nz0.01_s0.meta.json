@@ -1,0 +1,56 @@
+{
+  "data_id": "I.39.22_n200_nz0.01_s0",
+  "problem_id": "I.39.22",
+  "name": "I.39.22",
+  "ref": "Feynman I.39.22",
+  "target_variable": "pr",
+  "n_samples": 200,
+  "noise": 0.01,
+  "seed": 0,
+  "mode": "discovery",
+  "variables": [
+    {
+      "name": "n",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "T",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "V",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    },
+    {
+      "name": "kb",
+      "sampled_range": [
+        1.0,
+        5.0
+      ],
+      "sampling": "linear"
+    }
+  ],
+  "created": "2026-10-04 19:42:55",
+  "reference": {
+    "expr": "n*kb*T/V",
+    "target_unit": "kg/m/s^2",
+    "variables_units": {
+      "n": "1",
+      "T": "K",
+      "V": "m^3",
+      "kb": "J/K"
+    }
+  }
+}

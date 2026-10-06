@@ -195,10 +195,46 @@ python agh_tools.py call build_candidate_library --json '{"data_id":"kepler_spee
   同一条数据把目标量换成比动能（m²/s²）即可跑通，
   拟合出 `0.4997*(G*M*1/a)`（真值 `G*M/(2a)`），验证 passed。
 
+### F5　后验评分器的判定输入缺失（回归测试：`unscorable` ≠ `no_formula`）
+
+- **背景**：评分卡判定一条公式，需要**拟合时那张设计矩阵 `X`** 去做撒点比对。
+  这张 `X` 原本只存在于运行期目录 `.agh_runs/`，而该目录被 `.gitignore` 排除——
+  于是干净克隆后 6 份评分卡会**静默翻转**成 `no_formula`（方向固定是把
+  「成功恢复」改写成「没作答」）。这是"证据链缺一环"，不是模型的问题。
+- **期望**：
+  1. 判定输入随仓库提交（`results/posthoc/data/`），**干净克隆也能得到同样的判定**；
+  2. 万一真的缺料，判 `unscorable`（无法判定）并显著标注，**不计入公式恢复率的分母**；
+     **绝不能**判成 `no_formula`——那会把"评不了"伪装成"模型没作答"。
+- **实际**：
+  - 移走运行目录（模拟干净克隆）后重跑，**7 份评分卡与提交版逐字节一致**；
+  - 再把固定副本也移走（最坏情况），9 个可评轮次里
+    **8 轮判 `unscorable`、仅 1 轮判 `no_formula`**——
+    后者正是 `agh-session.html` 第 1 轮（模型确实一个公式都没给出），
+    说明两个值各归其位、没有互相顶替。
+- **复现**（不修改仓库内容，只打印判定）：
+
+```bash
+python - <<'PY'
+import sys; sys.path.insert(0, ".")
+import posthoc_eval as PE
+PE.PINNED_DATA_DIR = ".agh_runs"          # 固定副本指向运行目录
+PE.RUN_DIR = ".agh_runs__DOES_NOT_EXIST"  # 运行目录不存在 → 等价于"干净克隆且没带副本"
+for name in ("agh-session-sim", "agh-session"):
+    rec = PE.parse_session("results/%s.html" % name)
+    print(name, [(r["problem_id"], r["score"]["verdict"]) for r in PE.score_session(rec)])
+PY
+# 期望：全部 unscorable；而 agh-session 第 1 轮（模型未给公式）为 no_formula
+```
+
+- **说明**：这条样例的价值在于它是**真实发生过的缺陷**（2026-10-06 由仓库外部审计
+  第二轮抓出、当场实测复现），而不是构造出来的。修完顺带修正了一处既有错判：
+  `agh-session.md` 第 3 轮（P20）原先因缺数据被判 `no_formula`，
+  补上判定输入后是正确的 `approx`，会话说得分由 1/3 更正为 **2/3**。
+
 ## 附：三类样例的统计口径
 
 | 类别 | 数量 | 出处 |
 |---|---|---|
 | 正常 | 迷你库 20/21 通过双重检验；官方基准三档 54/54/57（确定性修复后口径，见 README）；**仿真实验台 4 个场景 4/4 一次通过** | `results/report.html`、`results/report_feynman.html`、README「数值仿真实验台」一节 |
 | 边界 | 2 条可离线复现 + 1 条 AGH 会话证据 | 本文 B1~B3 |
-| 失败 | P19（表达力边界）、负动能拦截（回归测试）、官方 15 题无解、仿真台目标量超表达力 | 本文 F1~F4 |
+| 失败 | P19（表达力边界）、负动能拦截（回归测试）、官方 15 题无解、仿真台目标量超表达力、后验评分器判定输入缺失（回归测试） | 本文 F1~F5 |

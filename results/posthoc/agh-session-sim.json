@@ -1,6 +1,6 @@
 {
   "session_id": "6ea6a59e-2c25-47f8-96b9-e000383a5a93",
-  "source": "results/agh-session-sim.html",
+  "source": "results\\agh-session-sim.html",
   "rounds": [
     {
       "round": 1,
@@ -74,6 +74,8 @@
         "verdict": "up_to_constant",
         "verdict_label": "差一个常数因子",
         "recovered": true,
+        "scorable": true,
+        "data_source": "pinned",
         "max_rel": 0.0015396090098026395,
         "r2_extrap": 0.9999970920083255
       }

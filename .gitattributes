@@ -23,3 +23,9 @@
 
 # —— 证据原件：不做任何换行符转换，字节原样保存 ——
 results/agh-session-*.html -text
+
+# —— 评分器判定输入副本：二进制，完全不转换 ——
+# 用 binary（= -diff -merge -text）而不是 -text：这些 .npz 是 zip 容器，
+# 逐行 diff 毫无意义，干脆别让 git 去试。
+# 它们进了 EVIDENCE.sha256，字节必须原样。
+results/posthoc/data/*.npz binary

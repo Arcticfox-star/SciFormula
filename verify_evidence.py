@@ -17,6 +17,9 @@
       而把 LF 换成 CRLF 重算哈希，15 个**全部**等于清单值，无一处是内容被改。
       这类情况标记为 `OK(换行)` 通过，但仍显式打印出来，不掩盖。
       → `--strict` 可关掉这个容错，要求逐字节完全一致。
+      ⚠️ 该容错**只对文本生效**：二进制文件（前 8KB 含 NUL 字节）一律逐字节比对。
+         评分器的判定输入 `results/posthoc/data/*.npz` 就在这里——zip 容器里
+         出现 0x0D 0x0A 是正常的，若还拿换行符容错兜底，等于给篡改开后门。
 
   二、生成快照（results/SNAPSHOTS.sha256）
       基准报告与明细表。它们**每次重跑都会变**（`detailed*.csv` 含每条耗时列
@@ -68,6 +71,18 @@ def sha256_of(path, chunk=1 << 20):
 def to_lf(data):
     """把 CRLF / 孤立 CR 统一成 LF。"""
     return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def looks_binary(data, probe=8192):
+    """按 git 的判据看前若干字节里有没有 NUL —— 有就是二进制。
+
+    为什么要单独判：`to_lf()` 那层换行符容错只对**文本**成立。二进制文件
+    （如评分器的判定输入 `results/posthoc/data/*.npz`，zip 容器）里恰好出现
+    0x0D 0x0A 是完全正常的事，若还用 to_lf 兜底，就有可能把"内容真的变了"
+    误判成"只是换行符差异"——那就变成给篡改开后门了。
+    二进制一律逐字节比，不兜底。
+    """
+    return b"\0" in data[:probe]
 
 
 def canonical(rel, data):
@@ -145,7 +160,7 @@ def _check(rows, mode, label, verbose, strict):
             n_ok += 1
             if verbose:
                 print("  OK       %s" % rel)
-        elif sha256_of_bytes(to_lf(raw)) == expect:
+        elif not looks_binary(raw) and sha256_of_bytes(to_lf(raw)) == expect:
             n_nl += 1
             if strict:
                 print("  CHANGED  %s（仅换行符差异，--strict 下判为异常）" % rel)
