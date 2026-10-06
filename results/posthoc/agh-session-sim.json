@@ -1,0 +1,82 @@
+{
+  "session_id": "6ea6a59e-2c25-47f8-96b9-e000383a5a93",
+  "source": "results/agh-session-sim.html",
+  "rounds": [
+    {
+      "round": 1,
+      "problem_id": "rc_discharge_n60",
+      "params": {},
+      "units": {
+        "C": "A^2*s^4*kg^-1*m^-2",
+        "R": "kg*m^2*s^-3*A^-2",
+        "V0": "kg*m^2*s^-3*A^-1"
+      },
+      "target_unit": "s",
+      "unit_rows": [
+        {
+          "name": "R",
+          "given": "kg*m^2*s^-3*A^-2",
+          "ref": "ohm",
+          "ok": true
+        },
+        {
+          "name": "C",
+          "given": "A^2*s^4*kg^-1*m^-2",
+          "ref": "F",
+          "ok": true
+        },
+        {
+          "name": "V0",
+          "given": "kg*m^2*s^-3*A^-1",
+          "ref": "V",
+          "ok": true
+        }
+      ],
+      "var_hits": 3,
+      "var_tot": 3,
+      "target_ok": true,
+      "ref_target_unit": "s",
+      "truth": "R*C",
+      "kind": "simulation",
+      "scenario": "rc_discharge",
+      "build": {
+        "total": 124,
+        "kept": 1,
+        "prune": 99.2
+      },
+      "formula": "(1.0015396090098025)*(C*R)",
+      "fit": {
+        "n_terms": 1,
+        "r2": 0.999971
+      },
+      "verify": {
+        "verdict": "passed",
+        "passed": true
+      },
+      "tool_seq": [
+        "list_simulations",
+        "run_sweep",
+        "load_dataset",
+        "check_units",
+        "build_candidate_library",
+        "fit_sparse",
+        "verify_formula"
+      ],
+      "honesty": {
+        "claimed_failures": 0,
+        "actual_failures": 0,
+        "rejects": 0,
+        "claimed_pass": true,
+        "actual_verdict": "passed",
+        "flags": []
+      },
+      "score": {
+        "verdict": "up_to_constant",
+        "verdict_label": "差一个常数因子",
+        "recovered": true,
+        "max_rel": 0.0015396090098026395,
+        "r2_extrap": 0.9999970920083255
+      }
+    }
+  ]
+}

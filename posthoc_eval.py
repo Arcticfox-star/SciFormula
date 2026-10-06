@@ -37,9 +37,21 @@ import equations as EQ                               # noqa: E402
 from equivalence import VERDICT_LABEL, classify, evaluate, is_recovered, nmse, r2   # noqa: E402
 from exp_units_ab import normalize_unit, unit_correct           # noqa: E402
 from pipeline import RUN_DIR, sample_X              # noqa: E402
+import simulator as SIM                              # noqa: E402
 
-TOOLS = ("list_problems", "load_problem", "check_units", "build_candidate_library",
-         "fit_sparse", "verify_formula", "compare_strategies", "score_prediction")
+# 工具名清单：**从工具注册表自动读取**，不要硬编码。
+# 踩过的坑（2026-10-06）：这里原本写死的是早期的 8 个工具名，后来加了
+# list_datasets / load_dataset 与三个仿真工具之后，正则匹配不到它们，
+# 于是评分卡把"7 次调用"统计成"4 次"——过程指标与失败次数一起被少报。
+# 单一信息源（agh_tools.TOOL_DEFS）可以从根上避免这种漂移。
+try:
+    import agh_tools as _AT
+    TOOLS = tuple(d["name"] for d in _AT.TOOL_DEFS)
+except Exception:                                  # 极端情况下退回到已知清单
+    TOOLS = ("list_problems", "load_problem", "check_units", "build_candidate_library",
+             "fit_sparse", "verify_formula", "compare_strategies", "score_prediction",
+             "list_datasets", "load_dataset", "list_simulations", "run_simulation",
+             "run_sweep")
 TOOL_RE = re.compile(r"\bmcp_\S*?_(" + "|".join(TOOLS) + r")\b")
 STATUS_RE = re.compile(r"\bmcp_\S*?_(" + "|".join(TOOLS) + r")\s*·\s*(completed|failed)")
 APPROVAL_RE = re.compile(r"Approval\s*·\s*([a-z-]+)")
@@ -172,7 +184,46 @@ def split_rounds(raw):
 # ---------------------------------------------------------------------------
 # 二、判分
 # ---------------------------------------------------------------------------
-def score_formula(formula, problem_id, data_id):
+def reference_for(problem_id):
+    """
+    取"参考信息"：题目/数据集叫什么不重要，重要的是**真值从哪来**。
+
+      · 官方题库题号   → 内置方程库的闭式公式；外推点用 sample_X 在该题变量区间上采
+      · 仿真数据集名   → 该场景的闭式解；外推点用 simulator 的参数采样（同样是换点重取）
+
+    两种来源共用同一套判据（score_formula 只依赖本函数返回的 ref）。
+    找不到任何参考信息时返回 None，调用方跳过该轮。
+    """
+    try:
+        eq = EQ.get(problem_id)
+        return dict(kind="library", names=EQ.varnames(eq), vars=dict(eq["vars"]),
+                    target_unit=eq["target_unit"], expr=eq["expr"],
+                    points=(lambda eq=eq: sample_X(eq, 100, 7, expand=0.3)))
+    except Exception:
+        pass
+
+    side = None
+    try:
+        side = SIM.load_sidecar(problem_id)
+    except Exception:
+        side = None
+    if not side or side.get("scenario") not in SIM.SCENARIOS:
+        return None
+    sid = side["scenario"]
+    pnames = [q["name"] for q in side["parameters"]]
+
+    def _points(sid=sid, pnames=pnames):
+        import numpy as np
+        cases = SIM.sample_params(sid, 100, 7, expand=0.3)
+        return np.asarray([[c[k] for k in pnames] for c in cases], dtype=float)
+
+    return dict(kind="simulation", names=pnames,
+                vars={q["name"]: q["unit"] for q in side["parameters"]},
+                target_unit=side["target_unit"],
+                expr=SIM.SCENARIOS[sid]["truth_expr"], scenario=sid, points=_points)
+
+
+def score_formula(formula, ref, data_id):
     """
     与 `pipeline.score_prediction` **同一口径**判定公式。
     这里没有直接复用那个函数，是因为它要求数据文件的 meta.mode == benchmark；
@@ -185,18 +236,17 @@ def score_formula(formula, problem_id, data_id):
     import numpy as np
     z = np.load(npz)
     X, y = z["X"], z["y"]
-    eq = EQ.get(problem_id)
-    names = EQ.varnames(eq)
+    names = ref["names"]
     try:
-        c = classify(formula, eq["expr"], X, names)
+        c = classify(formula, ref["expr"], X, names)
     except Exception as exc:
         return dict(verdict="error", verdict_label="判定异常: %s" % exc, recovered=False)
-    Xe = sample_X(eq, 100, 7, expand=0.3)
-    te = evaluate(eq["expr"], Xe, names)
+    Xe = ref["points"]()
+    te = evaluate(ref["expr"], Xe, names)
     ok = np.isfinite(te)
     r2ex = float("nan")
     if ok.sum() >= 10:
-        r2ex = float(r2(formula, eq["expr"], Xe[ok], names))
+        r2ex = float(r2(formula, ref["expr"], Xe[ok], names))
     return dict(verdict=c["verdict"], verdict_label=VERDICT_LABEL[c["verdict"]],
                 recovered=bool(is_recovered(c["verdict"])) or c["verdict"] == "approx",
                 max_rel=c.get("max_rel"), r2_extrap=r2ex)
@@ -282,9 +332,11 @@ def score_session(rec):
         got = parse_round(rec, rnd)
         if not got["problem_id"]:
             continue
-        eq = EQ.get(got["problem_id"])
-        names = EQ.varnames(eq)
-        sc = score_formula(got["formula"], got["problem_id"],
+        refobj = reference_for(got["problem_id"])
+        if refobj is None:
+            continue
+        names = refobj["names"]
+        sc = score_formula(got["formula"], refobj,
                            got["data_id"] or data_id_for(got)) if got["formula"] else dict(
             verdict="no_formula", verdict_label="模型未给出可解析公式", recovered=False)
         # 单位准确率
@@ -293,19 +345,20 @@ def score_session(rec):
         units = got["units"] or {}
         for n in names:
             given = normalize_unit(units.get(n, ""))
-            ok = unit_correct(given, eq["vars"][n])
-            ref = eq["vars"][n]
+            ok = unit_correct(given, refobj["vars"][n])
+            ref = refobj["vars"][n]
             unit_rows.append(dict(name=n, given=given or "(空)", ref=ref,
                                   ok=(None if ok is None else bool(ok))))
             if ok is None:
                 continue
             var_tot += 1
             var_hits += 1 if ok else 0
-        t_ok = unit_correct(normalize_unit(got["target_unit"] or ""), eq["target_unit"])
+        t_ok = unit_correct(normalize_unit(got["target_unit"] or ""), refobj["target_unit"])
         out.append(dict(round=i, problem_id=got["problem_id"], params=got["params"],
                         units=units, target_unit=got["target_unit"], unit_rows=unit_rows,
                         var_hits=var_hits, var_tot=var_tot, target_ok=t_ok,
-                        ref_target_unit=eq["target_unit"], truth=eq["expr"],
+                        ref_target_unit=refobj["target_unit"], truth=refobj["expr"],
+                        kind=refobj["kind"], scenario=refobj.get("scenario"),
                         build=got["build"], formula=got["formula"], fit=got["fit"],
                         verify=got["verify"], tool_seq=got["tool_seq"],
                         honesty=honesty(got, reject_by_round.get(i, 0)),
@@ -361,6 +414,9 @@ def write_card(rec, scored, outdir):
     for r in scored:
         A("---\n")
         A("## 第 %d 轮：%s\n" % (r["round"], r["problem_id"]))
+        if r.get("kind") == "simulation":
+            A("> 本轮的观测数据来自**仿真实验台**（%s，RK4 数值积分）；"
+              "本卡的公式判定用的真值是该场景的闭式解。\n" % r.get("scenario"))
         A("参数：%s\n" % json.dumps(r["params"], ensure_ascii=False))
         A("**① 公式判定**：`%s`（%s）%s"
           % (r["score"]["verdict"], r["score"].get("verdict_label", ""),

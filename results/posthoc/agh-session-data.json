@@ -44,6 +44,8 @@
       "target_ok": false,
       "ref_target_unit": "kg/m/s^2",
       "truth": "n*kb*T/V",
+      "kind": "library",
+      "scenario": null,
       "build": {
         "total": 5888,
         "kept": 48,
@@ -59,6 +61,8 @@
         "passed": null
       },
       "tool_seq": [
+        "list_datasets",
+        "load_dataset",
         "check_units",
         "build_candidate_library",
         "check_units",

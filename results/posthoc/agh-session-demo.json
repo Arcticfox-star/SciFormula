@@ -48,6 +48,8 @@
       "target_ok": true,
       "ref_target_unit": "kg/m/s^2",
       "truth": "n*kb*T/V",
+      "kind": "library",
+      "scenario": null,
       "build": {
         "total": 5888,
         "kept": 63,
@@ -132,6 +134,8 @@
       "target_ok": true,
       "ref_target_unit": "1/s",
       "truth": "q*v*B/p",
+      "kind": "library",
+      "scenario": null,
       "build": {
         "total": 5888,
         "kept": 63,

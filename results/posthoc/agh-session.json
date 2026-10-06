@@ -34,6 +34,8 @@
       "target_ok": true,
       "ref_target_unit": "J",
       "truth": "m*v**2/2",
+      "kind": "library",
+      "scenario": null,
       "build": null,
       "formula": null,
       "fit": null,
@@ -91,6 +93,8 @@
       "target_ok": true,
       "ref_target_unit": "J",
       "truth": "m*v**2/2",
+      "kind": "library",
+      "scenario": null,
       "build": {
         "total": 40,
         "kept": 1,
@@ -161,6 +165,8 @@
       "target_ok": true,
       "ref_target_unit": "",
       "truth": "exp(-t/tau)",
+      "kind": "library",
+      "scenario": null,
       "build": {
         "total": 640,
         "kept": 80,

@@ -4,11 +4,11 @@
 #   · 行为 sha256sum 兼容格式（`sha256sum -c results/EVIDENCE.sha256` 可直接用）
 #   · 也可用项目自带脚本核对：python verify_evidence.py
 #
-# 生成时间（UTC）：2026-10-05T09:1xZ（北京时间 2026-10-05 约 17:1x）
-# 本次重签原因：有意修改了 docs/test-cases.md（新增仿真实验台的正常样例 N4 与失败样例 F4）。
+# 生成时间（北京时间）：2026-10-06 13:30:12
+# 本次重签原因：登记第 7 份官方会话导出（agh-session-sim.html，AGH 驱动仿真实验台）；新增轨迹摘要 agh-trace-sim.md 与评分卡 agh-session-sim.md；并因修复评分器的工具名清单（原为硬编码 8 个旧工具，导致调用次数少报）而重跑全部评分卡
 # 生成方式：sha256sum results/... docs/...（AGH 官方导出 + 自动生成的报告/摘要/评分卡）
 #
-# ⚠️ 这六个 agh-session-*.html 是 AGH 官方导出的原件。
+# ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
 #    data-page-node-id 之类的属性，破坏原件字节一致性。
 #    只想看内容时，用浏览器打开即可（浏览器不会写文件）。
@@ -18,13 +18,19 @@
 30d9e51301a4b72da98775ad1517b604d6274e10e8704935be1e15fa6e185713  results/agh-session-demo.html
 545e5244f61c790ed56d27d0f7fb2a8b3772264103c2b135bed5d50d47651e73  results/agh-session-data.html
 2fc42161eedbfde468623ce9b14680eb9fc30b794efe3df5a3e4832ccf168639  results/agh-session-data2.html
+1367139badd8d2a9735a6461093cc51bbac388654f04f652978567c5efe8e7a1  results/agh-session-sim.html
 077b30fd291d70f5969845c81898d160089bdea26dbf1367c1f916ad7ddad7f5  results/agh-trace-summary.md
 3707f3f1b6b039d095f505d2801c7e684ccbc2708200e81c0f68c456fa895f42  results/agh-trace-feynman.md
 37cd3e7828668e1eb694ecb928c3ddc0b1cab1220a91ca86deab23dab95c2825  results/agh-trace-demo.md
 71bef5406a209b34e67b685826bf62b0ebfaac9b50c8eaa3a13ae87f529b4a22  results/agh-trace-data.md
-51c04258c385bc9e54151b845c54edd561bfc13108e03da3e8738212c159e96b  results/posthoc/agh-session-demo.md
-af6d2db3e70cce20b9069f39a05b6fb8ea534ca0bae87168e63f80ce53096a49  results/posthoc/agh-session-data.md
-f6f62cd698836e8c7612ee26e0e774d9b5b545c6d1fef02869c1ba37223e537f  results/posthoc/agh-session-data2.md
+6230002d4b2162dd3068e2076756d66ad01a22b1cdc875b0c5b90d8f060d4bce  results/agh-trace-sim.md
+1adde06cad0fc3c43fcc34b631d533eb4e5ffb0e1f76bdbaaa63a5725cd625c7  results/posthoc/agh-session.md
+04f46e79605d54469cb45ec5c6b688793e4352e9f2e7bbadd2df3a1a5ec5ee69  results/posthoc/agh-session-feynman.md
+9347d70e675d5b5544d533cc10a037850b76d2a6e63b31a81f2e0458cff2e5b6  results/posthoc/agh-session-unitinfer.md
+90e734937a0c4f7383c71fde044521559aeee8e561783baa0d816a0036ef23ef  results/posthoc/agh-session-demo.md
+1d44d27432ab38cdb4184b430a940184527db6a99a62e3970c1321790d7deeca  results/posthoc/agh-session-data.md
+8bafc3ebbc63511b5621a7d6220ab9dbd45f9ad67d3f2381b4d190ccc02a2969  results/posthoc/agh-session-data2.md
+24517746848594f0f015f2580bef32eae763f21fbc6f9dcb48088432f6829176  results/posthoc/agh-session-sim.md
 36fcbf0ac1b7387adbe955ce8ca831e2abf97c4175c03c9c47618497322ac818  results/report.html
 cd3aa2e43d89ec2edd5294b6cda6f8ca5c3adc7bcaf7e950c0f912f57e0b3a9f  results/report_feynman.html
 1b84fb854068c67f4bd895c9c3df8107ee70235e8a2b5145745f1bb56757a4cc  results/detailed.csv
