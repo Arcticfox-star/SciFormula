@@ -5,10 +5,12 @@
 不直接调 pipeline —— 这样才能证明"智能体看到的"和"我们声称的"是同一条路径。
 """
 import json
+import os
 import sys
 
 sys.stdout.reconfigure(encoding="utf-8")
-sys.path.insert(0, r"D:\projects\SciFormula")
+# 用脚本位置反推项目根目录：换台机器克隆到别处也能直接跑
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import agh_tools as T                                          # noqa: E402
 
 

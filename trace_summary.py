@@ -210,7 +210,9 @@ def main():
         analysis = io.open(analysis_path, encoding="utf-8").read().strip()
 
     out = summarize(events, info, analysis)
-    io.open(dst, "w", encoding="utf-8").write(out)
+    # newline="\n"：轨迹摘要进证据清单，行尾固定 LF（与仓库、与任何人的克隆一致）
+    with io.open(dst, "w", encoding="utf-8", newline="\n") as f:
+        f.write(out)
     print("已写出 %s（%d 字节）" % (dst, len(out)))
     print("工具调用 %d 次，批准 %d 次" % (len(collect(events)["pairs"]), len(collect(events)["approvals"])))
     return 0

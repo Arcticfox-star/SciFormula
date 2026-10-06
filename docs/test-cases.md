@@ -3,8 +3,8 @@
 按提交规程要求，测试样例分**正常、边界、失败**三类。每条样例给出：
 输入 → 期望行为 → 实际结果 → 一条可复制执行的复现命令。
 
-所有命令都在项目根目录 `D:\projects\SciFormula` 下执行（Windows PowerShell / Git Bash 均可）；
-`python` 指项目虚拟环境 `D:\projects\SciFormula\.venv\Scripts\python.exe`。
+所有命令都在项目根目录下执行（本文把项目根目录记为 `D:\SciFormula`，请换成本机实际克隆位置；Windows PowerShell / Git Bash 均可）；
+`python` 指项目虚拟环境 `.venv\Scripts\python.exe`。
 
 ---
 

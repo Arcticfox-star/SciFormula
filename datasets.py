@@ -197,7 +197,8 @@ def load_dataset(name, mode=DISCOVERY):
             y_preview=[float(v) for v in y[:k]],
             x_preview=[[float(v) for v in row] for row in X[:k]],
         ),
-        saved=os.path.join(RUN_DIR, data_id + ".npz"),
+        # 相对项目根的路径（不泄露本机绝对目录结构；该字段会进入会话导出）
+        saved=os.path.relpath(os.path.join(RUN_DIR, data_id + ".npz"), ROOT),
         has_reference=bool(known is not None or side is not None),
         verification=("reference" if known is not None
                       else ("simulation_rerun" if side is not None else None)),

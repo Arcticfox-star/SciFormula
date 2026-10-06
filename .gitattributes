@@ -1,0 +1,25 @@
+# 换行符策略（2026-10-06 新增）
+#
+# 【为什么必须有这个文件】
+# 本仓库带一份 sha256 证据清单（results/EVIDENCE.sha256），用来证明
+# 「AGH 官方导出没被改过」。但在加这个文件之前，仓库里没有 .gitattributes，
+# 换行符行为完全交给各人的 core.autocrlf 决定 —— 于是出现过一个自相矛盾的现象：
+# 干净克隆后跑 `python verify_evidence.py`，会立刻报「15 处文件被改动过」，
+# 而实测 15 处全是 LF ↔ CRLF 差异，没有一处是内容被改。
+# 想证明的东西，被证明方式本身毁掉了。
+#
+# 【现在的策略】
+#   ① 除下面明确排除的路径外，一律按文本处理并统一成 LF。
+#      这样「仓库里的字节 / Windows 工作区 / Linux 工作区」三处一致，
+#      清单在谁的机器上都对得上。
+#   ② AGH 官方导出的 HTML 按「非文本」处理（git 不转换、不改字节）——
+#      它们是证据原件，要保证存进仓库的字节就是 AGH 写出来时的字节。
+#      注意这里用 -text 而不是 binary：-text 只关掉换行符转换，
+#      文本 diff 仍然可用（评委在 GitHub 上还能正常看内容）。
+#
+# 相关文件：verify_evidence.py（分类校验）、scripts/resign_evidence.py（重签清单）
+
+* text=auto eol=lf
+
+# —— 证据原件：不做任何换行符转换，字节原样保存 ——
+results/agh-session-*.html -text

@@ -471,9 +471,11 @@ def write_card(rec, scored, outdir):
          sum(r["var_hits"] for r in scored), sum(r["var_tot"] for r in scored),
          sum(1 for r in scored if r.get("target_ok")), len(scored),
          sum(len(r["honesty"]["flags"]) for r in scored)))
-    open(md, "w", encoding="utf-8").write("\n".join(L) + "\n")
-    json.dump(dict(session_id=rec["session_id"], source=rec["path"], rounds=scored),
-              open(js, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    # newline="\n"：评分卡在证据清单里，行尾必须固定为 LF（Windows 默认会写 CRLF）
+    open(md, "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
+    with open(js, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(dict(session_id=rec["session_id"], source=rec["path"], rounds=scored),
+                  f, ensure_ascii=False, indent=2)
     return md, js, scored
 
 

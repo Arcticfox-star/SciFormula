@@ -1,0 +1,18 @@
+# SciFormula 生成快照校验清单（sha256）—— ② 生成快照
+#
+# 与 EVIDENCE.sha256 的区别：这些文件**每次重跑都会变**，所以按「规范形式」比对：
+#   · 换行符统一为 LF
+#   · results/detailed*.csv  去掉 seconds 列（每条耗时，随机器负载浮动）
+#   · results/report*.html   抹掉页脚的「生成时间」（墙上时钟）
+# 除这两处之外的一切（题目、公式、各项指标、判定结论）仍逐字节受保护。
+#
+# ⚠️ 本清单存的是**规范形式**的哈希，因此 `sha256sum -c` 对它不适用；
+#    请用 `python verify_evidence.py`（它会分别按两种严格度核对两份清单）。
+#
+# 生成时间（北京时间）：2026-10-06 19:04:16
+# 本次重签原因：按仓库外部审计结论修复后重签：docs/test-cases.md 的示例路径改为通用写法（去掉作者本机路径）；生成快照按「换行符统一 + 抹掉耗时列与生成时间」的规范形式登记；新增 .gitattributes 锁定换行符策略
+
+290e6b18c5f20580419bf087f4e2c9d54f00c745fd7fd3328954f9bb7a646feb  results/report.html
+30df63b5002b5b5e703609a57ed7102f4ed3bc68c7f0df069836fd835eed8b87  results/report_feynman.html
+e0d1de643fcb86b511ef9d0734ce1bd61aa5e2aeb3f3c91d0cdbb8d89cb34a43  results/detailed.csv
+db0171432aa6d796281fcfcf8886520d35d59bc2107fae17f8ce2e4334966a96  results/detailed_feynman.csv

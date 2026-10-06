@@ -90,7 +90,7 @@ def dump():
 
     if not os.path.exists(ANSWERS_PATH):
         os.makedirs(os.path.dirname(ANSWERS_PATH), exist_ok=True)
-        with open(ANSWERS_PATH, "w", encoding="utf-8") as f:
+        with open(ANSWERS_PATH, "w", encoding="utf-8", newline="\n") as f:
             json.dump(tmpl, f, ensure_ascii=False, indent=2)
         print("\n答案模板已生成：%s" % ANSWERS_PATH)
         print("把模型的推断结果填进对应字段后，运行：python unit_infer_eval.py score")
@@ -169,7 +169,7 @@ def score():
             rep.append("  - %s" % c)
     text = "\n".join(rep)
     print(text)
-    with open(REPORT_PATH, "w", encoding="utf-8") as f:
+    with open(REPORT_PATH, "w", encoding="utf-8", newline="\n") as f:
         f.write(text + "\n")
     print("\n报告已写出：%s" % REPORT_PATH)
 

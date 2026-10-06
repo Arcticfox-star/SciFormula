@@ -203,8 +203,11 @@ def usable(r):
 
 
 def write_csv(rows, path):
+    # newline="" + lineterminator="\n"：CSV 必须显式指定行尾。
+    # 默认 lineterminator 是 "\r\n"，在 Windows 上会让工作区文件与仓库里的
+    # LF 版本不一致 —— 而 results/detailed*.csv 在证据清单里，换行符必须可控。
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=FIELDS)
+        w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
         w.writeheader()
         for r in rows:
             w.writerow({k: (round(v, 6) if isinstance(v, float) else v)
@@ -491,7 +494,7 @@ small{color:var(--tx3)}
              '随机种子：%d　|　训练样本：%d　外推样本：%d</p>'
              % (time.strftime("%Y-%m-%d %H:%M:%S"), SEED, N_TRAIN, N_EXTRAP))
     H.append("</div></body></html>")
-    with open(path, "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write("".join(H))
 
 

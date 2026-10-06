@@ -1,17 +1,19 @@
-# SciFormula 证据文件校验清单（sha256）
+# SciFormula 证据文件校验清单（sha256）—— ① 不可变证据
 #
 # 用途：证明提交材料中的「运行证据」是官方原件、未被任何编辑器或工具改动。
 #   · 行为 sha256sum 兼容格式（`sha256sum -c results/EVIDENCE.sha256` 可直接用）
 #   · 也可用项目自带脚本核对：python verify_evidence.py
+#   · 校验对**换行符差异**留了容错（Windows/Linux 的 LF↔CRLF 会造成同内容两种字节），
+#     但会把这类情况显式打印为 `OK(换行)`，不掩盖；`--strict` 可关掉容错。
 #
-# 生成时间（北京时间）：2026-10-06 13:30:12
-# 本次重签原因：登记第 7 份官方会话导出（agh-session-sim.html，AGH 驱动仿真实验台）；新增轨迹摘要 agh-trace-sim.md 与评分卡 agh-session-sim.md；并因修复评分器的工具名清单（原为硬编码 8 个旧工具，导致调用次数少报）而重跑全部评分卡
-# 生成方式：sha256sum results/... docs/...（AGH 官方导出 + 自动生成的报告/摘要/评分卡）
+# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-06 19:04:16
+# 本次重签原因：按仓库外部审计结论修复后重签：docs/test-cases.md 的示例路径改为通用写法（去掉作者本机路径）；生成快照按「换行符统一 + 抹掉耗时列与生成时间」的规范形式登记；新增 .gitattributes 锁定换行符策略
 #
 # ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
 #    data-page-node-id 之类的属性，破坏原件字节一致性。
 #    只想看内容时，用浏览器打开即可（浏览器不会写文件）。
+
 2d6a7b01a03d8c3e8bded27f5d4a09c05c3e9f318daecf4dd1c6b1b49eb74dac  results/agh-session.html
 372b63b23af79d6db28558ec0ee7af206b6adf710475a2de714ee5f8e560672a  results/agh-session-feynman.html
 12b9826e211c51aff6e2ba8158c7db111d8ee1cff8ff1fa4126e944ee3160b49  results/agh-session-unitinfer.html
@@ -19,22 +21,18 @@
 545e5244f61c790ed56d27d0f7fb2a8b3772264103c2b135bed5d50d47651e73  results/agh-session-data.html
 2fc42161eedbfde468623ce9b14680eb9fc30b794efe3df5a3e4832ccf168639  results/agh-session-data2.html
 1367139badd8d2a9735a6461093cc51bbac388654f04f652978567c5efe8e7a1  results/agh-session-sim.html
-077b30fd291d70f5969845c81898d160089bdea26dbf1367c1f916ad7ddad7f5  results/agh-trace-summary.md
+31a31246f24e70ddf32cd062d69b072a39ce1591a2fa831ca29db2086437dafb  results/agh-trace-summary.md
 3707f3f1b6b039d095f505d2801c7e684ccbc2708200e81c0f68c456fa895f42  results/agh-trace-feynman.md
 37cd3e7828668e1eb694ecb928c3ddc0b1cab1220a91ca86deab23dab95c2825  results/agh-trace-demo.md
 71bef5406a209b34e67b685826bf62b0ebfaac9b50c8eaa3a13ae87f529b4a22  results/agh-trace-data.md
 6230002d4b2162dd3068e2076756d66ad01a22b1cdc875b0c5b90d8f060d4bce  results/agh-trace-sim.md
-1adde06cad0fc3c43fcc34b631d533eb4e5ffb0e1f76bdbaaa63a5725cd625c7  results/posthoc/agh-session.md
-04f46e79605d54469cb45ec5c6b688793e4352e9f2e7bbadd2df3a1a5ec5ee69  results/posthoc/agh-session-feynman.md
-9347d70e675d5b5544d533cc10a037850b76d2a6e63b31a81f2e0458cff2e5b6  results/posthoc/agh-session-unitinfer.md
-90e734937a0c4f7383c71fde044521559aeee8e561783baa0d816a0036ef23ef  results/posthoc/agh-session-demo.md
-1d44d27432ab38cdb4184b430a940184527db6a99a62e3970c1321790d7deeca  results/posthoc/agh-session-data.md
-8bafc3ebbc63511b5621a7d6220ab9dbd45f9ad67d3f2381b4d190ccc02a2969  results/posthoc/agh-session-data2.md
-24517746848594f0f015f2580bef32eae763f21fbc6f9dcb48088432f6829176  results/posthoc/agh-session-sim.md
-36fcbf0ac1b7387adbe955ce8ca831e2abf97c4175c03c9c47618497322ac818  results/report.html
-cd3aa2e43d89ec2edd5294b6cda6f8ca5c3adc7bcaf7e950c0f912f57e0b3a9f  results/report_feynman.html
-1b84fb854068c67f4bd895c9c3df8107ee70235e8a2b5145745f1bb56757a4cc  results/detailed.csv
-04feeedb14dcb824457dcc575acf1dbef3c89e2f4d86f01243b26ccee9a2c234  results/detailed_feynman.csv
-d3c479cceba296ba984dd94512e35e6aea3719a5723638f834b627656f0ece9e  results/unit_infer_report.md
-4b39e0c400f900f0207d0a9d0817ee2d4ff69517ba0ee10641dbe6b6bef6a432  results/unit_infer_answers.json
-9f9907b6f7b5a2db8ffc5f8f8dedec99405ce0555ea1e303156f55031597d9ca  docs/test-cases.md
+4effc4f47e4125c5f8421a6582987c350104cfb46e553882929dbcb38e2ea640  results/posthoc/agh-session.md
+419da1aedbb6dbddc790dcf5293394eea5026a7b1eabba06f5b7a1bc33e9dac0  results/posthoc/agh-session-feynman.md
+f80bc996f960ceb7ffdeb3683933ab10d293da9047e24ab7e8acb84ac8cd1153  results/posthoc/agh-session-unitinfer.md
+440b6ad853ce617ee2445c3f392395b8ee5f18998a46f4a6818591ca0404f2ef  results/posthoc/agh-session-demo.md
+3158aa11401116f27012c9c345545e86a2d306e1f9ac8dda7ffbe84fadf79675  results/posthoc/agh-session-data.md
+af47e44a5e5864e61622d07271e07a66bb5d5fae1be5ab16d0a43ef83d4eac5d  results/posthoc/agh-session-data2.md
+802c8bd64e298a2b42d43b2af4655e8d4b8f7dfba4b5949a453e3d61a021060a  results/posthoc/agh-session-sim.md
+6921304d61557ed23eadbdf27c33b0f14efd07448d80db00e279d7ecdc4ee67a  results/unit_infer_report.md
+170e72d9ba6257ac24c3f7a8c4549cc40521b7e4dbe1b1127771a9da4d739d86  results/unit_infer_answers.json
+fb2aeaf409e7246e1124f9c35c2dfe5e3d4f08a05292383cd19a18c3a10febf7  docs/test-cases.md

@@ -69,30 +69,33 @@ AGH 只是一个执行了一条命令的外壳。评审看 AGH 轨迹，只会�
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  AGH 运行底座（Agnes 模型 + Agent Loop）                      │
-│  · 任务规划：选问题、推断单位、决定策略                        │
-│  · 能力调用：调下面 8 个工具                                   │
-│  · 反馈处理：读诊断，判断"单位推错了"→ 改 → 重试               │
-│  · 结果验证：判定通过与否，决定是否收工                        │
-│  · 轨迹记录：以上每一步自动留痕（这是要交的运行证据）           │
+│  AGH 运行底座（Agnes 模型 + Agent Loop）                     │
+│  · 任务规划：选问题、推断单位、决定策略                      │
+│  · 能力调用：调下面 13 个工具                                │
+│  · 反馈处理：读诊断，判断“单位推错了”→ 改 → 重试             │
+│  · 结果验证：判定通过与否，决定是否收工                      │
+│  · 轨迹记录：以上每一步自动留痕（这是要交的运行证据）        │
 └───────────────────────────┬──────────────────────────────────┘
                             │ MCP（stdio）/ 后端插件 / CLI
 ┌───────────────────────────▼──────────────────────────────────┐
-│  agh_tools.py —— 工具注册表（8 个工具）                        │
-│  只声明接口 + 校验参数 + 写执行日志，不做任何决策               │
+│  agh_tools.py —— 工具注册表（13 个工具）                     │
+│  只声明接口 + 校验参数 + 写执行日志，不做任何决策            │
 └───────────────────────────┬──────────────────────────────────┘
 ┌───────────────────────────▼──────────────────────────────────┐
-│  pipeline.py —— 原子能力层（纯计算，输入输出都是纯数据）        │
-│  8 个能力：list_problems / load_problem / check_units /        │
-│  build_candidate_library / fit_sparse / verify_formula /       │
-│  compare_strategies / score_prediction                         │
+│  pipeline.py —— 原子能力层（纯计算，输入输出都是纯数据）     │
+│  8 个能力：list_problems / load_problem / check_units /      │
+│  build_candidate_library / fit_sparse / verify_formula /     │
+│  compare_strategies / score_prediction                       │
+│  +2 数据接入：list_datasets / load_dataset（读磁盘上的 CSV） │
+│  +3 仿真实验台：list_simulations / run_simulation / run_sweep│
 └───────────────────────────┬──────────────────────────────────┘
-│  dims.py / features.py / sparse.py / equivalence.py            │
-│  equations.py —— 算法内核（一行没改，原来就是对的）             │
-└───────────────────────────────────────────────────────────────┘
+│                                                              │
+│  dims.py / features.py / sparse.py / equivalence.py          │
+│  equations.py —— 算法内核（一行没改，原来就是对的）          │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-**一个必须遵守的设计纪律：不要把这 8 个工具再包成一个"一键跑完 21 题"的工具。**
+**一个必须遵守的设计纪律：不要把这 13 个工具再包成一个"一键跑完 21 题"的工具。**
 那等于把决策又拿回脚本里，白改。批量跑 21 题的能力保留在 `experiment.py`，
 它的定位是**基准回归测试与出报告**（验证算法没退化），不是智能体路径。
 
@@ -110,11 +113,12 @@ AGH 的 `mcp add` 支持 stdio / HTTP / SSE。官方文档明确提醒：
 
 ```sh
 # 步骤 1：注册。--name 是必需参数，漏了会直接报 usage 错误。
+#         （示例里把项目根目录记为 D:\SciFormula，请换成本机实际克隆位置）
 #         这条命令会打印摘要并问 Continue? [y/N]，需要有人在真终端里输 y。
 node packages/cli/dist/local/agnes.mjs mcp add sciformula \
   --name SciFormula \
-  --stdio "D:\projects\SciFormula\.venv\Scripts\python.exe" \
-  --arg "D:\projects\SciFormula\mcp_server.py"
+  --stdio "D:\SciFormula\.venv\Scripts\python.exe" \
+  --arg "D:\SciFormula\mcp_server.py"
 
 # 步骤 2：取 revision（只读，不需要确认）
 node packages/cli/dist/local/agnes.mjs mcp get sciformula
@@ -124,8 +128,8 @@ node packages/cli/dist/local/agnes.mjs mcp trust  sciformula --expected-revision
 node packages/cli/dist/local/agnes.mjs mcp enable sciformula --expected-revision REVISION
 
 # 步骤 4：验证（只读）
-node packages/cli/dist/local/agnes.mjs mcp status sciformula   # 期望 connection=ready tools=8
-node packages/cli/dist/local/agnes.mjs mcp tools  sciformula   # 期望列出 8 个工具，中文描述完整
+node packages/cli/dist/local/agnes.mjs mcp status sciformula   # 期望 connection=ready tools=13
+node packages/cli/dist/local/agnes.mjs mcp tools  sciformula   # 期望列出 13 个工具，中文描述完整
 ```
 
 **实测输出（2026-10-03 13:41）：**
@@ -137,7 +141,7 @@ mcp status → sciformula connection=ready revision=58e274c7... catalog=1f3eb8bd
 
 三个词各管一件事，别混：`trust=trusted`（人审过了，不是自动信任）、
 `desired=enabled / actual=ready`（配置要它开且真连上了）、`catalog=<指纹>`（AGH 实际抓到的工具目录）。
-**只有 `tools=8` 且描述可读，才算「能力调用」这一环真正打通。**
+**只有 `tools` 的数量与 `python agh_tools.py list` 的输出一致、且描述可读，才算「能力调用」这一环真正打通。**
 
 > ⚠️ **`--name <显示名>` 不能省。** 只给 `--stdio` 会报
 > `usage: agh mcp add <serverId> --name <displayName> (--stdio ...)`，白跑一轮。
@@ -155,7 +159,7 @@ mcp status → sciformula connection=ready revision=58e274c7... catalog=1f3eb8bd
 **解释器要指向项目内的 `.venv`，不要指向全局 Python：**
 
 ```sh
-cd D:\projects\SciFormula
+cd D:\SciFormula
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 # 之后 --stdio 就填这个 .venv\Scripts\python.exe 的绝对路径
@@ -397,15 +401,16 @@ E = 0.5017 · m·v²  −  1.204
 
 ### 已验证（真实环境实测）
 
-- **算法侧**：8 个工具的参数校验、错误反馈、执行日志；
+- **算法侧**：13 个工具的参数校验、错误反馈、执行日志；
   工具链闭环（含一次单位推断错误的纠正过程，`toolchain_check.py` 通过）；
   改造后 `experiment.py` 结果与改造前完全一致（20/21 × 三个噪声档，剪枝 91.6%）。
 - **MCP 协议侧**：`initialize` 握手、`tools/list`、`tools/call` 返回结构
   （`mcp_server.py --selftest` 通过）。
 - **Windows 上的 stdio 编码**：走真实管道检查原始字节，1062 个非 ASCII 字节全部合法 UTF-8。
   客户端按 UTF-8 解码时中文不乱码。
-- **AGH 真实接入**：`mcp status sciformula` → `connection=ready`、`tools=8`；
-  `mcp tools sciformula` 列出全部 8 个工具、中文描述完整。
+- **AGH 真实接入**：`mcp status sciformula` → `connection=ready`、`tools=13`；
+  `mcp tools sciformula` 列出全部 13 个工具、中文描述完整
+  （2026-10-03 首次接入时为 8 个，其后陆续加入数据接入 2 个与仿真台 3 个）。
   **这一步同时反向验证了编码修复是有效的**——若 stdin/stdout 还是 GBK，
   工具描述会在这一步变成乱码、列表根本列不出来。
 - **可执行文件策略**：项目内 `.venv\Scripts\python.exe` 作为 `--stdio` 目标**已被允许启动**，
@@ -413,17 +418,27 @@ E = 0.5017 · m·v²  −  1.204
 - **模型能否看见工具**：实测问智能体「你有哪些工具」，它准确列出 8 个带
   `mcp_sciformula_98791938_` 前缀的工具名。**接线畅通。**
 
-### 尚未验证（下一步）
+### 曾经"尚未验证"、现在已验证（2026-10-06 更新）
 
-1. **Agnes 是否按预期顺序连续调用工具。** 官方文档自己就提醒过
-   「Whether a real model selects the tool requires real-model verification」。
-   已知它能看见工具、也愿意尝试调用（只是被批准机制拦下），
-   但**"会不会按 1→7 顺序走完、会不会在候选归零时自己判断推错了单位"还没有实测**。
-2. **单位推断环节的实际质量**：Agnes 从变量名推断量纲的准确率、失败后能否自主纠正——
-   这是本项目「数学 AI 与形式化推理」的落点，也是最有价值的观察记录。
+这一节原先挂着的开放问题，后来都跑通了，如实改过来：
 
-> 这两项都要在**网页工作台或用户自己的终端**里跑，
-> 因为工具调用需要人工批准（见 3.1.2）。计划见 `AGH环境搭建指引.html` 第 7 节。
+1. **Agnes 会不会按预期顺序连续调用工具** —— **已验证**。七份官方会话导出里，
+   智能体每次都自行走完 6~7 步（列数据/实验台 → 载入 → 推单位 → 建库剪枝 →
+   拟合 → 独立验证），调用与返回值完整留痕。官方文档提醒过的
+   「Whether a real model selects the tool requires real-model verification」已经落实。
+2. **候选归零时能不能自己判断"单位推错了"** —— **已验证，而且不止一次**。
+   `results/agh-trace-feynman.md` 记录了「候选归零 → 自主诊断 → 换题」的纠错链；
+   `results/agh-trace-demo.md` 记录了单位**写法**歧义（`kg/m/s` 被左结合解析成 kg·m⁻¹·s⁻¹）
+   引起的连锁失败与自纠；`results/agh-trace-data.md` 记录了工具超时事故的定位与修复。
+3. **单位推断环节的实际质量** —— **已量化**。从官方基准抽 12 题做「无单位题目卡」
+   让模型推断（`unit_infer_eval.py` → `results/unit_infer_report.md`）；
+   对照实验 A 进一步量化了「不给单位」的代价（`results/units_ab_report.md`）。
+
+**仍未验证的**：以上全部发生在**本机、单用户**的 AGH 上，跨机器 / 多人协作下的行为没有验证。
+这一条如实保留。
+
+> 交互前提仍然成立：工具调用需要人工批准（见 3.1.2），
+> 所以会话要在**网页工作台或用户自己的终端**里跑。
 
 ---
 
@@ -436,8 +451,8 @@ E = 0.5017 · m·v²  −  1.204
 
 | 要求 | 我们的做法 | 可核查证据 |
 |---|---|---|
-| 以 AGH 为运行底座 | 全部 10 个能力经 **MCP** 暴露，由 AGH 的 agent loop 规划与调用 | `agh mcp status sciformula` 的 `catalog` 指纹、`trust=trusted / actual=ready` |
-| 完成 ≥3 个连续步骤 | 实测一串 6~7 步闭环：列数据 → 载入 → 推单位 → 建库剪枝 → 拟合 → 独立验证 | 四份官方会话导出（含每次调用与返回值）|
+| 以 AGH 为运行底座 | 全部 13 个工具经 **MCP** 暴露，由 AGH 的 agent loop 规划与调用 | `agh mcp status sciformula` 的 `catalog` 指纹、`trust=trusted / actual=ready` |
+| 完成 ≥3 个连续步骤 | 实测一串 6~7 步闭环：列数据 → 载入 → 推单位 → 建库剪枝 → 拟合 → 独立验证 | 七份官方会话导出（含每次调用与返回值）|
 | 任务规划与决策在 AGH 一侧 | 单位推断、策略选择、失败后重试全部由模型决定；工具只做计算 | 会话里可看到它自己改单位、换策略、自报失败 |
 | 有监督的执行 | 每次工具调用都需要人工批准（AGH 的信任机制） | 会话导出里的批准卡片与拒绝记录 |
 

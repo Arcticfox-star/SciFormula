@@ -18,7 +18,10 @@ import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+# venv 的解释器：Windows 在 Scripts/、Linux/macOS 在 bin/ —— 两种都认
 PY = os.path.join(ROOT, ".venv-baseline", "Scripts", "python.exe")
+if not os.path.exists(PY):
+    PY = os.path.join(ROOT, ".venv-baseline", "bin", "python")
 WH = os.path.join(ROOT, ".baseline_wheels")
 MIRROR = "https://pypi.tuna.tsinghua.edu.cn"
 
@@ -41,18 +44,35 @@ def curl(url, dest, timeout=300):
     return r.stdout.strip()
 
 
+def abi_tag():
+    """问当前解释器要它的 wheel 兼容标签，例如 cp313-cp313-win_amd64。
+
+    不写死版本：换 Python 版本 / 换操作系统都能取到正确的轮子。
+    """
+    code = ("import sysconfig, sys;"
+            "v = 'cp%d%d' % sys.version_info[:2];"
+            "print('%s-%s-%s' % (v, v,"
+            " sysconfig.get_platform().replace('-', '_').replace('.', '_')))")
+    out = subprocess.run([PY, "-c", code], capture_output=True, text=True).stdout.strip()
+    return out
+
+
 def fetch(pkg):
     """从镜像取一个 wheel（优先纯 Python）。返回本地路径或 None。"""
     html = subprocess.run(["curl", "-s", "--max-time", "40",
                            "%s/simple/%s/" % (MIRROR, pkg)],
                           capture_output=True, text=True).stdout
     links = re.findall(r'href="([^"]*\.whl[^"]*)"', html)
-    for pat in ("py3-none-any", "cp314-cp314-win_amd64", "cp313-cp313-win_amd64"):
+    for pat in ("py3-none-any", abi_tag(), "py3-none-manylinux_2_17_x86_64"):
+        if not pat:
+            continue
         cand = [l for l in links if pat in l]
         if cand:
             rel = cand[-1].replace("../../", "").split("#")[0]
             name = os.path.basename(rel)
             dest = os.path.join(WH, name)
+            # 注意：wheel 实际在镜像根目录的 /packages/ 下，不是 /simple/packages/
+            #（按后者拼会 404，实测踩过）
             code = curl("%s/%s" % (MIRROR, rel), dest)
             if code == "200" and os.path.getsize(dest) > 1000:
                 return dest

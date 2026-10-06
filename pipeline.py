@@ -60,7 +60,8 @@ from equivalence import (VERDICT_LABEL, build_expr_string, classify, evaluate,
 # ---------------------------------------------------------------------------
 # 运行目录：所有中间产物落在这里，方便 AGH 执行记录之外再留一份可核查的痕迹
 # ---------------------------------------------------------------------------
-RUN_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".agh_runs")
+ROOT = os.path.dirname(os.path.abspath(__file__))   # 项目根目录
+RUN_DIR = os.path.join(ROOT, ".agh_runs")
 
 DISCOVERY = "discovery"      # 真实使用场景：只给观测数据，单位靠推断
 BENCHMARK = "benchmark"      # 基准评测：额外保存真值，用于打分
@@ -201,7 +202,9 @@ def load_problem(problem_id, n_samples=100, noise=0.0, seed=0, mode=DISCOVERY):
             y_preview=[float(v) for v in y[:k]],
             x_preview=[[float(v) for v in row] for row in X[:k]],
         ),
-        saved=os.path.join(RUN_DIR, data_id + ".npz"),
+        # 相对项目根的路径：工具返回值会原样进入 AGH 会话导出（也就是运行证据），
+        # 不要在这里泄露开发机的绝对目录结构。
+        saved=os.path.relpath(os.path.join(RUN_DIR, data_id + ".npz"), ROOT),
     )
     if mode == DISCOVERY:
         out["note"] = ("目标量的量纲与各变量的量纲均未提供。请根据变量名与物理语境"
