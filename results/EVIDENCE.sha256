@@ -6,8 +6,8 @@
 #   · 校验对**换行符差异**留了容错（Windows/Linux 的 LF↔CRLF 会造成同内容两种字节），
 #     但会把这类情况显式打印为 `OK(换行)`，不掩盖；`--strict` 可关掉容错。
 #
-# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-06 19:37:32
-# 本次重签原因：按外部审计第二轮结论修复评分卡证据断链：评分器判定所需的观测数据固定副本（results/posthoc/data，7 份 npz + 7 份 meta.json）纳入仓库并登记；posthoc_eval 区分 unscorable 与 no_formula 后重生成 7 份评分卡（agh-session.md 第 3 轮 P20 由 no_formula 更正为 approx）；docs/test-cases.md 新增 F5 回归样例；verify_evidence 对二进制文件关闭换行符容错；README/AGH接入说明 同步
+# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-06 19:38:20
+# 本次重签原因：按外部审计第二轮结论修复评分卡证据断链：评分器判定所需的观测数据固定副本（results/posthoc/data，7 份 npz + 7 份 meta.json）纳入仓库并登记；posthoc_eval 区分 unscorable 与 no_formula 后重生成 7 份评分卡（agh-session.md 第 3 轮 P20 由 no_formula 更正为 approx）；docs/test-cases.md 新增 F5 回归样例；verify_evidence 对二进制文件关闭换行符容错；README/AGH接入说明 同步；工作区文本文件换行符已按 .gitattributes 统一为 LF
 #
 # ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
@@ -37,16 +37,16 @@ af47e44a5e5864e61622d07271e07a66bb5d5fae1be5ab16d0a43ef83d4eac5d  results/postho
 170e72d9ba6257ac24c3f7a8c4549cc40521b7e4dbe1b1127771a9da4d739d86  results/unit_infer_answers.json
 2be4094fdc4ce1e80c2c0a257d374f6a2db3107ab558b64e5080a7d2d4e03c0e  docs/test-cases.md
 6cda9eee2bb20c5cfe351a0a6b1eb5b9f65825ea4a849b37cea109a96b8953c3  results/posthoc/data/I.39.22_csv_n200.npz
-d4d3a621df911c9582b266220da17fde1d6e79f4a70c1fc8104afafd2f850f04  results/posthoc/data/I.39.22_csv_n200.meta.json
+ddf88512fd70dc8ea275b9ae0333e25d6314283db7dcfcbb2a33424ab3033e1d  results/posthoc/data/I.39.22_csv_n200.meta.json
 35b6f9e7f5998f1ab6c967ccf127de5fb3efb8bae388acb5f61e6e2be94d48d6  results/posthoc/data/I.39.22_n200_nz0.01_s0.npz
-d45e4ce608e5c46096e0a9875c32fc9011fca0be685bd784bfe986a4a49232da  results/posthoc/data/I.39.22_n200_nz0.01_s0.meta.json
+1b2cfd39a954b87eeb167bbbc0283fbd8ea942d9c84d863b472916fc3d3eaec2  results/posthoc/data/I.39.22_n200_nz0.01_s0.meta.json
 0bfa3fcd10e101d235157121e34e78e136b1d7c993123e2c7b45fd36dab7652a  results/posthoc/data/I.34.8_n200_nz0.01_s0.npz
-d7b27dc289110b43b66472e851c6734f5ce5bbba944e402662807af76de8696b  results/posthoc/data/I.34.8_n200_nz0.01_s0.meta.json
+a6f78e9d983c9288cb7b3deced934b145ad8057b2d03cb0d231ec2437f34c8a6  results/posthoc/data/I.34.8_n200_nz0.01_s0.meta.json
 360ebb31fdcb8d72543bd88e9dd5923ea85f5222a596be47f7430402d11efe23  results/posthoc/data/I.13.12_n200_nz0.05_s0.npz
-592dcc371fb835637e3f3683cf185fe3a04116b115a7664dca1b46bc62bafe24  results/posthoc/data/I.13.12_n200_nz0.05_s0.meta.json
+21552de25e6ad546cc005939e612f710832c6411775bc707df8167c80dfc9625  results/posthoc/data/I.13.12_n200_nz0.05_s0.meta.json
 eb4f3459b7c4ae002da0edd52044fd19535ad9356ae35aa91a5e4063264917b2  results/posthoc/data/P03_n100_nz0.05_s0.npz
-517d32f059e21891880c659fc29facbd12013b5b0bcb5bfdd76847d84d30f188  results/posthoc/data/P03_n100_nz0.05_s0.meta.json
+735425283e8e3ba5611c9de99274983a15c4a3a75e491ad17010b604c54ea58b  results/posthoc/data/P03_n100_nz0.05_s0.meta.json
 345bbc5725c2ec4c7c9daa4715c838a8ccce99ad2e020e2148feb3100f37e61d  results/posthoc/data/P20_n100_nz0.05_s0.npz
-61ad46bb637d7bbbe24e697b7e50256af35514c47e2adfbbdd05f9cc150f7e65  results/posthoc/data/P20_n100_nz0.05_s0.meta.json
+baae48d1aae7d44cbde3b60ef3b32bb1a197f8574c15fa83f93fa97c5f0dd771  results/posthoc/data/P20_n100_nz0.05_s0.meta.json
 981d8035b436112754cf203e00d752db58ff87e0f9764f9e301bf59f551138be  results/posthoc/data/rc_discharge_n60_csv_n60.npz
-fccffea959d5e3871a94bd081505d9460dd10b21a7c731973107032bfdf9e7eb  results/posthoc/data/rc_discharge_n60_csv_n60.meta.json
+024a257e58f51cf6435dd7677bb5ac9ac85b744516ac263556c1e29263cea801  results/posthoc/data/rc_discharge_n60_csv_n60.meta.json
