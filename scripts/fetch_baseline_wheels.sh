@@ -27,7 +27,7 @@ mkdir -p "$TMP"
 PY="${PYTHON:-$(command -v python || command -v python3 || true)}"
 if [ -z "$PY" ]; then
   echo "!! 找不到 python。请设置 PYTHON 指向你的解释器，例如："
-  echo "   PYTHON=/c/Python314/python.exe sh scripts/fetch_baseline_wheels.sh"
+  echo "   PYTHON=$(command -v python3 || echo /usr/bin/python3) sh scripts/fetch_baseline_wheels.sh"
   exit 1
 fi
 TAG="${TAG:-$("$PY" -c "import sysconfig,sys;v='cp%d%d'%sys.version_info[:2];print('%s-%s-%s'%(v,v,sysconfig.get_platform().replace('-','_').replace('.','_')))")}"

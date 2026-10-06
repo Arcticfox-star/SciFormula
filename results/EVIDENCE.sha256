@@ -6,8 +6,8 @@
 #   · 校验对**换行符差异**留了容错（Windows/Linux 的 LF↔CRLF 会造成同内容两种字节），
 #     但会把这类情况显式打印为 `OK(换行)`，不掩盖；`--strict` 可关掉容错。
 #
-# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-06 19:38:20
-# 本次重签原因：按外部审计第二轮结论修复评分卡证据断链：评分器判定所需的观测数据固定副本（results/posthoc/data，7 份 npz + 7 份 meta.json）纳入仓库并登记；posthoc_eval 区分 unscorable 与 no_formula 后重生成 7 份评分卡（agh-session.md 第 3 轮 P20 由 no_formula 更正为 approx）；docs/test-cases.md 新增 F5 回归样例；verify_evidence 对二进制文件关闭换行符容错；README/AGH接入说明 同步；工作区文本文件换行符已按 .gitattributes 统一为 LF
+# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-06 21:16:33
+# 本次重签原因：按外部审计第三轮结论收尾：① README 与 docs/test-cases.md 的 P19 失败机制叙述更正——实测确认候选库保留 80 项且含 1/(1+(v/c_light)**2) 等近似基函数，算法拼出训练 R²=1.00000 的解后被外推检验拦下（外推 R²=-5.20476），属检验机制生效而非特征库表达力上限；② 新增 report_notes.py 标注区机制，unit_infer_eval/exp_verify_ab/score_baseline/score_gp 四个整文件覆盖写的脚本改为保留人工标注区（results/unit_infer_report.md 的作答会话溯源从此不再被重跑抹掉）；③ docs/test-cases.md 与两个 .sh 脚本彻底去掉本机路径；④ README 消融表耗时标注为参考量级并修正一处列表排版
 #
 # ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
@@ -33,9 +33,9 @@ f3caa22e77906a0ed6574cca3ebb25e7f40bbf578ed2eac80c6426ad37581323  results/postho
 37a2563d08d8631e02234af6f1e655b1490cbdbf8fb27722d7efc900073287c7  results/posthoc/agh-session-data.md
 af47e44a5e5864e61622d07271e07a66bb5d5fae1be5ab16d0a43ef83d4eac5d  results/posthoc/agh-session-data2.md
 802c8bd64e298a2b42d43b2af4655e8d4b8f7dfba4b5949a453e3d61a021060a  results/posthoc/agh-session-sim.md
-6921304d61557ed23eadbdf27c33b0f14efd07448d80db00e279d7ecdc4ee67a  results/unit_infer_report.md
+0335d3d6c17b428e1717511a276a0b12501de3251b1d8e19ce1c4f3c37754f06  results/unit_infer_report.md
 170e72d9ba6257ac24c3f7a8c4549cc40521b7e4dbe1b1127771a9da4d739d86  results/unit_infer_answers.json
-2be4094fdc4ce1e80c2c0a257d374f6a2db3107ab558b64e5080a7d2d4e03c0e  docs/test-cases.md
+54302fad33205da07fe224441c07714e3901c370a2ff4f7e1fc0634b1f19a619  docs/test-cases.md
 6cda9eee2bb20c5cfe351a0a6b1eb5b9f65825ea4a849b37cea109a96b8953c3  results/posthoc/data/I.39.22_csv_n200.npz
 ddf88512fd70dc8ea275b9ae0333e25d6314283db7dcfcbb2a33424ab3033e1d  results/posthoc/data/I.39.22_csv_n200.meta.json
 35b6f9e7f5998f1ab6c967ccf127de5fb3efb8bae388acb5f61e6e2be94d48d6  results/posthoc/data/I.39.22_n200_nz0.01_s0.npz

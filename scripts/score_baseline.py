@@ -29,6 +29,8 @@ sys.path.insert(0, ROOT)
 
 import numpy as np                                    # noqa: E402
 
+import report_notes                                   # noqa: E402
+
 IN = os.path.join(ROOT, "results", "baseline_input")
 PRED = os.path.join(ROOT, "results", "baseline_pred")
 RES = os.path.join(ROOT, "results")
@@ -193,7 +195,7 @@ def report(rows):
     A("生成命令：`python scripts/export_baseline_input.py` →")
     A("`.venv-baseline/Scripts/python.exe scripts/run_baseline.py` →")
     A("`python scripts/score_baseline.py`")
-    open(os.path.join(RES, "baseline_report.md"), "w", encoding="utf-8").write("\n".join(L) + "\n")
+    report_notes.write_report(os.path.join(RES, "baseline_report.md"), "\n".join(L))
     print("结论报告：results/baseline_report.md")
 
 

@@ -1,3 +1,5 @@
+> 本文件由脚本自动生成：**标注区（NOTES）之外的内容每次重跑都会被覆盖**，请把手工补充的信息写在标注区内。
+
 # 对照实验：黑箱拟合基线 vs 本项目
 
 同一批数据（官方 Feynman 基准 300 组：100 题 × 3 档噪声）、同一套判分口径。
@@ -31,3 +33,7 @@
 生成命令：`python scripts/export_baseline_input.py` →
 `.venv-baseline/Scripts/python.exe scripts/run_baseline.py` →
 `python scripts/score_baseline.py`
+
+<!-- NOTES:BEGIN -->
+（这一区由人手工书写，脚本重跑时会**原样保留**。可用来记录产物来历、作答会话、复现环境等正文之外的信息。）
+<!-- NOTES:END -->

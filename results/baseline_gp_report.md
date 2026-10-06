@@ -1,3 +1,5 @@
+> 本文件由脚本自动生成：**标注区（NOTES）之外的内容每次重跑都会被覆盖**，请把手工补充的信息写在标注区内。
+
 # 同类方法对比：gplearn vs 本项目（1% 噪声档，全部 100 题）
 
 所有方法跑在**完全相同**的数据与验收口径上；本项目这一列也**只取这 100 题**，
@@ -33,3 +35,7 @@
 
 生成命令：`.venv-baseline/Scripts/python.exe scripts/run_baseline.py --methods gp,gpx --noise 0.01`
 → `python scripts/score_gp.py`
+
+<!-- NOTES:BEGIN -->
+（这一区由人手工书写，脚本重跑时会**原样保留**。可用来记录产物来历、作答会话、复现环境等正文之外的信息。）
+<!-- NOTES:END -->

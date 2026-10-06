@@ -40,6 +40,7 @@ import os
 import sys
 
 import equations as EQ
+import report_notes
 from dims import parse_unit, same, fmt
 
 PICKED = [
@@ -169,9 +170,10 @@ def score():
             rep.append("  - %s" % c)
     text = "\n".join(rep)
     print(text)
-    with open(REPORT_PATH, "w", encoding="utf-8", newline="\n") as f:
-        f.write(text + "\n")
+    # 写入时把「人工标注区」原样搬过来——否则每次重跑都会把手工补的溯源信息抹掉。
+    kept = report_notes.write_report(REPORT_PATH, text)
     print("\n报告已写出：%s" % REPORT_PATH)
+    print("（人工标注区：%s）" % ("已保留" if kept else "新建（首次生成）"))
 
 
 if __name__ == "__main__":

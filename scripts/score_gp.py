@@ -35,6 +35,7 @@ sys.path.insert(0, ROOT)
 
 import numpy as np                                     # noqa: E402
 import equations as EQ                                 # noqa: E402
+import report_notes                                    # noqa: E402
 from equivalence import VERDICT_LABEL, classify         # noqa: E402
 
 IN = os.path.join(ROOT, "results", "baseline_input")
@@ -280,7 +281,7 @@ def report(rows, slice_tags):
     A("   两边各自在哪类题上更强，明细见 `results/baseline_gp_scores.csv`。\n")
     A("生成命令：`.venv-baseline/Scripts/python.exe scripts/run_baseline.py --methods gp,gpx --noise 0.01`")
     A("→ `python scripts/score_gp.py`")
-    open(os.path.join(RES, "baseline_gp_report.md"), "w", encoding="utf-8").write("\n".join(L) + "\n")
+    report_notes.write_report(os.path.join(RES, "baseline_gp_report.md"), "\n".join(L))
     print("结论报告：results/baseline_gp_report.md")
 
 

@@ -1,3 +1,5 @@
+> 本文件由脚本自动生成：**标注区（NOTES）之外的内容每次重跑都会被覆盖**，请把手工补充的信息写在标注区内。
+
 # 单位推断评测报告
 
 - 题目：官方 Feynman 基准抽样 12 题（1~6 变量）
@@ -5,9 +7,6 @@
 - 题目级准确率：**6 / 12（50%）**
 - 变量级准确率：**45 / 54（83%）**
 - 未作答 4 项 · 写法不合法 0 项
-- 作答会话：`agnes-3.0-flash` 在 AGH 网页工作台完成，官方导出
-  `results/agh-session-unitinfer.html`（会话 `06df62f6-f32f-41dc-a78b-81c5eb4531be`）；
-  模型作答 JSON 与本报告打分所用 `results/unit_infer_answers.json` 逐题一致
 
 ## 逐题明细
 
@@ -88,3 +87,9 @@
   - y2: m  [对，等价 m]
   - y3: m  [对，等价 m]
   - (目标) A: m^2  [对，等价 m^2]
+
+<!-- NOTES:BEGIN -->
+- 作答会话：`agnes-3.0-flash` 在 AGH 网页工作台完成，官方导出
+  `results/agh-session-unitinfer.html`（会话 `06df62f6-f32f-41dc-a78b-81c5eb4531be`）；
+  模型作答 JSON 与本报告打分所用 `results/unit_infer_answers.json` 逐题一致
+<!-- NOTES:END -->

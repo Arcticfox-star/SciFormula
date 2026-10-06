@@ -20,7 +20,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PY="${PYTHON:-$(command -v python || command -v python3 || true)}"
 if [ -z "$PY" ]; then
   echo "!! 找不到 python。请设置 PYTHON 指向你的解释器，例如："
-  echo "   PYTHON=/c/Python314/python.exe sh scripts/setup_baseline_env.sh"
+  echo "   PYTHON=$(command -v python3 || echo /usr/bin/python3) sh scripts/setup_baseline_env.sh"
   exit 1
 fi
 W="$ROOT/.baseline_wheels"

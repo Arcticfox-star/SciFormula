@@ -36,6 +36,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import equations as EQ            # noqa: E402
 import experiment as EX           # noqa: E402
 import pipeline as P              # noqa: E402
+import report_notes               # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.join(HERE, "results")
@@ -235,7 +236,7 @@ def write_report(rows):
       "独立测量数据；这是本项目明确声明的边界之一。");
     A("5. 阈值沿用项目默认（区间内 0.05 / 外推 0.20），**没有为迎合结论调参**。\n")
     A("生成命令：`SCIFORMULA_LIBRARY=feynman python exp_verify_ab.py`")
-    open(os.path.join(RES, "verify_ab_report.md"), "w", encoding="utf-8").write("\n".join(L) + "\n")
+    report_notes.write_report(os.path.join(RES, "verify_ab_report.md"), "\n".join(L))
     print("结论报告：results/verify_ab_report.md")
 
 
