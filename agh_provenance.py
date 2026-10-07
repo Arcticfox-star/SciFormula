@@ -338,7 +338,7 @@ def main(argv=None):
             return 1
         old = io.open(os.path.join(ROOT, OUT_PATH), encoding="utf-8", newline="\n").read()
         if old.strip() == text.strip():
-            print("登账表与 %d 份事件原件一致（含意外到的例外项见下）" % len(rows))
+            print("登账表与 %d 份事件原件一致" % len(rows))
         else:
             print("!! 登账表已与原件不一致，请重新生成")
             return 1
