@@ -65,7 +65,8 @@ python verify_evidence.py  # 10. 核对运行证据与哈希清单（提交前�
 | `scripts/export_baseline_input.py` | 为对照实验导出数据：训练/预测点给基线，**真值只给评分脚本**（边界靠文件分离）|
 | `scripts/run_baseline.py` | 在隔离环境里跑基线方法（随机森林 / 梯度提升 / gplearn）|
 | `scripts/score_baseline.py` | 用同一套验收口径给基线打分，并与本项目成绩并列出表 |
-| `trace_summary.py` | 把 AGH 导出的会话流水（JSONL）整理成可提交的轨迹摘要表格 |
+| `trace_summary.py` | 把 AGH 导出的会话流水（JSONL）整理成可提交的轨迹摘要表格（回答「这次会话干了什么」） |
+| `agh_provenance.py` | **运行模型溯源**：从 AGH 事件原件读出所用模型/版本/批准次数，生成可自行复算的登账表（回答「用的是哪个模型」）。缺 JSONL 原件时明确报缺件并以非 0 退出，参见第七节 |
 | `experiment.py` | 批量基准评测 + 汇总 + 生成 HTML 报告（**它是回归测试，不是智能体路径**） |
 | `AGH接入说明.md` | 与 AGH 的分层设计、接入步骤、提交证据对照、以及尚未验证的部分 |
 
@@ -789,6 +790,53 @@ python verify_evidence.py --strict # 连换行符差异也不容忍
    而那份清单要证明的正是这件事。宁可如实说明，不去动证据。
    同理，这些 HTML **只能用浏览器打开**：用文档/富文本编辑器保存会注入
    `data-page-node-id` 之类的属性（内容肉眼不变，但字节已不是原件）。
+
+### 运行模型溯源：能不能核对「用了什么模型」（2026-10-07 如实交代）
+
+外部审计提了一条硬性要求：**必须留有 trace，以便核对运行记录是否使用了 AGH /
+Agnes 系列模型进行开发**。我们的核查结论是分两半的——
+
+| 要求 | 结论 | 依据 |
+|---|---|---|
+| 有没有 trace 留存 | ✅ **符合** | 7 份 AGH 官方会话导出全部入库，受 `EVIDENCE.sha256` 逐字节保护；含工具调用链、人工批准卡片与被拒记录 |
+| 能不能核对所用模型 | ❌ **尚未符合** | 见下，模型名目前仍是**作者的转述**，复核者无法自行复算 |
+
+**缺口的确切位置**（都是实测，不是推测）：
+
+1. **7 份 AGH 官方 HTML 导出里不含任何模型字段**——逐份 grep `agnes` 零命中。
+   HTML 导出能证明「运行受 AGH 管辖」，但自证不了「跑的是哪个模型」。
+2. **模型名实际只存在于 JSONL 事件原件的 `session/start` 事件**
+   （`modelSettings[*].model`），而仓库里 JSONL 数为 **0**。
+3. 于是 `agnes-3.0-flash` 这个型号目前只以**二手转述**的形式散落在几份文档里
+   （`results/agh-trace-*.md`、`unit_infer_report.md`、`units_ab_report.md`）。
+   能被引证 ≠ 能被核对，转述只满足前者。
+
+**补证不需要重跑任何实验**，源文件还在就能补。项目已留好通道：
+
+```bash
+# 1) 在真实终端导出事件原件（本项目开发时 agh 不在 PATH，需用完整路径）
+agh sessions list
+agh export <会话id> --format agnes -o results/agh-event/<会话id>.jsonl
+
+# 2) 生成一手登账表（也可由任何人复算）
+python agh_provenance.py            # → results/agh-model-provenance.md
+python agh_provenance.py --selftest # 工具自检
+```
+
+补证后，模型名就从「作者说」变成「原件算出来」，这条要求才真正成立。
+已建好的配套能力：
+
+- `agh_provenance.py` 从原件的 `session/start` 读**全部**模型（不是只读第一个）、
+   AGH 版本、预设，并统计工具调用/批准/拒绝次数，输出登账表。
+  **登账表刻意不设人工标注区**——一旦允许手改，它就退化成又一份转述。
+- 缺 JSONL 时它**明确报缺件并以非 0 退出**，绝不自造数据、绝不打印「全部通过」。
+  一个「没数据也全绿」的核查工具，比没有工具更糟。
+- `results/agh-event/*.jsonl` 一旦存在即被 `scripts/resign_evidence.py`
+  自动登记进 `EVIDENCE.sha256`（缺席时不算缺失，因此现在不影响校验通过）。
+- 顺带修了 `trace_summary.py` 两处取证缺陷：模型只读 `modelSettings[0]`
+  （多模型会话会被静默记成单模型），以及 `AGH 版本 0.0.0` 被原样照抄
+  （实际是导出侧没填，新版渲染成「（导出未提供）」）。
+  仓库里已有的几份 trace md 尚未重生成——重生成需要 JSONL 原件——因此仍显示 `0.0.0`。
 
 ### 一条曾经存在过的断链（2026-10-06 修，值得记下来）
 

@@ -110,6 +110,16 @@ HEADER_EVIDENCE = """# SciFormula 证据文件校验清单（sha256）—— ①
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
 #    data-page-node-id 之类的属性，破坏原件字节一致性。
 #    只想看内容时，用浏览器打开即可（浏览器不会写文件）。
+#
+# 【关于「用没用 Agnes 系列模型」的可核对性】（2026-10-07）
+# 外部审计要求可核对运行所用模型。核查结论：HTML 官方导出里**不含任何模型字段**
+# （实测 7 份全部零命中 "agnes"），模型名只存在于 AGH 事件原件（JSONL）的
+# `session/start` 事件的 `modelSettings[*].model` 中。因此本清单额外覆盖两类文件，
+# 它们一旦存在就会被 pick_optional() 自动登记、缺席时不算缺失：
+#   · results/agh-event/*.jsonl        AGH 事件原件（agh export --format agnes）
+#   · results/agh-model-provenance.md  由 agh_provenance.py 从原件算出的模型登账表
+# 缺 JSONL 时 `python agh_provenance.py` 明确报缺件并以非 0 退出 ——
+# 一个「没数据也全绿」的核查工具，比没有工具更糟。
 """
 
 HEADER_SNAPSHOT = """# SciFormula 生成快照校验清单（sha256）—— ② 生成快照
@@ -126,6 +136,25 @@ HEADER_SNAPSHOT = """# SciFormula 生成快照校验清单（sha256）—— ②
 # 生成时间（北京时间）：{when}
 # 本次重签原因：{reason}
 """
+
+
+def pick_optional():
+    """扫那些「现在可能还没有、一旦有了就必须受保护」的一手证据。
+
+    AGH 事件原件（JSONL）目前不在仓库里 —— 这正是「模型名不可核对」的根因。
+    它们是**可选**的：现在没有不算错（不算「文件缺失」），
+    但一旦有人导出并把它们放进去，就必须自动进清单受逐字节保护，
+    否则「补了证」和「没补」在证据链上没有区别。
+    """
+    extra = []
+    evdir = os.path.join(ROOT, "results", "agh-event")
+    if os.path.isdir(evdir):
+        for fn in sorted(os.listdir(evdir)):
+            if fn.endswith(".jsonl"):
+                extra.append("results/agh-event/" + fn)
+    if os.path.exists(os.path.join(ROOT, "results", "agh-model-provenance.md")):
+        extra.append("results/agh-model-provenance.md")
+    return extra
 
 
 def write_manifest(path, header, entries, rel_hashes):
@@ -146,7 +175,8 @@ def main(argv=None):
     if a.check:
         return subprocess.call([sys.executable, "verify_evidence.py"], cwd=ROOT)
 
-    missing = [p for p in EVIDENCE + SNAPSHOTS
+    ev_files = EVIDENCE + pick_optional()
+    missing = [p for p in ev_files + SNAPSHOTS
                if not os.path.exists(os.path.join(ROOT, p))]
     if missing:
         print("以下文件不存在，请先补齐：")
@@ -159,7 +189,7 @@ def main(argv=None):
 
     # ① 不可变证据：直接对文件字节取哈希
     # ② 生成快照：对**规范形式**取哈希（与 verify_evidence.canonical 同一实现）
-    ev = [(p, sha256_of_bytes(open(os.path.join(ROOT, p), "rb").read())) for p in EVIDENCE]
+    ev = [(p, sha256_of_bytes(open(os.path.join(ROOT, p), "rb").read())) for p in ev_files]
     sn = [(p, sha256_of_bytes(canonical(p, open(os.path.join(ROOT, p), "rb").read())))
           for p in SNAPSHOTS]
 

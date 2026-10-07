@@ -16,6 +16,17 @@ AGH 的 `agh export <会话id> --format agnes` 导出的是一行一个 JSON 的
     python trace_summary.py session.json results/agh-trace-summary.md
 
     # 也可以顺带把「这次运行发现了什么」换成自己写的内容（见文件末尾说明）
+
+【与 agh_provenance.py 的分工（2026-10-07）】
+本脚本回答的是「这次会话**干了什么**」（工具链、批准、结果），适合放进材料给评审读。
+但它有一处先天限制：**只有拿到 JSONL 事件原件才读得出模型名**，
+而仓库里目前没有 JSONL（背景见 `agh_provenance.py` 的文档头）。
+所以「用了什么模型」请以 `agh_provenance.py` 生成的
+`results/agh-model-provenance.md` 为准——那份是从原件算出来的，可自行复算。
+
+另外：本脚本产出的 trace md 里若看到「AGH 版本 `0.0.0`」，那是**旧版输出**——
+AGH 导出未填版本号时会被原样写成 0.0.0。新版已改为标注「（导出未提供）」。
+仓库里已有的几份 trace md 尚未重生成（重生成需要 JSONL 原件），因此仍显示 0.0.0。
 """
 
 import io
@@ -192,10 +203,20 @@ def main():
         if ev.get("type") == "session/start":
             d = ev.get("data", {})
             info["会话 ID"] = "`%s`" % d.get("key", "?")
-            info["AGH 版本"] = "`%s`" % d.get("agnesVersion", "?")
-            models = [m.get("model") for m in d.get("modelSettings", []) if isinstance(m, dict)]
+            ver = (d.get("agnesVersion") or "").strip()
+            # AGH 有时把版本号导出成 "0.0.0"——那是导出侧没填，不是真有个 0.0.0 版本。
+            # 原样照抄会让复核者去查一个不存在的版本；如实标注比伪造一个版本号体面。
+            if not ver or ver.lower() in ("0.0.0", "0.0", "unknown", "none", "null"):
+                info["AGH 版本"] = "（导出未提供）"
+            else:
+                info["AGH 版本"] = "`%s`" % ver
+            # modelSettings 是个列表：一次会话可能配了多个模型（主模型 / 备用降级）。
+            # 只读 [0] 会把多模型会话静默记成单模型——这和「成绩造假」没有本质区别，
+            # 所以这里列全部。
+            models = [m.get("model") for m in (d.get("modelSettings") or [])
+                      if isinstance(m, dict) and m.get("model")]
             if models:
-                info["模型"] = "`%s`" % models[0]
+                info["模型"] = "、".join("`%s`" % m for m in models)
             info["预设"] = "`%s`" % d.get("preset", "?")
             break
     for ev in events:

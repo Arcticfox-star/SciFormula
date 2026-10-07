@@ -6,13 +6,23 @@
 #   · 校验对**换行符差异**留了容错（Windows/Linux 的 LF↔CRLF 会造成同内容两种字节），
 #     但会把这类情况显式打印为 `OK(换行)`，不掩盖；`--strict` 可关掉容错。
 #
-# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-06 21:16:33
-# 本次重签原因：按外部审计第三轮结论收尾：① README 与 docs/test-cases.md 的 P19 失败机制叙述更正——实测确认候选库保留 80 项且含 1/(1+(v/c_light)**2) 等近似基函数，算法拼出训练 R²=1.00000 的解后被外推检验拦下（外推 R²=-5.20476），属检验机制生效而非特征库表达力上限；② 新增 report_notes.py 标注区机制，unit_infer_eval/exp_verify_ab/score_baseline/score_gp 四个整文件覆盖写的脚本改为保留人工标注区（results/unit_infer_report.md 的作答会话溯源从此不再被重跑抹掉）；③ docs/test-cases.md 与两个 .sh 脚本彻底去掉本机路径；④ README 消融表耗时标注为参考量级并修正一处列表排版
+# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-07 08:27:09
+# 本次重签原因：新增 agh_provenance.py：把「用了什么模型」从转述升级为可复算的一手证据。背景：7 份 AGH 官方 HTML 导出实测不含任何模型字段（grep agnes 零命中），模型名只存在于 JSONL 事件原件的 session/start，而 JSONL 未入库，导致「模型可核对」这条外部审计要求不合要求。本工具从原件读全部模型/版本/批准次数生成登账表，缺件时明确报错退出非 0；results/agh-event/*.jsonl 一旦存在即自动纳入 EVIDENCE 清单。同时修 trace_summary.py 两处取证缺陷（模型只读 modelSettings[0]、AGH 版本 0.0.0 照抄未标未提供）；README 与 AGH接入说明 如实交代缺口与补证方式
 #
 # ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
 #    data-page-node-id 之类的属性，破坏原件字节一致性。
 #    只想看内容时，用浏览器打开即可（浏览器不会写文件）。
+#
+# 【关于「用没用 Agnes 系列模型」的可核对性】（2026-10-07）
+# 外部审计要求可核对运行所用模型。核查结论：HTML 官方导出里**不含任何模型字段**
+# （实测 7 份全部零命中 "agnes"），模型名只存在于 AGH 事件原件（JSONL）的
+# `session/start` 事件的 `modelSettings[*].model` 中。因此本清单额外覆盖两类文件，
+# 它们一旦存在就会被 pick_optional() 自动登记、缺席时不算缺失：
+#   · results/agh-event/*.jsonl        AGH 事件原件（agh export --format agnes）
+#   · results/agh-model-provenance.md  由 agh_provenance.py 从原件算出的模型登账表
+# 缺 JSONL 时 `python agh_provenance.py` 明确报缺件并以非 0 退出 ——
+# 一个「没数据也全绿」的核查工具，比没有工具更糟。
 
 2d6a7b01a03d8c3e8bded27f5d4a09c05c3e9f318daecf4dd1c6b1b49eb74dac  results/agh-session.html
 372b63b23af79d6db28558ec0ee7af206b6adf710475a2de714ee5f8e560672a  results/agh-session-feynman.html
