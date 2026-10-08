@@ -814,14 +814,32 @@ Agnes 系列模型进行开发**。我们的核查结论是分两半的——
 **补证不需要重跑任何实验**，源文件还在就能补。项目已留好通道：
 
 ```bash
-# 1) 在真实终端导出事件原件（本项目开发时 agh 不在 PATH，需用完整路径）
-agh sessions list
-agh export <会话id> --format agnes -o results/agh-event/<会话id>.jsonl
+# 1) 列出会话，拿到 ID
+#    注意命令是 sessions --json —— 没有 `agh sessions list` 这个子命令，
+#    也没有 `sessions show`，写错会白跑一轮（本项目开发时实测踩过）。
+agh sessions --json
 
-# 2) 生成一手登账表（也可由任何人复算）
+# 2) 逐个导出事件原件（文件名必须就是会话 ID，脚本按文件名与内容双向核对）
+agh export SESSION_ID --format agnes -o results/agh-event/SESSION_ID.jsonl
+
+# 3) 生成一手登账表（也可由任何人复算）
 python agh_provenance.py            # → results/agh-model-provenance.md
 python agh_provenance.py --selftest # 工具自检
 ```
+
+7 份已入库官方导出的原始会话 ID（一一对应，可逐个导出）：
+
+| 官方导出 | 会话 ID |
+|---|---|
+| `agh-session.html` | `161ea3fb-7f17-4a89-9ba7-d6c70d46c6be` |
+| `agh-session-demo.html` | `438d81fd-c1b5-4efc-b739-d238864a3d3a` |
+| `agh-session-feynman.html` | `39d31a09-7e75-42d0-934e-911e92cf6e74` |
+| `agh-session-data.html` | `6501b3a2-515a-4ce2-bce6-6dc59d6a954a` |
+| `agh-session-data2.html` | `9d469c46-1842-49b0-8dc3-21a9f04c6888` |
+| `agh-session-sim.html` | `6ea6a59e-2c25-47f8-96b9-e000383a5a93` |
+| `agh-session-unitinfer.html` | `06df62f6-f32f-41dc-a78b-81c5eb4531be` |
+
+批量导出可以直接跑 `powershell -File scripts/export_agh_events.ps1`（脚本里已内置这 7 个 ID）。
 
 补证后，模型名就从「作者说」变成「原件算出来」，这条要求才真正成立。
 已建好的配套能力：

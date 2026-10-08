@@ -465,9 +465,13 @@ E = 0.5017 · m·v²  −  1.204
 补证通道已建好，且**不需要重跑任何实验**：
 
 ```bash
-agh export <会话id> --format agnes -o results/agh-event/<会话id>.jsonl
+agh sessions --json   # 拿会话 ID（是 sessions --json，没有 sessions list 这个子命令）
+agh export SESSION_ID --format agnes -o results/agh-event/SESSION_ID.jsonl
 python agh_provenance.py        # → results/agh-model-provenance.md（可自行复算）
 ```
+
+（`SESSION_ID` 换成上一步列出的真实 ID。7 个原始会话 ID 一览见 README 第七节；
+批量导出可跑 `powershell -File scripts/export_agh_events.ps1`。）
 
 `agh_provenance.py` 在缺件时明确报缺件并以非 0 退出（不假装通过）；
 JSONL 一旦存在即自动进 `EVIDENCE.sha256` 受逐字节保护。详见 README 第七节。
