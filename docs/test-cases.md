@@ -24,11 +24,13 @@
 python agh_tools.py call load_problem --json '{"problem_id":"P03","n_samples":100,"noise":0.0,"seed":0}'
 python agh_tools.py call check_units --json '{"variables_units":{"m":"kg","v":"m/s"},"target_unit":"J","data_id":"P03_n100_nz0_s0"}'
 python agh_tools.py call build_candidate_library --json '{"data_id":"P03_n100_nz0_s0","variables_units":{"m":"kg","v":"m/s"},"target_unit":"J"}'
-python agh_tools.py call fit_sparse --json '{"library_id":"<上一步返回的 lib_id>","data_id":"P03_n100_nz0_s0"}'
+python agh_tools.py call fit_sparse --json '{"library_id":"lib_1df518136eb2fa42","data_id":"P03_n100_nz0_s0"}'
 ```
 
-（`lib_id` 由上一步返回，复制其真实值；同一输入必然得到同一 `lib_id`。）
+（`lib_id` 那串是真实值，不是占位符——同一输入必然得到同一个 `lib_id`，
+已在三个独立进程里复核过，可直接照抄。上一步的返回里也能看到它。）
 
+- **截图**：`docs/screenshots/N1.png`
 - **AGH 内的完整证据**：`results/agh-session.html`（会话 161ea3fb，330 条事件）、
   `results/agh-trace-summary.md`（整理稿）。
 
@@ -100,6 +102,8 @@ python agh_tools.py call verify_formula --json '{"data_id":"rc_discharge_n60_csv
 python agh_tools.py call check_units --json '{"variables_units":{"m":"kg","v":"米每秒"},"target_unit":"J"}'
 ```
 
+- **截图**：`docs/screenshots/B1.png`
+
 ### B2　单位写法合法但物理推断错误
 
 - **输入**：P03 数据，但把速度推成 `kg`（合法写法、错误物理）。
@@ -143,6 +147,10 @@ python agh_tools.py call build_candidate_library --json '{"data_id":"P03_n100_nz
 ```bash
 python experiment.py P19
 ```
+
+- **截图**：`docs/screenshots/F1.png`
+- **注意**：这条命令会重写 `results/` 下的报告与明细（属「生成快照」文件）。
+  截完图后想还原工作区：`git checkout -- results/`。
 
 ### F2　历史 bug 回归测试：负动能截距公式被验证器拦截
 
