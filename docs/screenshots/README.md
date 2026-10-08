@@ -18,7 +18,19 @@
 
 ## 怎么截（终端）
 
-仓库根目录下，逐条跑：
+**先确认解释器装了依赖**：跑 `python -c "import numpy, sympy"`，不报错才继续。
+若报 `ModuleNotFoundError: No module named 'numpy'`，说明用错了 `python`——
+项目依赖在 `.venv/` 里，用 `.venv\Scripts\python.exe`（Windows）
+或 `.venv/bin/python`（Linux/macOS）。
+
+**最省事的做法**是直接用这个脚本（它会自动切到装了依赖的解释器，
+并把命令原文与真实输出一起打出来）：
+
+```bash
+.venv\Scripts\python.exe scripts/show_test_cases.py N1    # 再换 B1 / F1 / all
+```
+
+也可以手工逐条跑（仓库根目录下）：
 
 ```bash
 # N1
@@ -43,8 +55,9 @@ python experiment.py P19
 截图前把终端字号调大一点（能看清即可），截完另存为 PNG，
 文件名按上表放在本目录。
 
-> 三条都能用 `scripts/show_test_cases.py` 一条一条打出来：
-> `python scripts/show_test_cases.py N1`（把 N1 换成 B1 / F1）。
+> 关于 B1 的 `[退出码 1]`：那条样例的期望结果**就是**解析失败，
+> 工具如实报告问题才返回非 0 —— **不是命令挂了**。`show_test_cases.py` 会把这句说明
+> 一并打出来，截图里带着它更好懂。
 
 ## 几条不要做的事
 

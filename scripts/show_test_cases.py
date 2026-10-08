@@ -25,7 +25,65 @@ import sys
 
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PY = sys.executable
+def pick_python():
+    """挑一个**装了依赖**的解释器来跑子进程。
+
+    为什么必须挑：本脚本要拉起 agh_tools.py / experiment.py，它们 import numpy。
+    如果调用方是系统 Python（且没装 numpy），子进程会直接
+    `ModuleNotFoundError: No module named 'numpy'` —— 报错发生在子进程里，
+    看起来像"项目坏了"，其实只是用错了解释器。**这条是用户实测打回来的**：
+    在 `PS D:\\projects\\SciFormula> python scripts/show_test_cases.py N1` 下
+    三条样例全部 numpy 报错。所以这里自动优先用项目自带的虚拟环境。
+    """
+    cands = [
+        os.path.join(ROOT, ".venv", "Scripts", "python.exe"),   # Windows venv
+        os.path.join(ROOT, ".venv", "bin", "python"),           # Unix venv
+        os.path.join(ROOT, "venv", "Scripts", "python.exe"),
+    ]
+    for p in cands:
+        if os.path.exists(p):
+            return p
+    return sys.executable
+
+
+PY = pick_python()
+
+
+def preflight():
+    """开跑前先确认解释器能用。不检查的话，报错会以一堆 traceback 的形式散在各步里。"""
+    r = subprocess.run([PY, "-c", "import numpy, sympy"],
+                       capture_output=True, text=True, encoding="utf-8")
+    if r.returncode == 0:
+        return True
+    print("!" * 78)
+    print("当前用的解释器缺依赖，三条样例都会失败：")
+    print("    %s" % PY)
+    print("    %s" % (r.stderr or "").strip().splitlines()[-1])
+    print()
+    print("项目依赖装在自带的虚拟环境里。两种解法，任选一种：")
+    print("  ① 直接用虚拟环境的解释器跑本脚本（推荐）：")
+    print('       .venv\\Scripts\\python.exe scripts\\show_test_cases.py N1')
+    print("  ② 给当前解释器装上依赖：")
+    print("       python -m pip install -r requirements.txt")
+    print("!" * 78)
+    return False
+
+
+def py_label():
+    """命令回显该写什么解释器名。
+
+    若脚本内部换了别的解释器（见 pick_python），就**如实显示换成了谁**——
+    截图里的「输入」必须和「实际执行」一致，否则读者照抄截图里的命令会跑不通。
+    """
+    if PY == sys.executable:
+        return "python"
+    try:
+        rel = os.path.relpath(PY, ROOT)
+    except Exception:
+        rel = PY
+    if not rel.startswith(".."):
+        return rel.replace("/", "\\")          # 项目内的虚拟环境，用相对路径更好读
+    return PY
 
 
 def banner(title, subtitle=""):
@@ -44,7 +102,7 @@ def call(tool, payload, note="", expect_fail=False):
     （工具如实报告问题），不是程序出错。截图里要让人看懂这一点，否则会被误读成故障。
     """
     js = json.dumps(payload, ensure_ascii=False)
-    print("\n$ python agh_tools.py call %s --json '%s'" % (tool, js))
+    print("\n$ %s agh_tools.py call %s --json '%s'" % (py_label(), tool, js))
     if note:
         print("  （%s）" % note)
     print("-" * 78)
@@ -64,7 +122,7 @@ def call(tool, payload, note="", expect_fail=False):
 
 def run_script(args, note=""):
     """跑一个普通脚本，把命令与真实输出都打出来。"""
-    print("\n$ python %s" % " ".join(args))
+    print("\n$ %s %s" % (py_label(), " ".join(args)))
     if note:
         print("  （%s）" % note)
     print("-" * 78)
@@ -131,6 +189,14 @@ def main(argv=None):
     ap.add_argument("case", choices=["N1", "B1", "F1", "all"],
                     help="要跑哪条；all 依次跑三条")
     a = ap.parse_args(argv)
+
+    # 开跑前先确认解释器可用——否则三条样例会各自抛一堆 numpy traceback，
+    # 看起来像项目坏了，实际只是解释器选错（用户实测踩过）。
+    if not preflight():
+        return 1
+    if py_label() != "python":
+        print("（子进程改用 %s —— 它的依赖是齐的；命令回显里也会如实写成它）\n"
+              % py_label())
 
     names = ["N1", "B1", "F1"] if a.case == "all" else [a.case]
     for n in names:

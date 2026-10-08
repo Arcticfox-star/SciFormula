@@ -3,10 +3,12 @@
 按提交规程要求，测试样例分**正常、边界、失败**三类。每条样例给出：
 输入 → 期望行为 → 实际结果 → 一条可复制执行的复现命令。
 
-所有命令都在**你克隆下来的仓库根目录**下执行（Windows PowerShell / Git Bash 均可）；
-命令里的 `python` 指**你所用环境的解释器**——若建了虚拟环境就指
-`.venv/Scripts/python.exe`（Windows）或 `.venv/bin/python`（Linux/macOS），
-没建虚拟环境就直接用系统的 `python`。本文不写死任何绝对路径，照抄即可跑。
+所有命令都在**你克隆下来的仓库根目录**下执行（Windows 命令行 / Git Bash 均可）；
+命令里的 `python` 指**装了 numpy / sympy 的那个解释器**——建了虚拟环境就指
+`.venv\Scripts\python.exe`（Windows）或 `.venv/bin/python`（Linux/macOS），
+没建虚拟环境就直接用系统的 `python`（先跑一次 `python -c "import numpy, sympy"` 确认不报错）。
+**若报 `ModuleNotFoundError: No module named 'numpy'`，是解释器选错，不是项目坏了。**
+本文不写死任何绝对路径，照抄即可跑。
 
 ---
 

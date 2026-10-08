@@ -56,6 +56,45 @@ STEPS = [
 SLOW = {"experiment.py"}          # --fast 时跳过
 
 
+def pick_python():
+    """挑一个**装了依赖**的解释器来跑各步骤。
+
+    为什么必须挑：各步骤要 import numpy。若调用方是系统 Python（没装 numpy），
+    第一步就会 `ModuleNotFoundError` —— 报错在子进程里，看起来像"项目坏了"，
+    其实只是解释器选错。**这条是用户实测打回来的**（`python scripts/run_all.py`
+    在只装了项目虚拟环境的机器上全步失败）。所以这里优先用项目自带的虚拟环境。
+    """
+    cands = [
+        os.path.join(ROOT, ".venv", "Scripts", "python.exe"),   # Windows venv
+        os.path.join(ROOT, ".venv", "bin", "python"),           # Unix venv
+        os.path.join(ROOT, "venv", "Scripts", "python.exe"),
+    ]
+    for p in cands:
+        if os.path.exists(p):
+            return p
+    return sys.executable
+
+
+def preflight(py):
+    """开跑前先确认解释器能用，避免每步各抛一次 traceback（那样看不出真正原因）。"""
+    r = subprocess.run([py, "-c", "import numpy, sympy"],
+                       capture_output=True, text=True, encoding="utf-8")
+    if r.returncode == 0:
+        return True
+    print("!" * 74)
+    print("当前解释器缺依赖（numpy / sympy），所有步骤都会失败：")
+    print("    %s" % py)
+    print("    %s" % (r.stderr or "").strip().splitlines()[-1])
+    print()
+    print("项目依赖装在自带的虚拟环境里。两种解法，任选一种：")
+    print("  ① 直接用虚拟环境的解释器跑本脚本（推荐）：")
+    print("       .venv\\Scripts\\python.exe scripts\\run_all.py")
+    print("  ② 给当前解释器装上依赖：")
+    print("       python -m pip install -r requirements.txt")
+    print("!" * 74)
+    return False
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="按 README 第一节顺序一键复现")
     ap.add_argument("--fast", action="store_true", help="跳过全量实验（最耗时的一步）")
@@ -70,8 +109,15 @@ def main(argv=None):
         return 0
 
     todo = [s for s in STEPS if not (a.fast and s[0] in SLOW)]
+
+    PY = pick_python()
+    if not preflight(PY):
+        return 1
+
     print("=" * 74)
     print("SciFormula 一键复现 —— 共 %d 步%s" % (len(todo), "（--fast：跳过全量实验）" if a.fast else ""))
+    if PY != sys.executable:
+        print("解释器：%s（调用方那个缺依赖，已自动切到项目虚拟环境）" % PY)
     print("工作目录：%s" % ROOT)
     print("=" * 74)
 
@@ -85,7 +131,7 @@ def main(argv=None):
         print("\n[%d/%d] %s —— %s" % (i, len(todo), script, desc))
         print("-" * 74)
         t0 = time.time()
-        rc = subprocess.call([sys.executable, script] + args, cwd=ROOT)
+        rc = subprocess.call([PY, script] + args, cwd=ROOT)
         dt = time.time() - t0
         results.append((script, rc, dt, "ok" if rc == 0 else "FAILED"))
 

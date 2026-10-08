@@ -6,8 +6,8 @@
 #   · 校验对**换行符差异**留了容错（Windows/Linux 的 LF↔CRLF 会造成同内容两种字节），
 #     但会把这类情况显式打印为 `OK(换行)`，不掩盖；`--strict` 可关掉容错。
 #
-# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-08 20:58:07
-# 本次重签原因：按缺口清单 C 项准备测试样例截图：① docs/test-cases.md 把 N1 的 lib_id 占位符换成真实值（经三个独立进程复核其确定性），并给 N1/B1/F1 三条加上『截图』条目；② 新增 docs/screenshots/README.md（截图规范：要哪三张、怎么截、三条不要做的事）；③ 新增 scripts/show_test_cases.py 把三条样例逐条跑出来方便截图（B1 的退出码非 0 会显式说明『本样例期望如此』，避免被误读成故障）；④ docs/membership-statement.md 按本人确认更新第三节（赛事无该申报项）
+# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-08 21:11:00
+# 本次重签原因：修一个用户实测打回来的缺陷：两个入口脚本（run_all.py / show_test_cases.py）原先用 sys.executable 拉起子进程，在只装了项目虚拟环境的机器上会全程 ModuleNotFoundError: No module named 'numpy'——报错发生在子进程里，看起来像项目坏了，实际是解释器选错。现改为自动探测并使用 .venv 里的解释器，命令回显也如实写成实际用的那个（截图里的输入必须与执行一致）；两者都加了开跑前的依赖预检，缺依赖时给人话提示而不是一串 traceback。同时 README 第一节与 docs/test-cases.md 开头补上解释器说明（报 numpy 缺失 = 解释器选错，不是项目坏了）
 #
 # ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
@@ -45,7 +45,7 @@ af47e44a5e5864e61622d07271e07a66bb5d5fae1be5ab16d0a43ef83d4eac5d  results/postho
 802c8bd64e298a2b42d43b2af4655e8d4b8f7dfba4b5949a453e3d61a021060a  results/posthoc/agh-session-sim.md
 0335d3d6c17b428e1717511a276a0b12501de3251b1d8e19ce1c4f3c37754f06  results/unit_infer_report.md
 170e72d9ba6257ac24c3f7a8c4549cc40521b7e4dbe1b1127771a9da4d739d86  results/unit_infer_answers.json
-d5b5be5e0aac9dee25a8434119b820815957f721a6f84f7ececfe494af46fdb8  docs/test-cases.md
+8109822d1d2e959f0f84819c2ea54022aee2fad75e40b85aad30633aa90287f5  docs/test-cases.md
 3ddbdb9b3a6905ada54b3429c11e099c830c30653c67147b875727ff60f85659  docs/model-declaration.md
 6cda9eee2bb20c5cfe351a0a6b1eb5b9f65825ea4a849b37cea109a96b8953c3  results/posthoc/data/I.39.22_csv_n200.npz
 ddf88512fd70dc8ea275b9ae0333e25d6314283db7dcfcbb2a33424ab3033e1d  results/posthoc/data/I.39.22_csv_n200.meta.json

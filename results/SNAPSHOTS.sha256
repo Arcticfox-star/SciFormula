@@ -9,8 +9,8 @@
 # ⚠️ 本清单存的是**规范形式**的哈希，因此 `sha256sum -c` 对它不适用；
 #    请用 `python verify_evidence.py`（它会分别按两种严格度核对两份清单）。
 #
-# 生成时间（北京时间）：2026-10-08 20:58:07
-# 本次重签原因：按缺口清单 C 项准备测试样例截图：① docs/test-cases.md 把 N1 的 lib_id 占位符换成真实值（经三个独立进程复核其确定性），并给 N1/B1/F1 三条加上『截图』条目；② 新增 docs/screenshots/README.md（截图规范：要哪三张、怎么截、三条不要做的事）；③ 新增 scripts/show_test_cases.py 把三条样例逐条跑出来方便截图（B1 的退出码非 0 会显式说明『本样例期望如此』，避免被误读成故障）；④ docs/membership-statement.md 按本人确认更新第三节（赛事无该申报项）
+# 生成时间（北京时间）：2026-10-08 21:11:00
+# 本次重签原因：修一个用户实测打回来的缺陷：两个入口脚本（run_all.py / show_test_cases.py）原先用 sys.executable 拉起子进程，在只装了项目虚拟环境的机器上会全程 ModuleNotFoundError: No module named 'numpy'——报错发生在子进程里，看起来像项目坏了，实际是解释器选错。现改为自动探测并使用 .venv 里的解释器，命令回显也如实写成实际用的那个（截图里的输入必须与执行一致）；两者都加了开跑前的依赖预检，缺依赖时给人话提示而不是一串 traceback。同时 README 第一节与 docs/test-cases.md 开头补上解释器说明（报 numpy 缺失 = 解释器选错，不是项目坏了）
 
 290e6b18c5f20580419bf087f4e2c9d54f00c745fd7fd3328954f9bb7a646feb  results/report.html
 30df63b5002b5b5e703609a57ed7102f4ed3bc68c7f0df069836fd835eed8b87  results/report_feynman.html

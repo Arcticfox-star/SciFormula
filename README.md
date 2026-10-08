@@ -13,6 +13,21 @@
 
 需要 Python 3.10+ 和 `numpy`、`sympy` 两个库（安装见第七节）。
 
+> **先确认「你用的这个 `python`」装了依赖。** 下面的命令都写作 `python ...`，
+> 指的是**装了 numpy / sympy 的那个解释器**。若机器上另装了虚拟环境（本项目开发时用
+> `.venv/`）而系统 `python` 里没有这两个库，命令会报
+> `ModuleNotFoundError: No module named 'numpy'` —— 这不是项目坏了，是解释器选错了。
+>
+> ```bash
+> # 用虚拟环境的解释器（Windows / macOS·Linux 二选一）
+> .venv\Scripts\python.exe dims.py
+> .venv/bin/python dims.py
+> ```
+>
+> 分不清用哪个时，`python -c "import numpy, sympy; print('OK')"` 一跑便知。
+> 两个入口脚本（`scripts/run_all.py`、`scripts/show_test_cases.py`）会自动检测并切到
+> `.venv`，跑起来更省心；根目录这些脚本本身不做这层探测。
+
 ```bash
 cd SciFormula
 
