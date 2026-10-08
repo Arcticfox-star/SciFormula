@@ -43,6 +43,7 @@ Agnes 系列模型进行开发**。核查的结论是分两半的：
 一个「没数据也全绿」的核查工具，比没有工具更糟——它会让人误以为已经合规。
 """
 import argparse
+import glob
 import hashlib
 import io
 import json
@@ -87,15 +88,20 @@ def load_events(path):
 def session_meta(events):
     """从 session/start 事件里抓会话元信息。
 
-    注意 modelSettings 是个列表：一次会话可能配了多个模型（主模型 / 降级备用等）。
-    旧版 trace_summary.py 只读了 [0]，多模型会话会静默漏掉——这里读全部。
+    注意 modelSettings 是个列表，且实测每个会话里常有 5 个配置项。
+    旧版 trace_summary.py 只读了 [0]，多模型会话会静默漏掉——这里读全部**并去重**：
+    不去重的话，登账表会写成「agnes-3.0-flash, agnes-3.0-flash, …」五连，
+    复核者会误以为配了五个模型，反而看不清事实。去重但保序，
+    真出现两个不同模型时两个都列。
     """
     for ev in events:
         if ev.get("type") != "session/start":
             continue
         d = ev.get("data", {}) or {}
-        models = [m.get("model") for m in (d.get("modelSettings") or [])
-                  if isinstance(m, dict) and m.get("model")]
+        models = []
+        for m in (d.get("modelSettings") or []):
+            if isinstance(m, dict) and m.get("model") and m["model"] not in models:
+                models.append(m["model"])
         ver = d.get("agnesVersion") or ""
         if ver.strip().lower() in _NULL_VERSIONS:
             ver = ""                       # 空串由上层渲染成「未提供」
@@ -132,19 +138,31 @@ def tally(events):
 def index_mentions():
     """扫描仓库文档，建立「会话 ID → 提到它的文档」倒排索引。
 
-    这一步是为了把 JSONL 原件和已有的 HTML 导出 / trace 摘要关联起来。
-    AGH 的 HTML 导出里没写会话 ID（实测如此），所以只能从整理好的 trace 里反查。
+    这一步是为了把 JSONL 原件和已有的 HTML 导出 / trace 摘要关联起来：
+    AGH 的 HTML 导出里**不含会话 ID**（实测如此），所以只能从别的文档反查。
+
+    ⚠️ 扫描面要够宽。曾经只扫 results/agh-trace-*.md 这 5 个文件，
+    结果 unitinfer 那场会话（ID 记在 unit_infer_report.md 里）被误报成
+    「尚未落到官方 HTML 导出」—— 它其实有 agh-session-unitinfer.html。
+    假警报会让人去补一份本来就存在的东西，比不报还糟。
     """
     idx = {}
-    scan_roots = [os.path.join("results", "agh-trace-%s.md" % n)
-                  for n in ("summary", "demo", "feynman", "sim", "data")]
-    for rel in scan_roots:
-        p = os.path.join(ROOT, rel)
-        if not os.path.exists(p):
-            continue
-        body = io.open(p, encoding="utf-8", errors="replace").read()
-        for sid in set(UUID_RE.findall(body)):
-            idx.setdefault(sid.lower(), set()).add(rel)
+    patterns = [
+        "results/*.md",
+        "results/posthoc/*.md",
+        "results/posthoc/*.json",
+        "README.md",
+        "AGH接入说明.md",
+    ]
+    for pat in patterns:
+        for p in glob.glob(os.path.join(ROOT, pat)):
+            rel = os.path.relpath(p, ROOT).replace("\\", "/")
+            # 绝不能扫自己：登账表里含全部会话 ID，自引用会让「未登记」永远查不出来
+            if rel.endswith("agh-model-provenance.md"):
+                continue
+            body = io.open(p, encoding="utf-8", errors="replace").read()
+            for sid in set(UUID_RE.findall(body)):
+                idx.setdefault(sid.lower(), set()).add(rel)
     return idx
 
 

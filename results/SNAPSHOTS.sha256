@@ -9,8 +9,8 @@
 # ⚠️ 本清单存的是**规范形式**的哈希，因此 `sha256sum -c` 对它不适用；
 #    请用 `python verify_evidence.py`（它会分别按两种严格度核对两份清单）。
 #
-# 生成时间（北京时间）：2026-10-07 08:27:09
-# 本次重签原因：新增 agh_provenance.py：把「用了什么模型」从转述升级为可复算的一手证据。背景：7 份 AGH 官方 HTML 导出实测不含任何模型字段（grep agnes 零命中），模型名只存在于 JSONL 事件原件的 session/start，而 JSONL 未入库，导致「模型可核对」这条外部审计要求不合要求。本工具从原件读全部模型/版本/批准次数生成登账表，缺件时明确报错退出非 0；results/agh-event/*.jsonl 一旦存在即自动纳入 EVIDENCE 清单。同时修 trace_summary.py 两处取证缺陷（模型只读 modelSettings[0]、AGH 版本 0.0.0 照抄未标未提供）；README 与 AGH接入说明 如实交代缺口与补证方式
+# 生成时间（北京时间）：2026-10-08 15:07:01
+# 本次重签原因：补入 AGH 事件原件：模型溯源升级为一手证据
 
 290e6b18c5f20580419bf087f4e2c9d54f00c745fd7fd3328954f9bb7a646feb  results/report.html
 30df63b5002b5b5e703609a57ed7102f4ed3bc68c7f0df069836fd835eed8b87  results/report_feynman.html

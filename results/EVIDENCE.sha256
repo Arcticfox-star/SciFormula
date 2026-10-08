@@ -6,8 +6,8 @@
 #   · 校验对**换行符差异**留了容错（Windows/Linux 的 LF↔CRLF 会造成同内容两种字节），
 #     但会把这类情况显式打印为 `OK(换行)`，不掩盖；`--strict` 可关掉容错。
 #
-# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-07 08:27:09
-# 本次重签原因：新增 agh_provenance.py：把「用了什么模型」从转述升级为可复算的一手证据。背景：7 份 AGH 官方 HTML 导出实测不含任何模型字段（grep agnes 零命中），模型名只存在于 JSONL 事件原件的 session/start，而 JSONL 未入库，导致「模型可核对」这条外部审计要求不合要求。本工具从原件读全部模型/版本/批准次数生成登账表，缺件时明确报错退出非 0；results/agh-event/*.jsonl 一旦存在即自动纳入 EVIDENCE 清单。同时修 trace_summary.py 两处取证缺陷（模型只读 modelSettings[0]、AGH 版本 0.0.0 照抄未标未提供）；README 与 AGH接入说明 如实交代缺口与补证方式
+# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-08 15:07:01
+# 本次重签原因：补入 AGH 事件原件：模型溯源升级为一手证据
 #
 # ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
@@ -60,3 +60,11 @@ eb4f3459b7c4ae002da0edd52044fd19535ad9356ae35aa91a5e4063264917b2  results/postho
 baae48d1aae7d44cbde3b60ef3b32bb1a197f8574c15fa83f93fa97c5f0dd771  results/posthoc/data/P20_n100_nz0.05_s0.meta.json
 981d8035b436112754cf203e00d752db58ff87e0f9764f9e301bf59f551138be  results/posthoc/data/rc_discharge_n60_csv_n60.npz
 024a257e58f51cf6435dd7677bb5ac9ac85b744516ac263556c1e29263cea801  results/posthoc/data/rc_discharge_n60_csv_n60.meta.json
+a46015fa5520a402b077f1187b6b490dd9f233df37198c64357511975be151d3  results/agh-event/06df62f6-f32f-41dc-a78b-81c5eb4531be.jsonl
+48a4e21a3704f462a7239141738cce4f2be7d70a238f9ffe0d4e130e068c45df  results/agh-event/161ea3fb-7f17-4a89-9ba7-d6c70d46c6be.jsonl
+b71e0dec1eecf1a1da76316cd020ab247a22fd6aa6191710df4aa231069538de  results/agh-event/39d31a09-7e75-42d0-934e-911e92cf6e74.jsonl
+b315274450cc53a269bd4ac8b5ab824ae61b58a65d645690ce20053487705258  results/agh-event/438d81fd-c1b5-4efc-b739-d238864a3d3a.jsonl
+a388085cf6d9db1df668a2791ae2f2f57dc126dc80dd3f4563b9270f3086c2d5  results/agh-event/6501b3a2-515a-4ce2-bce6-6dc59d6a954a.jsonl
+e5f044f1128955997929ee75d483f7b5feae26a5bcccf9fe116afa70d207e9e9  results/agh-event/6ea6a59e-2c25-47f8-96b9-e000383a5a93.jsonl
+963f231a4e6bd826e6dadfb86caa705c6e5863ad8cffa918f26f83fe9a08b6d9  results/agh-event/9d469c46-1842-49b0-8dc3-21a9f04c6888.jsonl
+136cee3fb07ec2f35077b4fbd41a21c527dadbea8c3bf58ed0d8f5c609e882df  results/agh-model-provenance.md
