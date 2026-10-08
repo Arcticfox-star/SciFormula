@@ -9,8 +9,8 @@
 # ⚠️ 本清单存的是**规范形式**的哈希，因此 `sha256sum -c` 对它不适用；
 #    请用 `python verify_evidence.py`（它会分别按两种严格度核对两份清单）。
 #
-# 生成时间（北京时间）：2026-10-08 21:31:14
-# 本次重签原因：缺口清单 C 项完成：① 填入三条测试样例的真实终端截图 8 张（N1 五屏、B1 两屏、F1 一屏），字节与原件逐一校验一致、未做任何修改——分屏而不拼接，因为像素对齐实测不可靠，错位的证据比不完整的更糟；② docs/test-cases.md 的截图条目改为直接嵌入图片；③ docs/screenshots/README.md 说明截图来历、为何分屏、重截方法；④ .gitattributes 标注 docs/screenshots/*.png 为 binary；⑤ show_test_cases.py 新增 --compact；⑥ resign_evidence.py 新增重签前的快照体量检查并记录事故：为截图跑过 experiment.py P19 后若直接重签，会把「单题版」产物签成正式快照，而之后 verify_evidence 会因清单与文件自洽而一路放行
+# 生成时间（北京时间）：2026-10-08 22:08:29
+# 本次重签原因：按官网 4.2 逐条核对后的补充：① 新增 docs/tech-info-declaration.md——官网「技术信息」一项要求申报的字段是「AGH 作用、模型名称/版本/环节/调用方式、数据/代码/专业软件/仿真环境/API/设备接口」，此前只覆盖了模型部分，其余字段散在几处未集中申报；现已逐字段成文并纳入本清单保护。② 修正 AGH接入说明.md 两处与事实不符的过时表述：文中仍写着「本机没有仿真环境」「可选的进一步加固：接入仿真环境，成本约 2~3 小时」，而数值仿真实验台 2026-10-06 就已完成并留有会话证据（agh-session-sim.html / agh-trace-sim.md），已改写为既成事实并附证据索引。③ model-declaration.md 顶部补上与 tech-info-declaration.md 的交叉引用
 
 290e6b18c5f20580419bf087f4e2c9d54f00c745fd7fd3328954f9bb7a646feb  results/report.html
 30df63b5002b5b5e703609a57ed7102f4ed3bc68c7f0df069836fd835eed8b87  results/report_feynman.html
