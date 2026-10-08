@@ -42,3 +42,8 @@ results/agh-event/*.jsonl -text
 # 逐行 diff 毫无意义，干脆别让 git 去试。
 # 它们进了 EVIDENCE.sha256，字节必须原样。
 results/posthoc/data/*.npz binary
+
+# —— 测试样例截图：纯二进制，和文本无关 ——
+# （git 的 text=auto 本来也能认出 PNG，这里显式标上是为了让意图一眼可见：
+#   本目录是提交材料，不受换行符策略影响。）
+docs/screenshots/*.png binary

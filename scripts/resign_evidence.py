@@ -162,6 +162,36 @@ def pick_optional():
     return extra
 
 
+def snapshot_sanity():
+    """重签「生成快照」前，先看看产物像不像「完整实验」的结果。
+
+    【为什么需要这道检查】
+    真实事故：为了给测试样例截图跑了 `experiment.py P19`（**只跑一题**），
+    它重写了 `results/detailed.csv`（64 行 → 4 行）与 `results/report.html`。
+    此时若重签，清单就会把「单题版本」当成正式快照签进去 ——
+    而之后 `verify_evidence.py` 会**通过**，因为清单与文件是自洽的。
+    **错得很安静**：证据被换成了残缺版，所有校验却全绿。
+    所以这里加一道最低限度的体量检查，把这类"看起来没问题"的替换拦住。
+    """
+    problems = []
+    for rel, min_rows, why in SNAPSHOT_MIN_ROWS:
+        p = os.path.join(ROOT, rel)
+        if not os.path.exists(p):
+            continue
+        with open(p, encoding="utf-8-sig", errors="replace") as f:
+            n = sum(1 for _ in f)
+        if n < min_rows:
+            problems.append((rel, n, min_rows, why))
+    return problems
+
+
+# (相对路径, 最少行数, 说明) —— 低于下限说明这多半不是全量实验的产物
+SNAPSHOT_MIN_ROWS = [
+    ("results/detailed.csv", 60, "迷你库 21 题 × 3 个噪声档 + 表头 = 64 行"),
+    ("results/detailed_feynman.csv", 200, "官方 100 题 × 3 个噪声档 + 表头 = 301 行"),
+]
+
+
 def write_manifest(path, header, entries, rel_hashes):
     """写清单。newline="\\n" 是必须的：Windows 上默认会写成 CRLF，
     而仓库里存的是 LF —— 清单自身的换行符也不能各平台不一。"""
@@ -175,10 +205,27 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--reason", default="（未填写原因）")
     ap.add_argument("--check", action="store_true", help="只核对，不重签")
+    ap.add_argument("--force", action="store_true",
+                    help="跳过「生成快照体量检查」，明知产物是局部实验也要签时使用")
     a = ap.parse_args(argv)
 
     if a.check:
         return subprocess.call([sys.executable, "verify_evidence.py"], cwd=ROOT)
+
+    # 重签之前先做体量检查：拦住"局部实验产物被当成正式快照签进去"这类事故。
+    # 这一步很关键——那种错误之后 verify_evidence 会一路放行（清单与文件自洽）。
+    if not a.force:
+        problems = snapshot_sanity()
+        if problems:
+            print("!! 拒绝重签：以下「生成快照」的体量异常，不像全量实验的产物——")
+            for rel, n, need, why in problems:
+                print("   %-32s 只有 %d 行（应有 %d：%s）" % (rel, n, need, why))
+            print()
+            print("   最常见原因：为了跑某条测试样例执行过 `experiment.py <单题>`，")
+            print("   它会把 results/ 下的产物重写成「只含那一题」的版本。")
+            print("   先还原再重签：  git checkout -- results/")
+            print("   （确实要用当前产物重签时，加 --force）")
+            return 1
 
     ev_files = EVIDENCE + pick_optional()
     missing = [p for p in ev_files + SNAPSHOTS

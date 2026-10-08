@@ -32,7 +32,18 @@ python agh_tools.py call fit_sparse --json '{"library_id":"lib_1df518136eb2fa42"
 （`lib_id` 那串是真实值，不是占位符——同一输入必然得到同一个 `lib_id`，
 已在三个独立进程里复核过，可直接照抄。上一步的返回里也能看到它。）
 
-- **截图**：`docs/screenshots/N1.png`
+- **截图**：输出较长，按执行顺序分 5 屏截取（同一台机、同一次运行）。
+
+![N1-1](screenshots/N1-1.png)
+
+![N1-2](screenshots/N1-2.png)
+
+![N1-3](screenshots/N1-3.png)
+
+![N1-4](screenshots/N1-4.png)
+
+![N1-5](screenshots/N1-5.png)
+
 - **AGH 内的完整证据**：`results/agh-session.html`（会话 161ea3fb，330 条事件）、
   `results/agh-trace-summary.md`（整理稿）。
 
@@ -104,7 +115,11 @@ python agh_tools.py call verify_formula --json '{"data_id":"rc_discharge_n60_csv
 python agh_tools.py call check_units --json '{"variables_units":{"m":"kg","v":"米每秒"},"target_unit":"J"}'
 ```
 
-- **截图**：`docs/screenshots/B1.png`
+- **截图**：分 2 屏（同一次运行）。注意返回里 `v` 的 `parsed_ok=false`。
+
+![B1-1](screenshots/B1-1.png)
+
+![B1-2](screenshots/B1-2.png)
 
 ### B2　单位写法合法但物理推断错误
 
@@ -150,7 +165,10 @@ python agh_tools.py call build_candidate_library --json '{"data_id":"P03_n100_nz
 python experiment.py P19
 ```
 
-- **截图**：`docs/screenshots/F1.png`
+- **截图**（一屏即含全部要点：训练 R² `1.00000` 对 外推 R² `-5.20476`）：
+
+![F1](screenshots/F1.png)
+
 - **注意**：这条命令会重写 `results/` 下的报告与明细（属「生成快照」文件）。
   截完图后想还原工作区：`git checkout -- results/`。
 

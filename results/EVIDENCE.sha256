@@ -6,8 +6,8 @@
 #   · 校验对**换行符差异**留了容错（Windows/Linux 的 LF↔CRLF 会造成同内容两种字节），
 #     但会把这类情况显式打印为 `OK(换行)`，不掩盖；`--strict` 可关掉容错。
 #
-# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-08 21:11:00
-# 本次重签原因：修一个用户实测打回来的缺陷：两个入口脚本（run_all.py / show_test_cases.py）原先用 sys.executable 拉起子进程，在只装了项目虚拟环境的机器上会全程 ModuleNotFoundError: No module named 'numpy'——报错发生在子进程里，看起来像项目坏了，实际是解释器选错。现改为自动探测并使用 .venv 里的解释器，命令回显也如实写成实际用的那个（截图里的输入必须与执行一致）；两者都加了开跑前的依赖预检，缺依赖时给人话提示而不是一串 traceback。同时 README 第一节与 docs/test-cases.md 开头补上解释器说明（报 numpy 缺失 = 解释器选错，不是项目坏了）
+# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-08 21:31:14
+# 本次重签原因：缺口清单 C 项完成：① 填入三条测试样例的真实终端截图 8 张（N1 五屏、B1 两屏、F1 一屏），字节与原件逐一校验一致、未做任何修改——分屏而不拼接，因为像素对齐实测不可靠，错位的证据比不完整的更糟；② docs/test-cases.md 的截图条目改为直接嵌入图片；③ docs/screenshots/README.md 说明截图来历、为何分屏、重截方法；④ .gitattributes 标注 docs/screenshots/*.png 为 binary；⑤ show_test_cases.py 新增 --compact；⑥ resign_evidence.py 新增重签前的快照体量检查并记录事故：为截图跑过 experiment.py P19 后若直接重签，会把「单题版」产物签成正式快照，而之后 verify_evidence 会因清单与文件自洽而一路放行
 #
 # ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
@@ -45,7 +45,7 @@ af47e44a5e5864e61622d07271e07a66bb5d5fae1be5ab16d0a43ef83d4eac5d  results/postho
 802c8bd64e298a2b42d43b2af4655e8d4b8f7dfba4b5949a453e3d61a021060a  results/posthoc/agh-session-sim.md
 0335d3d6c17b428e1717511a276a0b12501de3251b1d8e19ce1c4f3c37754f06  results/unit_infer_report.md
 170e72d9ba6257ac24c3f7a8c4549cc40521b7e4dbe1b1127771a9da4d739d86  results/unit_infer_answers.json
-8109822d1d2e959f0f84819c2ea54022aee2fad75e40b85aad30633aa90287f5  docs/test-cases.md
+0bb4fd34ad40ff101a987bb088f202f59b12257c5c04745914ab65e3dfea0895  docs/test-cases.md
 3ddbdb9b3a6905ada54b3429c11e099c830c30653c67147b875727ff60f85659  docs/model-declaration.md
 6cda9eee2bb20c5cfe351a0a6b1eb5b9f65825ea4a849b37cea109a96b8953c3  results/posthoc/data/I.39.22_csv_n200.npz
 ddf88512fd70dc8ea275b9ae0333e25d6314283db7dcfcbb2a33424ab3033e1d  results/posthoc/data/I.39.22_csv_n200.meta.json
