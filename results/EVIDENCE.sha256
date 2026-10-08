@@ -6,8 +6,8 @@
 #   · 校验对**换行符差异**留了容错（Windows/Linux 的 LF↔CRLF 会造成同内容两种字节），
 #     但会把这类情况显式打印为 `OK(换行)`，不掩盖；`--strict` 可关掉容错。
 #
-# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-08 15:07:01
-# 本次重签原因：补入 AGH 事件原件：模型溯源升级为一手证据
+# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-08 15:14:14
+# 本次重签原因：补证完成后的收尾：① 修正 agh_provenance.py 两处真实数据暴露的输出缺陷——模型在登账表里被重复列出 5 遍（modelSettings 有 5 个条目但都是同一模型，未去重），以及索引扫描面过窄导致 unitinfer 会话被假报「尚无对应文档」；② 登账表新增「原件与已有文档的对应」小节，并据此重生成；③ .gitattributes 给 results/agh-event/*.jsonl 标 -text（官方导出原件一律不做换行符转换），顺带修正 pattern 缺陷：原 results/agh-session-*.html 匹配不到 agh-session.html 本身；④ README 与 AGH接入说明 的结论由「模型核对尚未符合」更新为「符合」
 #
 # ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
@@ -67,4 +67,4 @@ b315274450cc53a269bd4ac8b5ab824ae61b58a65d645690ce20053487705258  results/agh-ev
 a388085cf6d9db1df668a2791ae2f2f57dc126dc80dd3f4563b9270f3086c2d5  results/agh-event/6501b3a2-515a-4ce2-bce6-6dc59d6a954a.jsonl
 e5f044f1128955997929ee75d483f7b5feae26a5bcccf9fe116afa70d207e9e9  results/agh-event/6ea6a59e-2c25-47f8-96b9-e000383a5a93.jsonl
 963f231a4e6bd826e6dadfb86caa705c6e5863ad8cffa918f26f83fe9a08b6d9  results/agh-event/9d469c46-1842-49b0-8dc3-21a9f04c6888.jsonl
-136cee3fb07ec2f35077b4fbd41a21c527dadbea8c3bf58ed0d8f5c609e882df  results/agh-model-provenance.md
+a08bef43d97078c4b9f64125639fc23f44e3d0b655aa0b4e3917b56bfef7d3b1  results/agh-model-provenance.md

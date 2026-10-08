@@ -17,12 +17,25 @@
 #      注意这里用 -text 而不是 binary：-text 只关掉换行符转换，
 #      文本 diff 仍然可用（评委在 GitHub 上还能正常看内容）。
 #
+#  ③ AGH 事件原件（JSONL）同样标 -text。
+#     实测这 7 份的换行符是 LF，所以标与不标当前都不改变字节；仍然明确标上，
+#     是为了让「原件字节原样」这条规则对**所有**官方导出一致成立 ——
+#     不依赖"这次恰好导出成 LF"这个巧合，也不怕将来在别的机器或别的 AGH 版本上
+#     导出成 CRLF 时，清单被 text=auto 悄悄改坏。
+#     （规则的由来见 ②：agh-session-*.html 当初没标，干净克隆误报 15 处"文件被改动"。
+#      判断口诀：**凡「官方导出 / 原件」，一律 -text**，别因为它像纯文本就交给 text=auto。）
+#
 # 相关文件：verify_evidence.py（分类校验）、scripts/resign_evidence.py（重签清单）
 
 * text=auto eol=lf
 
 # —— 证据原件：不做任何换行符转换，字节原样保存 ——
-results/agh-session-*.html -text
+# 注意这里的 `agh-session*`（没有连字符后面的 `-`）：
+# 之前写成 `agh-session-*.html`，结果**匹配不到 `agh-session.html` 本身**——
+# 而它正是 7 份原件之一，于是那一份一直落在 text=auto 里。
+# 实测它当前是 LF，所以没造成实际误报；但这属于蒙对，不是设计对。已改正。
+results/agh-session*.html -text
+results/agh-event/*.jsonl -text
 
 # —— 评分器判定输入副本：二进制，完全不转换 ——
 # 用 binary（= -diff -merge -text）而不是 -text：这些 .npz 是 zip 容器，

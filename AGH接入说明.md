@@ -456,25 +456,28 @@ E = 0.5017 · m·v²  −  1.204
 | 任务规划与决策在 AGH 一侧 | 单位推断、策略选择、失败后重试全部由模型决定；工具只做计算 | 会话里可看到它自己改单位、换策略、自报失败 |
 | 有监督的执行 | 每次工具调用都需要人工批准（AGH 的信任机制） | 会话导出里的批准卡片与拒绝记录 |
 
-**关于「用没用 Agnes 系列模型」的可核对性（2026-10-07 如实交代）**：
-「留有 trace」这条**符合**——上面四行的证据都在库里，且从未脱离 AGH 逐次管辖。
-但「**核对所用模型**」这条**尚未符合**：7 份官方 HTML 导出里不含任何模型字段
-（实测 grep `agnes` 零命中），模型名只存在于 JSONL 事件原件的 `session/start`
-事件里，而 JSONL 尚未入库——目前仍是作者的转述，复核者无法自行复算。
+**关于「用没用 Agnes 系列模型」的可核对性（2026-10-08 已补证）**：
+两条都**符合**。「留有 trace」不必多说——上面四行的证据都在库里；
+「**核对所用模型**」这条原先差一环：7 份官方 HTML 导出里不含任何模型字段
+（实测 grep `agnes` 零命中），模型名只存在于 JSONL 事件原件的 `session/start` 里，
+而 JSONL 当时没入库，模型名只是作者的转述。
 
-补证通道已建好，且**不需要重跑任何实验**：
+现已补上，**任何人可自行复算**：
 
 ```bash
-agh sessions --json   # 拿会话 ID（是 sessions --json，没有 sessions list 这个子命令）
-agh export SESSION_ID --format agnes -o results/agh-event/SESSION_ID.jsonl
-python agh_provenance.py        # → results/agh-model-provenance.md（可自行复算）
+python agh_provenance.py         # 从 7 份 JSONL 原件重算 → results/agh-model-provenance.md
+python agh_provenance.py --check # 核对登账表与原件是否一致
 ```
 
-（`SESSION_ID` 换成上一步列出的真实 ID。7 个原始会话 ID 一览见 README 第七节；
-批量导出可跑 `powershell -File scripts/export_agh_events.ps1`。）
+| 材料 | 作用 |
+|---|---|
+| `results/agh-event/*.jsonl`（7 份） | AGH 事件原件，模型名的唯一来源，受 `EVIDENCE.sha256` 逐字节保护 |
+| `results/agh-model-provenance.md` | 由原件算出的登账表（**刻意不设人工标注区**——可手改就退化成转述） |
 
-`agh_provenance.py` 在缺件时明确报缺件并以非 0 退出（不假装通过）；
-JSONL 一旦存在即自动进 `EVIDENCE.sha256` 受逐字节保护。详见 README 第七节。
+登账表给出每场会话的模型（`agnes-3.0-flash`）、事件数、工具调用与人工批准次数。
+`agh_provenance.py` 在缺件时明确报缺件并以非 0 退出（不假装通过）。
+要补导新会话时可跑 `scripts/export_agh_events.ps1`（已内置 7 个 ID）。
+来龙去脉详见 README 第七节。
 
 ### ② AGH 连接数据
 

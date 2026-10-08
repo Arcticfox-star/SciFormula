@@ -194,13 +194,19 @@ def build_table(rows, missing_html):
     L.append("> 「人工批准」= 每次工具调用前 AGH 都弹卡由人裁决。")
     L.append("> 这一列不为零，才能说明运行是在 AGH 里**逐次受管辖**地发生的，")
     L.append("> 而不是本地脚本一次性跑完后再补一份记录。\n")
+    L.append("## 二、原件与已有文档的对应\n")
+    L.append("AGH 的 HTML 导出里**不含会话 ID**（实测如此），所以对应关系只能从别的文档反查：\n")
+    L.append("| 会话 ID | 已在文档中登记于 |")
+    L.append("|---|---|")
+    for r in rows:
+        L.append("| `%s` | %s |" % (
+            r["meta"]["sid"],
+            "、".join("`%s`" % m for m in r.get("mentions") or []) or "**（尚无文档登记）**"))
+    L.append("")
     if missing_html:
-        L.append("## 二、尚未落到官方 HTML 导出的会话\n")
-        L.append("以下会话有事件原件，但在 `results/agh-trace-*.md` 里查不到对应 ID，")
-        L.append("复核时可用 `agh export <会话id> --format agnes --html` 补一份：\n")
-        for sid in missing_html:
-            L.append("- `%s`" % sid)
-        L.append("")
+        L.append("> 标「尚无文档登记」的会话有事件原件，但仓库里没有哪份文档写明它的来历。")
+        L.append("> 这不等于缺东西（HTML 导出本来就不含会话 ID），只是提示：这份原件的来源")
+        L.append("> 需要另外说明，否则复核者无法把它对应到某一次公开发布的运行。\n")
     L.append("---\n")
     L.append("本文件只是**登账**。真正的原件是 `%s/` 下的 JSONL，" % EVENT_DIR.replace("\\", "/"))
     L.append("它们同样受 `results/EVIDENCE.sha256` 逐字节保护。")
@@ -217,7 +223,6 @@ def collect():
     if not files:
         return rows, ["原件目录为空（%s），尚无 JSONL 入库" % EVENT_DIR], missing
     idx = index_mentions()
-    known = set(idx.keys())
     for fn in files:
         p = os.path.join(d, fn)
         events = load_events(p)
@@ -237,9 +242,10 @@ def collect():
         if not meta["models"]:
             errs.append("%s 的 session/start 里没有 model 字段——无法证明用了什么模型" % fn)
         rows.append(dict(file=fn, path=p, meta=meta, tally=tally(events),
-                         sha=sha256_of(p)))
+                         sha=sha256_of(p),
+                         mentions=sorted(idx.get(meta["sid"].lower(), []))))
     rows.sort(key=lambda r: r["meta"]["sid"])
-    missing = [r["meta"]["sid"] for r in rows if r["meta"]["sid"].lower() not in known]
+    missing = [r["meta"]["sid"] for r in rows if not r["mentions"]]
     return rows, errs, missing
 
 
@@ -287,8 +293,7 @@ def selftest():
             f.write("\n".join(json.dumps(e, ensure_ascii=False) for e in events) + "\n")
 
         rows, errs, missing = collect()
-        assert len(rows) == 1, "应扫到 1 份原件，实际 %d" % len(rows)
-        r = rows[0]
+        r = [x for x in rows if x["meta"]["sid"] == good][0]
         # 多模型必须全部读出（这正是旧版 trace_summary 会漏的那种）
         assert r["meta"]["models"] == ["agnes-3.0-flash", "agnes-3.0-mini"], \
             "多模型未完整读出：%r" % r["meta"]["models"]
@@ -299,7 +304,22 @@ def selftest():
         print("  ③ version=0.0.0 正确标注为「未提供」")
         print("  ④ 批准 2 次 / 拒绝 1 次 统计正确")
 
-        # ③ 缺 model 字段的原件必须报警（否则「用了什么模型」照样无法核对）
+        # 重复模型必须去重。
+        #     这条是真实数据打回来的：7 份真原件里每份的 modelSettings 都各有 5 个条目，
+        #     而 5 个都是同一个模型 → 不去重就会在登账表里写成「xxx, xxx, xxx, xxx, xxx」。
+        dup = "22222222-3333-4444-5555-666666666666"
+        dup_ev = [{"type": "session/start", "ts": "2026-10-07T00:00:00Z",
+                   "data": {"key": dup,
+                            "modelSettings": [{"model": "agnes-3.0-flash"}] * 5}}]
+        with io.open(os.path.join(evdir, dup + ".jsonl"), "w", encoding="utf-8", newline="\n") as f:
+            f.write("\n".join(json.dumps(e, ensure_ascii=False) for e in dup_ev) + "\n")
+        rows, errs, missing = collect()
+        d_row = [x for x in rows if x["meta"]["sid"] == dup][0]
+        assert d_row["meta"]["models"] == ["agnes-3.0-flash"], \
+            "重复模型未去重：%r" % d_row["meta"]["models"]
+        print("  ⑤ 重复 5 次的同一模型已去重为 1 项")
+
+        # 缺 model 字段的原件必须报警（否则「用了什么模型」照样无法核对）
         bad = "99999999-8888-7777-6666-555555555555"
         bad_ev = [{"type": "session/start", "ts": "2026-10-07T00:00:00Z",
                    "data": {"key": bad, "modelSettings": []}}]
@@ -308,13 +328,14 @@ def selftest():
         rows, errs, missing = collect()
         assert any("没有 model 字段" in e for e in errs), \
             "缺 model 的原件漏了告警：errs=%r" % errs
-        print("  ⑤ 缺 model 字段的原件正确告警")
+        print("  ⑥ 缺 model 字段的原件正确告警")
 
-        # ④ 生成的表格必须包含模型名
+        # 生成的表格必须包含模型名，并给出「原件↔文档」的对应小节
         tbl = build_table(rows, missing)
         assert "agnes-3.0-flash" in tbl, "登账表里没有模型名"
         assert "（未提供）" in tbl, "version=0.0.0 未渲染成「未提供」"
-        print("  ⑥ 登账表渲染正常，含模型名与「未提供」标注")
+        assert "原件与已有文档的对应" in tbl, "缺少「原件与已有文档的对应」小节"
+        print("  ⑦ 登账表渲染正常，含模型名、「未提供」标注与对应小节")
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
         globals()["EVENT_DIR"], globals()["OUT_PATH"] = saved
