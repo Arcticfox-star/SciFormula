@@ -6,8 +6,8 @@
 #   · 校验对**换行符差异**留了容错（Windows/Linux 的 LF↔CRLF 会造成同内容两种字节），
 #     但会把这类情况显式打印为 `OK(换行)`，不掩盖；`--strict` 可关掉容错。
 #
-# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-08 15:14:14
-# 本次重签原因：补证完成后的收尾：① 修正 agh_provenance.py 两处真实数据暴露的输出缺陷——模型在登账表里被重复列出 5 遍（modelSettings 有 5 个条目但都是同一模型，未去重），以及索引扫描面过窄导致 unitinfer 会话被假报「尚无对应文档」；② 登账表新增「原件与已有文档的对应」小节，并据此重生成；③ .gitattributes 给 results/agh-event/*.jsonl 标 -text（官方导出原件一律不做换行符转换），顺带修正 pattern 缺陷：原 results/agh-session-*.html 匹配不到 agh-session.html 本身；④ README 与 AGH接入说明 的结论由「模型核对尚未符合」更新为「符合」
+# 生成时间（北京时间）· **每次重签都不同，因此它不进本清单**：2026-10-08 20:45:27
+# 本次重签原因：按提交清单符合性核查的缺口清单收尾：① 新增 docs/model-declaration.md（模型申报清单，对应赛事 4.2「技术信息」必填项，名称/版本/使用环节/调用方式四项，数字全部由 agh_provenance.py 从 7 份 JSONL 原件算出）并纳入本清单保护；② 新增 docs/membership-statement.md（独立完成声明，缺口清单 D 项）；③ 新增 scripts/run_all.py 一键复现入口（缺口清单 B 项），跑完会主动说明快照文件的正常浮动；④ README 第一节补上 run_all 用法
 #
 # ⚠️ 这七个 agh-session-*.html 是 AGH 官方导出的原件。
 #    请勿用任何「文档编辑器 / 富文本编辑器」打开后保存——编辑器会注入
@@ -46,6 +46,7 @@ af47e44a5e5864e61622d07271e07a66bb5d5fae1be5ab16d0a43ef83d4eac5d  results/postho
 0335d3d6c17b428e1717511a276a0b12501de3251b1d8e19ce1c4f3c37754f06  results/unit_infer_report.md
 170e72d9ba6257ac24c3f7a8c4549cc40521b7e4dbe1b1127771a9da4d739d86  results/unit_infer_answers.json
 54302fad33205da07fe224441c07714e3901c370a2ff4f7e1fc0634b1f19a619  docs/test-cases.md
+3ddbdb9b3a6905ada54b3429c11e099c830c30653c67147b875727ff60f85659  docs/model-declaration.md
 6cda9eee2bb20c5cfe351a0a6b1eb5b9f65825ea4a849b37cea109a96b8953c3  results/posthoc/data/I.39.22_csv_n200.npz
 ddf88512fd70dc8ea275b9ae0333e25d6314283db7dcfcbb2a33424ab3033e1d  results/posthoc/data/I.39.22_csv_n200.meta.json
 35b6f9e7f5998f1ab6c967ccf127de5fb3efb8bae388acb5f61e6e2be94d48d6  results/posthoc/data/I.39.22_n200_nz0.01_s0.npz

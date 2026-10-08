@@ -9,8 +9,8 @@
 # ⚠️ 本清单存的是**规范形式**的哈希，因此 `sha256sum -c` 对它不适用；
 #    请用 `python verify_evidence.py`（它会分别按两种严格度核对两份清单）。
 #
-# 生成时间（北京时间）：2026-10-08 15:14:14
-# 本次重签原因：补证完成后的收尾：① 修正 agh_provenance.py 两处真实数据暴露的输出缺陷——模型在登账表里被重复列出 5 遍（modelSettings 有 5 个条目但都是同一模型，未去重），以及索引扫描面过窄导致 unitinfer 会话被假报「尚无对应文档」；② 登账表新增「原件与已有文档的对应」小节，并据此重生成；③ .gitattributes 给 results/agh-event/*.jsonl 标 -text（官方导出原件一律不做换行符转换），顺带修正 pattern 缺陷：原 results/agh-session-*.html 匹配不到 agh-session.html 本身；④ README 与 AGH接入说明 的结论由「模型核对尚未符合」更新为「符合」
+# 生成时间（北京时间）：2026-10-08 20:45:27
+# 本次重签原因：按提交清单符合性核查的缺口清单收尾：① 新增 docs/model-declaration.md（模型申报清单，对应赛事 4.2「技术信息」必填项，名称/版本/使用环节/调用方式四项，数字全部由 agh_provenance.py 从 7 份 JSONL 原件算出）并纳入本清单保护；② 新增 docs/membership-statement.md（独立完成声明，缺口清单 D 项）；③ 新增 scripts/run_all.py 一键复现入口（缺口清单 B 项），跑完会主动说明快照文件的正常浮动；④ README 第一节补上 run_all 用法
 
 290e6b18c5f20580419bf087f4e2c9d54f00c745fd7fd3328954f9bb7a646feb  results/report.html
 30df63b5002b5b5e703609a57ed7102f4ed3bc68c7f0df069836fd835eed8b87  results/report_feynman.html

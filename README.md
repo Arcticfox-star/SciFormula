@@ -33,6 +33,14 @@ python verify_evidence.py  # 10. 核对运行证据与哈希清单（提交前�
 - `results/detailed.csv` —— 每一条结果的原始数字，可逐条核对
 - `results/report.html` —— 自包含的实验报告（双击即可打开，不需要联网）
 
+**想一次跑完这 10 条**：`python scripts/run_all.py`
+（严格按上面的顺序执行，跑完给一张逐步汇总表；`--fast` 跳过第 9 步的全量实验，
+`--list` 只列步骤。）
+
+跑过第 9 步之后，`git status` 会显示 `results/detailed.csv` 与 `results/report.html`
+被改动——**这是正常的**，它们含耗时列与生成时间，属「生成快照」，
+按规范形式受保护（见第七节）。
+
 想只跑某几道题：`python experiment.py P03 P11`
 
 > **如果你只想知道"这套代码怎么跑在 AGH 上"，直接看 [`AGH接入说明.md`](AGH接入说明.md)。**

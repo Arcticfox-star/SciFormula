@@ -65,6 +65,11 @@ EVIDENCE = [
     "results/unit_infer_answers.json",
     # 测试样例文档
     "docs/test-cases.md",
+    # 模型申报清单（2026-10-08 新增）
+    # 【为什么进清单】它对应赛事 4.2「技术信息」的必填项，且正文声称
+    # 「本表所有计数由 agh_provenance.py 从 JSONL 原件算出」——既然承诺可核对，
+    # 它自己就不能被悄悄改动。改了它却不动原件，两边的数字就会对不上。
+    "docs/model-declaration.md",
     # 评分器的判定输入固定副本（2026-10-06 新增）
     # 【为什么必须进清单】posthoc_eval 判定公式要用拟合时的设计矩阵 X，
     # 它原本只存在于被 .gitignore 排除的 .agh_runs/ → 干净克隆后 6 份评分卡
