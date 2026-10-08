@@ -579,7 +579,15 @@ def write_card(rec, scored, outdir):
     # newline="\n"：评分卡在证据清单里，行尾必须固定为 LF（Windows 默认会写 CRLF）
     open(md, "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
     with open(js, "w", encoding="utf-8", newline="\n") as f:
-        json.dump(dict(session_id=rec["session_id"], source=rec["path"], rounds=scored),
+        # source 必须与评分卡正文（上面 `来源导出` 那行）用同一套规范化写法：
+        # 相对项目根的 POSIX 风格路径。
+        # **不能直接写 rec["path"]** —— 那是命令行参数的原样，于是
+        # `results/xxx.html`（正斜杠）与 `results\xxx.html`（反斜杠）会产出不同的 json。
+        # 后果：任何人换个斜杠重跑评分器，`git status` 就冒出一批 diff，
+        # 看起来像"结果不可复现"，其实只是路径写法不同。
+        json.dump(dict(session_id=rec["session_id"],
+                       source=os.path.relpath(rec["path"], HERE).replace("\\", "/"),
+                       rounds=scored),
                   f, ensure_ascii=False, indent=2)
     return md, js, scored
 
