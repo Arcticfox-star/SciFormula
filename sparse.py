@@ -143,7 +143,7 @@ def omp_path_raw(A, y, max_terms, centered=None):
 
     结论：**默认用版本二（centered），环境变量 SCIFORMULA_OMP_CENTERED=0 可退回版本一**。
     教训也如实写在这里：启发式的取舍只能靠全量基准说话，单题直觉会骗人；
-    且排名度量与拟合度量不一致时，边界情况下一定会翻车（I.12.11 就是代价）。
+    且排名度量与拟合度量不一致时，边界情况下会失效（I.12.11 就是代价）。
     """
     if centered is None:
         centered = _OMP_CENTERED
