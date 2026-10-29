@@ -126,12 +126,13 @@ SciFormula 把这个观察变成了核心机制：量纲检查在这里不是事
 
 ## 视频介绍
 
-| 版本 | 链接 | 语言 | 发布日期 |
+| 版本 | 链接 | 语言 | 收录日期 |
 |---|---|---|---|
 | 中文（主版本） | **[bilibili · BV1YKpu6ECi](https://www.bilibili.com/video/BV1YKpu6ECi)** | 中文 | 2026-10-07 |
-| 英文 | *制作中* | 英文 | — |
+| 英文 | **[仓库内 MP4](docs/assets/demo/demo-en.mp4)** — 4:06，1080p | 英文 | 2026-10-29 |
 
-<!-- TODO(en): 英文版发布后，把上面这一行替换成链接。 -->
+英文版是同一演示流程的英文旁白版，直接存在仓库里（16.9 MB，H.264），不挂在视频平台上：
+**录屏本身也是证据的一部分——平台链接会失效，文件不会。**
 
 视频把整个闭环在仿真实验台上走了一遍：选场景 → 驱动一批实验 → 载入落盘的数据集 → 推断单位 → 量纲剪枝 → 拟合 → 验证，并把 AGH 的批准过程一并录进了画面。
 
@@ -474,6 +475,7 @@ SciFormula/
 │   ├── FeynmanEquations.csv # 官方 100 题基准
 │   └── observations/        # 100 份观测 CSV（无单位、无公式）
 ├── docs/
+│   ├── assets/demo/demo-en.mp4   # 英文演示录屏（4:06，1080p）
 │   ├── technical-notes.zh-CN.md  # 深度技术文档（中文）
 │   ├── model-declaration.md      # 用了哪个模型、在哪用、怎么调
 │   ├── tech-info-declaration.md  # 数据 / 代码 / 求解器 / 接口申报
@@ -482,7 +484,7 @@ SciFormula/
 └── scripts/                 # run_all、清单重签、基线运行器
 ```
 
-Python 代码 9,562 行 / 34 个文件（剔除空行与纯注释后 7,701 行），跟踪文件 240 个。
+Python 代码 9,562 行 / 34 个文件（剔除空行与纯注释后 7,701 行），跟踪文件 243 个。
 
 > 想看逐步推导、每个坑的来龙去脉、以及每个数字怎么复核，读
 > [`docs/technical-notes.zh-CN.md`](docs/technical-notes.zh-CN.md)（约 950 行，章节编号一～八）。

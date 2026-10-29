@@ -124,12 +124,14 @@ An earlier version drifted between 53/53/56 and 52/52/55 across runs. The cause 
 
 ## Demo video
 
-| Version | Link | Narration | Published |
+| Version | Link | Narration | Added |
 |---|---|---|---|
 | Chinese (primary) | **[bilibili · BV1YKpu6ECi](https://www.bilibili.com/video/BV1YKpu6ECi)** | Chinese | 2026-10-07 |
-| English | *in production* | English | — |
+| English | **[MP4 in this repository](docs/assets/demo/demo-en.mp4)** — 4:06, 1080p | English | 2026-10-29 |
 
-<!-- TODO(en): replace the row above with the English upload link once it is published. -->
+The English cut follows the same demo flow with English narration and is stored in the repository
+(16.9 MB, H.264) rather than behind a platform link: a recording you can open offline is part of the
+evidence, and links expire.
 
 The recording walks the loop end to end on the simulator bench: pick a scenario, drive a sweep, load the resulting dataset, infer units, prune, fit, verify — and show the trace of approvals alongside it.
 
@@ -472,6 +474,7 @@ SciFormula/
 │   ├── FeynmanEquations.csv # official 100-equation benchmark
 │   └── observations/        # 100 observation CSVs (no units, no formulas)
 ├── docs/
+│   ├── assets/demo/demo-en.mp4   # English demo recording (4:06, 1080p)
 │   ├── technical-notes.zh-CN.md  # deep technical write-up (Chinese)
 │   ├── model-declaration.md      # which model, where, how it is called
 │   ├── tech-info-declaration.md  # data / code / solver / interfaces
@@ -480,7 +483,7 @@ SciFormula/
 └── scripts/                 # run_all, evidence re-signing, baseline runners
 ```
 
-9,562 lines of Python across 34 files (7,701 excluding blanks and comments), 240 tracked files.
+9,562 lines of Python across 34 files (7,701 excluding blanks and comments), 243 tracked files.
 
 ---
 

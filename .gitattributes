@@ -47,3 +47,9 @@ results/posthoc/data/*.npz binary
 # （git 的 text=auto 本来也能认出 PNG，这里显式标上是为了让意图一眼可见：
 #   本目录是提交材料，不受换行符策略影响。）
 docs/screenshots/*.png binary
+
+# —— 演示视频：纯二进制 ——
+# 与截图同理：视频不做任何文本处理，也不让 git 去 diff。
+# 放在仓库内而不是外链，是为了让录屏本身成为可离线核对的一部分：
+# 平台链接会失效，文件不会。
+docs/assets/demo/*.mp4 binary
