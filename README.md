@@ -1,945 +1,568 @@
-# SciFormula —— 量纲感知的科学定律自动发现
+# SciFormula
 
-从**带噪声的观测数据**里，自动反推出背后的**物理公式**，并用**物理量纲**约束搜索空间。
+English | [简体中文](README.zh-CN.md)
 
-一句话概括这个项目的技术主张：
+<div align="center">
 
-> 不训练黑箱模型，而是让程序直接交出一个物理公式——给它可以外推、可以写进教材、
-> 可以指导下一次实验的那种答案；而搜索过程用"物理定律必须量纲齐次"这条先验来收缩。
+### Dimension-aware discovery of physical laws
+
+**From noisy observations to a closed-form law — by pruning the search space with dimensional homogeneity before any fitting happens.**
+
+<img src="https://img.shields.io/badge/python-3.10%2B-3776AB" alt="Python 3.10 or later" />
+<img src="https://img.shields.io/badge/dependencies-numpy%20%C2%B7%20sympy-4B8BBE" alt="Dependencies: numpy and sympy" />
+<img src="https://img.shields.io/badge/license-MIT-2F4F4F" alt="License: MIT" />
+<img src="https://img.shields.io/badge/agent%20surface-13%20MCP%20tools-6E56CF" alt="13 tools exposed over MCP" />
+<img src="https://img.shields.io/badge/status-research%20prototype-f59e0b" alt="Status: research prototype" />
+
+[Quick start](#quick-start) · [Project overview](#project-overview) · [Demo video](#demo-video) · [Architecture](#architecture) · [Integration standards](#integration-standards) · [Results](#results) · [中文](README.zh-CN.md)
+
+</div>
+
+<p align="center">
+  <sub>Runs as a governed tool surface on <a href="https://github.com/AgnesAI-Labs/agnes-harness">Agnes Harness (AGH)</a>:
+  13 tools over MCP, every call approved by a human, every call recorded in the trace.</sub>
+</p>
+
+A black-box regressor can reach a training R² of 0.999 and still be useless one step outside the data it saw. SciFormula takes the opposite route: it returns a **closed-form formula**, and it uses a physical constraint — **every term of a physical law must have the dimension of the target quantity** — to delete 99% of the search space before regression starts.
+
+The result is not a better fit. It is an answer that can be **extrapolated, checked and argued with**.
+
+<details>
+<summary><kbd>Contents</kbd></summary>
+
+- [Project overview](#project-overview)
+- [Demo video](#demo-video)
+- [Architecture](#architecture)
+- [Integration standards](#integration-standards)
+- [Results](#results)
+- [Quick start](#quick-start)
+- [Repository layout](#repository-layout)
+- [Evidence and reproducibility](#evidence-and-reproducibility)
+- [Known limitations](#known-limitations)
+- [Status](#status)
+- [FAQ](#faq)
+- [License](#license)
+
+</details>
+
+> **Where the deep documentation lives.** The full technical write-up — stage-by-stage explanation, every design pitfall, and how each number is verified — is maintained in Chinese at **[docs/technical-notes.zh-CN.md](docs/technical-notes.zh-CN.md)** (sections 一–八, ≈950 lines). Older documents and code comments that cite `README §N` refer to those sections; their numbering is preserved there unchanged.
 
 ---
 
-## 一、怎么跑
+## Project overview
 
-需要 Python 3.10+ 和 `numpy`、`sympy` 两个库（安装见第七节）。
+### Background: fitting well is not the same as finding the law
 
-> **先确认「你用的这个 `python`」装了依赖。** 下面的命令都写作 `python ...`，
-> 指的是**装了 numpy / sympy 的那个解释器**。若机器上另装了虚拟环境（本项目开发时用
-> `.venv/`）而系统 `python` 里没有这两个库，命令会报
-> `ModuleNotFoundError: No module named 'numpy'` —— 这不是项目坏了，是解释器选错了。
->
-> ```bash
-> # 用虚拟环境的解释器（Windows / macOS·Linux 二选一）
-> .venv\Scripts\python.exe dims.py
-> .venv/bin/python dims.py
-> ```
->
-> 分不清用哪个时，`python -c "import numpy, sympy; print('OK')"` 一跑便知。
-> 两个入口脚本（`scripts/run_all.py`、`scripts/show_test_cases.py`）会自动检测并切到
-> `.venv`，跑起来更省心；根目录这些脚本本身不做这层探测。
+Symbolic regression searches for an expression that explains observations. Most of that search is wasted: of the millions of candidate terms a generic library produces, almost all are **physically impossible** — `m·v` can never be a term in an energy formula, because its dimension is not energy.
+
+SciFormula makes that observation the core mechanism. Dimension checking is not a post-hoc sanity check here; it is the **pruning step that runs before fitting**.
+
+The consequence shows up most clearly against black-box baselines on the same 300 runs (100 official Feynman equations × 3 noise levels), scored by the same protocol (`verify_formula` defaults: in-range nRMSE ≤ 0.05, extrapolation nRMSE ≤ 0.20):
+
+| Method | Training R² (median) | In-range nRMSE | Extrapolation nRMSE | Passes both gates | Outputs a formula |
+|---|---|---|---|---|---|
+| **SciFormula (dimensional pruning + OMP)** | 1.000 | **0.0041** | **0.0356** | **171 / 300 (57%)** | **yes** |
+| Gradient boosting (scikit-learn) | 0.999 | 0.3277 | 0.5461 | 3 / 291 (1%) | no |
+| Random forest (scikit-learn) | 0.979 | 0.3912 | 0.6128 | 3 / 291 (1%) | no |
+
+The three training R² values are nearly identical. The pass rates are **57% vs 1%**. The entire gap comes from whether the model can leave the observed interval — which is exactly what a physical law is supposed to do.
+
+### Core capabilities
+
+- **Reads observations only.** A dataset is a CSV of variable values and a measured target: no units, no ground-truth formula. Units are inferred by the model from variable names and physical context, then checked as *notation*, not as physics.
+- **Builds and prunes a candidate library.** Candidate terms are generated, then filtered by dimensional homogeneity against the target quantity. On the official benchmark this cuts **2,492,610 candidates to 22,368 — 99.1%**.
+- **Fits sparsely.** Orthogonal matching pursuit (OMP) selects a few terms; the number of terms is chosen on a held-out split, preferring the simplest model inside the statistically indistinguishable band.
+- **Verifies independently, and is allowed to say no.** `verify_formula` resamples fresh points inside the training range, then a further 30% outside it, applies a sign-plausibility check, and returns `passed` / `invalid` / `implausible` / `underfit` / `overfit`.
+- **Runs as an agent tool surface, not a script.** All 13 tools are exposed over MCP so AGH can plan, call, read the feedback and retry — with a human approval on every call.
+
+### Innovation highlights
+
+**1. Prune before you fit — and measure what the pruning is worth.**
+The ablation holds everything else fixed and only disables dimensional pruning (`SCIFORMULA_NO_PRUNE=1`):
+
+| Variant | Exact recovery (noise-free) | Passes both gates (0 / 1% / 2%) | Candidates kept |
+|---|---|---|---|
+| With pruning (default) | **36 / 100** | **54 / 54 / 57** | 22,368 |
+| Without pruning | 20 / 100 | 29 / 29 / 29 | 63,036 |
+
+The prior is worth **+25 passes** and costs nothing but a filter. Speed is only a side effect (145.7 s → 129.5 s on the development machine — the ≈12% ratio is the finding, not the absolute seconds): the expensive part is generating and evaluating expressions, not the regression.
+
+**2. A verification gate that rejects a perfect fit.**
+On `P19` (the relativistic factor) the library *does* contain a near-miss basis function. The fit reaches **training R² = 1.00000** and is rejected by extrapolation with **R² = −5.20476**. That distinction matters: "the library cannot express it" is a capability limit; "the fit was perfect and the gate caught it" is the mechanism working.
+
+Ablating the gate on 255 scorable official results quantifies it:
+
+| Acceptance rule | Admitted | Structurally wrong among them | False-positive rate |
+|---|---|---|---|
+| Training fit only (R² ≥ 0.99) | 195 | **5** | **2.6%** |
+| + in-range resampling | 172 | 0 | **0.0%** |
+| + 30% extrapolation | 171 | 0 | 0.0% |
+| + sign plausibility | 169 | 0 | 0.0% |
+
+The dangerous errors are the ones with R² ≈ 0.9999. One resampling pass removes all of them, at the cost of rejecting 9 correct formulas out of 178 — a trade this project makes deliberately, since an agent can always retry.
+
+**3. Physical constraints as executable rules, not prose.**
+Two rules are enforced in code rather than described in a paper:
+
+- **Dimension algebra.** A formula is parsed into a symbolic expression and its dimension is derived *from the structure* — multiplication adds exponent vectors, division subtracts, powers scale. No numerical experiment is involved, so any expression gets a definite answer. The same mechanism cross-checks every equation's declared unit against the dimension its formula actually computes.
+- **An additive constant is only legal when the target is dimensionless.** This rule exists because an AGH agent found the one loophole: the intercept is the only free parameter that bypasses dimension checking. `0.5·m·v² − 1.204` passed every numeric gate with in-range nRMSE 0.0034 while predicting **negative kinetic energy** (−1.07 where the truth is 0.14). The fix is derived from the claim itself, not patched around it.
+
+**4. Resources are replaceable, and validation can be an experiment.**
+Observations exist as files on disk and as a drivable numerical bench (RK4 integration, 4 scenarios). For simulator datasets, `verify_formula` **re-runs the simulation with held-out parameters at verification time** and compares against the measured reading — the reference fact is an experiment performed then, not a stored answer. Measurement error against the closed-form solution is **1.5 × 10⁻¹²** across 12 parameter points.
+
+**5. Determinism as a tested property, not an intention.**
+An earlier version drifted between 53/53/56 and 52/52/55 across runs. The cause was a `set` iteration order leaking into a truncated candidate list under randomized string hashing. After adding a total order, three different `PYTHONHASHSEED` values produce byte-identical formulas. This was found by an ablation that required re-running the full benchmark — not by reading the code.
+
+### What this project is not
+
+- **Not a theorem prover.** "Is the recovered formula the true one?" is decided by **numerical equivalence** over sampled points, not by symbolic proof. `exact` means "agrees wherever the test points reach". There is no Lean/Coq proof, no formal semantics, no machine-checkable proof object.
+- **Not a claim of new physics.** The laws in the simulator are the ODEs we wrote. Its value is that AGH can drive a measurable, repeatable bench and that verification performs a real experiment.
+- **Not a general-purpose solver.** The candidate library is finite: 15 of 100 official equations need structures it cannot express, and those are reported as capability limits rather than hidden.
+- **Not a 95% method.** The built-in 21-equation teaching library gives 95.2%; the official Feynman benchmark gives 54–57%. Both are published side by side on purpose.
+
+---
+
+## Demo video
+
+| Version | Link | Narration | Published |
+|---|---|---|---|
+| Chinese (primary) | **[bilibili · BV1YKpu6ECi](https://www.bilibili.com/video/BV1YKpu6ECi)** | Chinese | 2026-10-07 |
+| English | *in production* | English | — |
+
+<!-- TODO(en): replace the row above with the English upload link once it is published. -->
+
+The recording walks the loop end to end on the simulator bench: pick a scenario, drive a sweep, load the resulting dataset, infer units, prune, fit, verify — and show the trace of approvals alongside it.
+
+**Watch it, then reproduce it in about a minute:**
 
 ```bash
+git clone https://github.com/Arcticfox-star/SciFormula.git
 cd SciFormula
-
-python dims.py             # 1. 量纲系统自检（单位表有没有写错）
-python equations.py        # 2. 方程库自检（声明单位 vs 公式实际量纲 交叉校验）
-python features.py         # 3. 看量纲剪枝把搜索空间缩小了多少
-python sparse.py           # 4. 两种稀疏化策略对比 + 拟合自测
-python equivalence.py      # 5. 公式等价判定自测
-python pipeline.py         # 6. 原子能力层逐个自检（含"故意推错单位"的反馈检查）
-python toolchain_check.py  # 7. 走完整闭环，产出 episode 记录（不需要 AGH）
-python mcp_server.py --selftest   # 8. MCP 协议自检（AGH 就是通过它接进来的）
-python experiment.py       # 9. 跑全量实验，结果写到 results/
-python verify_evidence.py  # 10. 核对运行证据与哈希清单（提交前必跑，见第七节）
+pip install numpy sympy
+python scripts/run_all.py        # 9 self-checks + evidence verification, ~20 s
 ```
-
-第 9 条是批量评测主入口。完整跑完约 **6 秒**（21 条方程 × 3 个噪声档），产出：
-
-- `results/detailed.csv` —— 每一条结果的原始数字，可逐条核对
-- `results/report.html` —— 自包含的实验报告（双击即可打开，不需要联网）
-
-**想一次跑完这 10 条**：`python scripts/run_all.py`
-（严格按上面的顺序执行，跑完给一张逐步汇总表；`--fast` 跳过第 9 步的全量实验，
-`--list` 只列步骤。）
-
-跑过第 9 步之后，`git status` 会显示 `results/detailed.csv` 与 `results/report.html`
-被改动——**这是正常的**，它们含耗时列与生成时间，属「生成快照」，
-按规范形式受保护（见第七节）。
-
-想只跑某几道题：`python experiment.py P03 P11`
-
-> **如果你只想知道"这套代码怎么跑在 AGH 上"，直接看 [`AGH接入说明.md`](AGH接入说明.md)。**
-> 那里讲了为什么代码要分成三层、怎么用 MCP 接进 AGH、以及提交时要交哪些运行证据。
 
 ---
 
-## 二、目录结构
+## Architecture
 
-| 文件 | 负责什么 |
-|---|---|
-| `dims.py` | **量纲系统**。把物理单位变成可计算的 7 维指数向量；提供乘除、开方、一致性检查 |
-| `equations.py` | 内置迷你物理方程库（21 条有标准答案的定律）+ 观测数据生成器 |
-| `features.py` | **候选特征库构造 + 量纲剪枝**（本项目的技术核心）+ 特征矩阵的数值净化 |
-| `sparse.py` | 稀疏回归：STLSQ 与 OMP 两种策略，以及"该选几项"的验证集决策 |
-| `equivalence.py` | 判定"回归出的公式"和"真值公式"是不是同一个东西 |
-| `pipeline.py` | **原子能力层**：把流程切成 8 个"只做一件事"的能力，是智能体与批量实验的公共实现 |
-| `agh_tools.py` | **工具注册表**：把 **13 个工具**声明成 AGH 可调用的（8 个原子能力 + 2 个数据文件接入 + 3 个仿真实验台），含参数校验与执行日志 |
-| `mcp_server.py` | **MCP 服务器**（零第三方依赖）：让 AGH 通过官方 MCP 通道接进来 |
-| `toolchain_check.py` | 工具链连通性验证：走一遍完整闭环，含一次故意的单位推断错误 |
-| `verify_evidence.py` | **运行证据校验**：分两类核对——「不可变证据」（`results/EVIDENCE.sha256`）要求逐字节一致；「生成快照」（`results/SNAPSHOTS.sha256`）因含耗时列与生成时间，按规范形式比对。换行符差异不计为异常但会显式打印；**二进制文件不做这层容错** |
-| `report_notes.py` | **生成型报告的人工标注区机制**：四个写报告的脚本原先整文件覆盖写，会把手工补的溯源信息抹掉且不报错。本模块用一对 `NOTES:BEGIN/END` 标记划出人写区，写入流程改为「读旧文件 → 抠出标注区 → 拼新正文 + 原标注区」，让「这份评分出自哪个会话」这类信息不再被重跑抹掉 |
-| `posthoc_eval.py` | **会话级后验评分器**：读 AGH 导出，给会话打评分卡（公式判定 / 单位准确率 / 过程指标 / 诚实性与完整性核对）。**只在会话结束后跑，不进 MCP 工具集**。判定所需的观测数据先读 `results/posthoc/data/` 的固定副本、再读运行目录；两处都缺时判 `unscorable`（工具缺料）而不与 `no_formula`（模型没作答）混用 |
-| `simulator.py` | **数值仿真实验台**：纯 numpy 的 RK4 积分器，4 个场景（弹簧振子 / 阻尼振子 / RC 放电 / 圆轨道天体）。读数由积分轨迹后处理得出（过零检测、包络拟合、线性回归），由 AGH 经 MCP 驱动；验证时换参数当场重跑仿真当独立 oracle |
-| `exp_units_ab.py` | **对照实验 A**：单位「已知 vs 需推断」两臂对比，量化"不提供单位"的代价 |
-| `exp_verify_ab.py` | **对照实验 B**：验收环节消融——统计"放行但实际错"的假阳性率与"误杀正确"的假阴性率 |
-| `datasets.py` | **数据接入层**：`list_datasets` / `load_dataset` 读磁盘上的观测数据 CSV（智能体经 AGH 的 MCP 通道读，不读内存合成值）|
-| `scripts/make_observation_csv.py` | 把观测数据物化成 `data/observations/*.csv`（100 份，只含观测值、不含公式与单位）|
-| `scripts/fetch_baseline_wheels.sh` | 用 curl 从镜像取基线库（gplearn / scikit-learn / scipy）的 wheel（本机 pip 直连被拦，只能这样装）|
-| `scripts/export_baseline_input.py` | 为对照实验导出数据：训练/预测点给基线，**真值只给评分脚本**（边界靠文件分离）|
-| `scripts/run_baseline.py` | 在隔离环境里跑基线方法（随机森林 / 梯度提升 / gplearn）|
-| `scripts/score_baseline.py` | 用同一套验收口径给基线打分，并与本项目成绩并列出表 |
-| `trace_summary.py` | 把 AGH 导出的会话流水（JSONL）整理成可提交的轨迹摘要表格（回答「这次会话干了什么」） |
-| `agh_provenance.py` | **运行模型溯源**：从 AGH 事件原件读出所用模型/版本/批准次数，生成可自行复算的登账表（回答「用的是哪个模型」）。缺 JSONL 原件时明确报缺件并以非 0 退出，参见第七节 |
-| `experiment.py` | 批量基准评测 + 汇总 + 生成 HTML 报告（**它是回归测试，不是智能体路径**） |
-| `AGH接入说明.md` | 与 AGH 的分层设计、接入步骤、提交证据对照、以及尚未验证的部分 |
+SciFormula is deliberately layered so that the **same implementation** serves the agent and the batch benchmark. There is no "demo path" and "real path".
 
-跑通之后 `results/` 里会有四份产物：
+```mermaid
+flowchart TB
+  subgraph AGH["AGH runtime"]
+    M["Model · agnes-3.0-flash<br/>planning · unit inference · tool choice · reading verdicts"]
+    G["Approval gate<br/>every tool call approved by a human"]
+    X["Trace<br/>calls · results · decisions"]
+  end
 
-| 文件 | 是什么 |
-|---|---|
-| `detailed.csv` | 每条结果的原始数字，可逐条核对 |
-| `report.html` | 自动生成的实验报告（含失败案例一节） |
-| `agh-session.html` | **AGH 官方导出的执行记录**（提交要求的原件） |
-| `agh-trace-summary.md` | 上面那份流水整理出的调用链表格 + 人工分析 |
+  S["MCP server · mcp_server.py<br/>stdio · JSON-RPC 2.0 · zero dependencies"]
 
-另有第二、三份 AGH 会话证据（官方题库闭环与单位推断评测）：
-`agh-session-feynman.html` + `agh-trace-feynman.md`（官方 Feynman 题上
-19 次工具调用、含候选归零→自主诊断→换题的完整纠错链，验证环节判 overfit
-拦截了 R²=0.998 的高分假公式）；`agh-session-unitinfer.html` +
-`unit_infer_report.md`（12 题单位推断量化评测，变量级 45/54）。
+  subgraph TOOLS["Tool surface · 13 tools"]
+    A1["benchmark · 2"]
+    A2["data files · 2"]
+    A3["simulator · 3"]
+    A4["discovery · 6"]
+  end
 
----
+  P["Atomic capability layer · pipeline.py<br/>8 capabilities · pure data in, pure data out"]
 
-## 三、整个流程在做什么
+  subgraph K["Kernel — no knowledge of the agent"]
+    K1["dims.py<br/>dimension algebra"]
+    K2["features.py<br/>library + pruning"]
+    K3["sparse.py<br/>OMP / STLSQ"]
+    K4["equivalence.py<br/>equivalence verdict"]
+  end
 
-```
-读数据 → 构造候选库 → 量纲剪枝 → 稀疏回归 → 等价判定 → 外推检验 → 汇总报告
-                        ↑
-                  物理先验在这里注入
+  M --> G
+  G --> S
+  S --> A1
+  S --> A2
+  S --> A3
+  S --> A4
+  A1 --> P
+  A2 --> P
+  A3 --> P
+  A4 --> P
+  P --> K1
+  P --> K2
+  P --> K3
+  P --> K4
+  G -. recorded in .-> X
 ```
 
-### 第 1 步：把量纲变成能算的东西
+### Three layers, three responsibilities
 
-任何物理量的量纲都能用 7 个基本量纲的指数表示：
-
-```
-质量 kg | 长度 m | 时间 s | 电流 A | 温度 K | 物质量 mol | 发光强度 cd
-```
-
-力 F 的单位是 N = kg·m/s²，写成 7 元组就是 `(1, 1, -2, 0, 0, 0, 0)`。
-这样量纲的乘除就变成指数加减，开方就是指数乘 1/2。
-
-**指数为什么用分数而不是整数**：单摆周期 T = √(L/g)，L/g 的量纲是 s²，
-开方后是 s^(2×1/2) = s。如果指数只支持整数，这一步算不出来，剪枝会把正确的项误杀。
-
-### 第 2 步：量纲剪枝（核心机制）
-
-符号回归要先准备一大堆候选项（`m`、`v`、`m*v`、`v²`、`m*v²`、`1/m`…），再挑出少数几个。
-问题是怎么准备。
-
-我们的做法是：**先生成一堆，再用量纲把它们筛一遍。**
-
-因为物理公式 `E = m*v²/2` 里每一项的量纲都必须和目标量 E 一致，所以对目标量纲
-`kg·m²/s²`：
-
-| 候选项 | 量纲 | 结果 |
-|---|---|---|
-| `m*v²` | kg·m²/s² | 与目标一致 → **保留** |
-| `m*v` | kg·m/s | 不一致 → 丢弃 |
-| `m` | kg | 丢弃 |
-| `v²` | m²/s² | 丢弃 |
-
-这一步发生在**搜索之前**，所以叫"搜索前剪枝"。它同时带来两个好处：
-
-1. 砍掉的都是"物理上不可能对"的项，不砍任何可能是答案的项（前提见第六节）
-2. 被砍掉的项连数值都不用算——**计算成本也一起降了**
-
-实测数据：21 道题的候选全集是 **20892 项，量纲剪枝后剩 1752 项，砍掉 91.6%**。
-
-### 第 3 步：函数字典只能作用在无量纲量上
-
-`sin(3 米)` 在物理上没有意义。所以代码**只对无量纲的量施加** `sin` / `exp` / `log` / `tanh`。
-无量纲量来自两处：本身无量纲的变量，以及**两个同量纲变量之比**（如 `x/σ`、`t/τ`、`v/c`）。
-
-这是量纲检查的第二处用武之地——不需要额外写规则，结构上就杜绝了非法调用。
-
-### 第 4 步：稀疏回归
-
-从候选项里挑出少数几个。本项目实际用的是 **OMP（正交匹配追踪）**：
-一项一项贪心地选，每轮选"最能解释当前残差"的那一项，固定下来后对残差重复。
-
-**选几项由留出验证集决定**：把数据按 7:3 切分，在训练集上选 k 项、到没参与拟合的
-验证集上算残差，取验证残差最小者；并在"验证残差统计上区分不出来"的窄带里，
-选**项数最少**的那个（经典的一倍标准误思路）。
-
-> 这里走过一段弯路：最早用的是 STLSQ + 训练集 BIC 选阈值，在噪声数据上失效了。
-> 完整记录见 `sparse.py` 的模块说明，以及 `results/report.html` 第五节。
-
-### 第 5 步：三门验证，环环相扣
-
-| 检验 | 回答什么问题 |
-|---|---|
-| **无噪声档** | 能不能**精确**恢复出真值公式（符号恢复率） |
-| **噪声档** | 噪声变大时结果怎么退化（鲁棒性） |
-| **外推检验** | 在**没见过的区间**上还准不准 |
-
-第三项尤其关键：它把"真找到了定律"和"只是拟合了这批数据"区分开。
-一个只在训练区间内插值的公式，训练 R² 可以很漂亮，但外推会立刻露馅。
-
-### 关于「形式化」：我们做到哪一层，没做到哪一层
-
-（为什么专门写这一节：本项目报名的二级方向是 **B1 数学 AI 与形式化推理**，
-"形式化"正是这一栏的题眼。与其让评委自己猜我们的"形式化"有多强，不如主动划清边界
-——**包括主动说明哪一部分不是形式化的**。）
-
-**我们做了的：**
-
-1. **量纲代数：把"量纲对不对"变成一个可判定的代数问题**（`dims.py`）。
-   公式先被解析成符号表达式，然后**沿着表达式的结构递归求出它的量纲**——
-   乘法是量纲向量的加法、除法是减法、求幂是标量乘，最后得到一个基本量纲上的指数向量。
-   这个过程**只看表达式的结构，不做任何数值试验**，所以对任意表达式都能给出确定答案。
-   每个候选项必须先过这一关才有资格进入拟合：官方基准上这一步把候选
-   从 2,492,610 项砍到 22,368 项。
-   同一个机制还有一个纯符号的应用：`equations.py` 的自检会用它核对
-   "每条方程声明的单位"与"它公式实际算出来的量纲"是否一致，专门用来抓单位表里的笔误。
-2. **一条形式化规则直接写进代码**：加性常数只有在目标量无量纲时才合法
-   （见第五节第三个坑）——它堵住了唯一能绕过量纲约束的那个自由参数。
-
-**我们必须如实说明的边界（这一条很重要）：**
-
-- 判定"回归出的公式是不是真值公式"，用的**不是符号等价证明**，而是
-  **数值等价判定**（`equivalence.py`：在定义域内撒点、逐点比对，再看
-  "预测值 / 真值"这个比值的变异系数是否足够小）。模块开头自己就写着：
-  *"这是**数值等价**，不是**形式化证明**。它等价于「在测试点的覆盖范围内两个式子一致」，
-  覆盖不到的地方它给不出保证。"*
-  所以判成 `exact` 的含义是"在这批测试点覆盖的范围内一致"，不是数学证明。
-- 我们也**没有** Lean / Coq 级别的定理证明，没有形式语义，没有"机器可检查的证明对象"。
-
-**为什么这个取舍成立**：本项目要的不是"证明定理"，而是
-**让物理上不合法的表达式在进入拟合之前就被符号层面的代数手段排除**。
-这条约束能被机器严格判定、且不依赖任何数值试验——它是"形式"的，
-只是强度停在"量纲代数（符号层面）+ 数值等价佐证"，不冒充定理证明器。
-
-**进一步工作（已评估，未随仓库提交）**：另有一条 Lean 路线的完整方案——用 Lean 4 + mathlib
-把「公式的忠实性」做成可证伪的形式化审计。我们评估过它的成本与收益，也写好了方案文档
-与降级路线，但**它既没有进本仓库、也没有实现**。`equivalence.py` 的模块说明里写明了
-"想做成真正的形式化证明需要用 Lean 这类证明助手，那是另一条技术路线，
-我们已经评估过并主动放弃"。留作将来继续做学术方向时捡起（如需该方案文档，可另行提供）。
-
-> 一句可以直接念的话：**「我们把"量纲合不合法"变成了一个可以被机器严格判定的代数命题
-> ——这一步是符号层面的、不做数值试验；而"两个公式是不是同一个"，我们用的是数值等价判定，
-> 代码里的模块说明就是这么写的，我们不把它说成形式化证明。」**
-
----
-
-## 四、本轮实验结果
-
-**21 条方程 × 3 个噪声档，全程约 6 秒。**
-（比早期版本慢一些是正常的：现在每一步都通过原子能力层走，会落盘观测数据与候选库规格，
-换来的是"智能体调用的"和"批量评测的"必然是同一份实现。）
-
-| 噪声水平 | 精确恢复 | 结构判定通过 | 通过双重检验 |
+| Layer | Files | Owns | Must not |
 |---|---|---|---|
-| 无噪声（0%） | **20 / 21（95.2%）** | 20 / 21（95.2%） | **20 / 21（95.2%）** |
-| 1% | 0 / 21 | **21 / 21（100%）** | **20 / 21（95.2%）** |
-| 2% | 0 / 21 | 19 / 21（90.5%） | **20 / 21（95.2%）** |
+| **Tool surface** | `agh_tools.py`, `mcp_server.py` | Validation, JSON shaping, logging, protocol | Contain any physics |
+| **Atomic capabilities** | `pipeline.py` | One decision-free step per capability; identical path for agent and benchmark | Decide *when* to stop or *which* strategy to use |
+| **Kernel** | `dims.py`, `features.py`, `sparse.py`, `equivalence.py` | Mathematics: dimension vectors, candidate generation, regression, equivalence | Know that an agent exists |
 
-几点说明：
+The split exists for a specific reason: if the orchestration layer has nothing to decide, then "the agent ran it" is cosmetic. Every stage that *could* be automated was pushed down into the kernel, and everything that requires judgement — which units, whether the pruning result is plausible, whether to retry, whether to accept the verdict — was left to the model.
 
-- 噪声档下"精确恢复"必然为 0——真值系数不可能从含噪数据里被精确复现，这是正常的。
-  符号回归领域的通行做法就是：**符号恢复率在无噪声数据上衡量，鲁棒性在噪声数据上衡量**。
-- "**结构判定通过**"= 判定为「差一个常数因子」（比值恒定，形式对上了）。
-  例如 1% 噪声下回归出 `0.5003*(m*v**2)`，真值是 `0.5*m*v**2`——结构完全正确，
-  系数只差 0.06%。这属于符号回归领域的"恢复成功"口径。
-- "**通过双重检验**"= 结构判定通过 **且** 外推 R² ≥ 0.99。
-  **这道额外的门槛是被我们自己的数据打脸两次之后才定型的**：
-  第一次，只按 NMSE 判"近似恢复"给出了假阳性（某题外推 R² 只有 0.83，只是在插值）；
-  第二次，门槛只加在"近似恢复"这一类上，而这道题在结构门槛放宽后又从另一条路径绕了过去。
-  最终改成**所有判定一视同仁**：结构对 + 外推对，才算数。
-- 唯一始终恢复不了的是 **P19（相对论因子 γ = 1/√(1-v²/c²)）**。它失败的方式值得单看
-  （候选库里有近似基函数、拟合出训练 R²=1.0 的解，被外推检验拦下），见下节。
-- 从 AGH 那次运行里还带出一处**验证能力升级**：`verify_formula` 现在多一个
-  `implausible` 判定（符号合理性检查），并能给出"小量级区间的最大相对误差"。
-  这挡住了上一节第三个坑里那条"归一化 RMSE 很小、其实是错的"公式。
+### The discovery loop
 
-回归出来的公式举例：
+| # | Stage | Tool | Produces | What the model must decide |
+|---|---|---|---|---|
+| 1 | Load observations | `load_problem` / `load_dataset` | `data_id` | Which problem or dataset |
+| 2 | Infer units | `check_units` | normalized exponents, warnings | The units themselves — the only source of physics |
+| 3 | Build and prune | `build_candidate_library` | `library_id`, kept/total | Whether `kept = 0` means "retry units" |
+| 4 | Fit | `fit_sparse` | `formula`, `formula_readable` | Strategy and `max_terms` |
+| 5 | Verify | `verify_formula` | `passed`, `verdict`, reason | Whether to accept, retry or change units |
+| 6 | Score (benchmark only) | `score_prediction` | verdict vs. truth | Nothing — this tool is not available in discovery mode |
 
-| 题目 | 真值 | 回归结果 |
-|---|---|---|
-| P03 动能 | `m*v**2/2` | `0.5*(m*v**(2))` |
-| P11 单摆周期 | `sqrt(ell/g)` | `sqrt(Abs(ell))*Abs(g)**(-1/2)` |
-| P15 力矩 | `r*f*sin(theta)` | `f*r*sin(theta)` |
-| P20 指数衰减 | `exp(-t/tau)` | `exp(-(t/tau))` |
-| P21 高斯核 | `exp(-x**2/(2*sigma**2))` | `exp(-(x/sigma)**2/2)` |
+### Key design decisions
 
-P15 那一题的量纲剪枝后还剩 63 个候选，其中包含大量无意义的项；
-算法从 63 个里只留下 1 个，而且正是正确答案。
+| Decision | Why |
+|---|---|
+| Prune before fitting, not after | Removes only physically impossible terms, so nothing recoverable is lost — and it regularizes the regression, not just speeds it up |
+| OMP over STLSQ | STLSQ's threshold on a training-only criterion failed on noisy data; OMP is robust to collinearity. Both stay available, and `compare_strategies` runs them side by side so the claim is testable |
+| Numeric equivalence, stated as such | Symbolic proof is a different research programme (Lean/mathlib). Calling numeric agreement a proof would be wrong, so the module says what it is |
+| Intercept forbidden unless the target is dimensionless | The only free parameter that escapes dimension checking; leaving it open produced physically impossible formulas |
+| Deterministic ordering everywhere | Randomized `set` iteration once made published numbers irreproducible across processes |
 
-### 官方 Feynman 基准（100 题）成绩
+Retry handling lives in the model, not in a script: when `build_candidate_library` returns `candidate_kept = 0`, the loop goes back to unit inference; when `verify_formula` returns `overfit`, it refits with fewer terms. Both paths are visible in the recorded AGH sessions.
 
-接入官方 Feynman 符号回归基准（100 条方程，接入方式见第七节）后，
-同一套代码、同一个默认配置的全量成绩：
+---
 
-| 噪声水平 | 精确恢复 | 结构判定通过 | 通过双重检验 |
+## Integration standards
+
+Everything below is an interface contract. The goal is that another harness, or another person's script, can drive these capabilities without reading the source.
+
+### Transport and protocol
+
+| Item | Value |
+|---|---|
+| Transport | **MCP over stdio** — newline-delimited JSON-RPC 2.0, one message per line |
+| Server identity | `name: "sciformula"`, `version: "0.1.0"` |
+| Methods | `initialize`, `notifications/initialized`, `tools/list`, `tools/call`, `ping` |
+| Encoding | UTF-8 on stdio, forced at startup (Windows defaults to a non-UTF-8 code page) |
+| stdout | Protocol messages only; all logging is redirected to stderr |
+| Dependencies | Python standard library only — no MCP SDK required |
+
+The server is a plain Python process, so the executable you register is the **interpreter**, and the script path is passed as a separate argument. This is also what AGH's own guidance asks for ("do not pass a complete shell command as the executable").
+
+### Tool contract
+
+All 13 tools follow one shape, so a client can treat them uniformly.
+
+| Aspect | Contract |
+|---|---|
+| Input | A single JSON object; unknown parameters are rejected with the accepted list, missing required parameters are named explicitly |
+| Success | `{"ok": true, ...}` plus tool-specific fields |
+| Failure | `{"ok": false, "error": "...", "hint": "..."}` — a failure is **feedback, not an exception** |
+| Exceptions | `run_tool` never raises: every error is converted into a readable result so the agent can correct itself |
+| Serialization | NaN/Inf become `null`, NumPy scalars become native JSON types — output is always strict JSON |
+| Chaining | Tools pass opaque ids (`data_id`, `library_id`) forward; nothing is inferred from global state |
+| Determinism | Same inputs and seed produce the same output; no wall-clock or hash-order dependence in results |
+| Logging | Every call is appended to a local JSONL log with duration and error class |
+
+### The 13 tools
+
+| Tool | Group | Key parameters | Returns |
 |---|---|---|---|
-| 无噪声（0%） | **36 / 100** | 58 / 100 | **54 / 100** |
+| `list_problems` | benchmark | `library` | Problem ids, names, target and variable names |
+| `load_problem` | benchmark | `problem_id`, `n_samples`, `noise`, `seed`, `mode` | `data_id`, ranges, observation preview — **no units, no formula** in discovery mode |
+| `list_datasets` | data files | — | Dataset names, paths, row counts, columns |
+| `load_dataset` | data files | `name` | `data_id`, statistics, preview, `verification` capability |
+| `list_simulations` | simulator | — | Scenario ids, settable parameters, measured readings |
+| `run_simulation` | simulator | `scenario`, `params`, `preview_points` | Full time series (CSV on disk) and one reading |
+| `run_sweep` | simulator | `scenario`, `n_cases`, `noise`, `seed` | Dataset of parameter → reading pairs |
+| `check_units` | discovery | `variables_units`, `target_unit`, `data_id` | `parsed_ok`, normalized exponent form, warnings |
+| `build_candidate_library` | discovery | `data_id`, `variables_units`, `target_unit`, `max_terms` | `library_id`, total/kept, prune percentage |
+| `fit_sparse` | discovery | `library_id`, `data_id`, `strategy`, `max_terms`, `threshold` | `formula` (full precision), readable form, terms, R² |
+| `verify_formula` | discovery | `formula`, `data_id`, `expand`, `n_samples`, `tol_in_range`, `tol_extrap` | `passed`, `verdict`, reason, nRMSE in-range/extrapolation |
+| `compare_strategies` | discovery | `library_id`, `data_id` | OMP vs STLSQ side by side |
+| `score_prediction` | discovery | `formula`, `data_id` | Verdict against truth — **benchmark mode only** |
+
+Two deliberate exclusions: `score_prediction` refuses to run in discovery mode, and the post-hoc scorer (`posthoc_eval.py`) is **not** a tool at all. Ground truth must not be reachable from inside a session, or "discovering a law" degrades into "copying the answer".
+
+### Registering with AGH
+
+```sh
+# 1. Register. --name is required; the display name is not optional.
+node packages/cli/dist/local/agnes.mjs mcp add sciformula \
+  --name SciFormula \
+  --stdio "D:\SciFormula\.venv\Scripts\python.exe" \
+  --arg "D:\SciFormula\mcp_server.py"
+
+# 2. Read the revision (read-only).
+node packages/cli/dist/local/agnes.mjs mcp get sciformula
+
+# 3. Trust and enable (interactive confirmation).
+node packages/cli/dist/local/agnes.mjs mcp enable sciformula
+
+# 4. Verify: the tool count must match `python agh_tools.py list`.
+node packages/cli/dist/local/agnes.mjs mcp tools sciformula
+```
+
+Two operational notes, both encountered in practice:
+
+- **Write operations require a real TTY.** AGH refuses to proceed without `stdin`/`stdout` being terminals and offers no bypass flag; scripting the registration silently reports `operation cancelled`. Read-only commands are unaffected.
+- **Registration is per-machine configuration, not repository state.** The absolute paths above must be adapted to the local clone.
+
+### Data interface
+
+An observation dataset is an ordinary CSV, and that is the whole extension mechanism:
+
+```
+m_0,v,c,m
+3.547846749,1.319681636,4.415176658,3.727411286
+...
+```
+
+| Rule | Detail |
+|---|---|
+| Shape | Header row with variable names; one column per variable plus the target column |
+| Size | 200 data rows per file in the bundled datasets |
+| Forbidden content | No units, no formula, no ground truth — deliberately absent |
+| Naming | `data/observations/<problem-or-dataset-id>.csv`; the filename becomes the dataset name |
+| Encoding | UTF-8; files that carry a BOM are read with `utf-8-sig` |
+| Replacement | Dropping a CSV in the same shape into that directory makes it usable with no code change |
+
+### Simulator interface
+
+The bench exposes four scenarios. Parameters are set by the caller; readings are produced by post-processing an integrated trajectory, never by evaluating the closed-form solution.
+
+| Scenario | Settable parameters | Measured reading | Measurement method |
+|---|---|---|---|
+| `spring_period` | `m`, `k`, `A` | Period `T` | Zero-crossing detection with linear interpolation |
+| `damped_decay` | `m`, `k`, `c`, `A` | Envelope decay constant `γ` | Log-linear regression on the peak envelope |
+| `rc_discharge` | `R`, `C`, `V0` | Time constant `τ` | Linear regression of `ln V` against `t` |
+| `kepler_speed` | `M`, `a`, `G` | Specific kinetic energy `ε` | Average over the full trajectory |
+
+`A` and `V0` are distractors: they are set by the experimenter and do not affect the reading. They are present on purpose, because real experiments contain variables that look relevant and are not. `run_sweep` materializes a sweep as a dataset in the same CSV format, so the discovery loop is identical for simulated and measured data.
+
+### Verification standard
+
+`verify_formula` is the only gate, and its thresholds are explicit:
+
+| Parameter | Default | Meaning |
+|---|---|---|
+| `expand` | `0.3` | Extrapolation window as a fraction of the training range |
+| `n_samples` | `100` | Fresh points drawn per region |
+| `tol_in_range` | `0.05` | Normalized RMSE ceiling inside the training range |
+| `tol_extrap` | `0.20` | Normalized RMSE ceiling in the extrapolation window |
+
+| Verdict | Condition | Counts as recovered |
+|---|---|---|
+| `invalid` | Formula cannot be evaluated on the test points | no |
+| `implausible` | Sign plausibility violated (observations single-signed, prediction changes sign) | no |
+| `underfit` | In-range nRMSE above tolerance | no |
+| `overfit` | In-range acceptable, extrapolation above tolerance | no |
+| `passed` | Both regions within tolerance and sign-consistent | **yes** |
+
+A formula is never accepted on training fit alone. When the target is dimensionless the intercept is allowed; otherwise it is forced to zero.
+
+### Evidence standard
+
+Reproducibility claims are backed by two manifests with **different strictness**, and the difference is the point:
+
+| Manifest | Covers | Comparison |
+|---|---|---|
+| `results/EVIDENCE.sha256` | 46 immutable artefacts: AGH exports, trace summaries, scorecards, and the pinned scoring inputs (`.npz` + `.meta.json`) | Byte-for-byte; line-ending differences are reported but tolerated for text |
+| `results/SNAPSHOTS.sha256` | 4 generated artefacts: `detailed*.csv`, `report*.html` | Canonical form — timing columns and generation timestamps are stripped before hashing |
+
+Binary files are compared byte-for-byte with no line-ending tolerance, and official AGH exports are marked `-text` in `.gitattributes` so git never rewrites them. `verify_evidence.py` exits non-zero on any mismatch.
+
+### Runtime requirements
+
+| Item | Requirement |
+|---|---|
+| Python | 3.10 or later |
+| Direct dependencies | `numpy>=1.24`, `sympy>=1.12` (sympy pulls `mpmath`) |
+| Hardware | No GPU; full benchmark completes in roughly 2 minutes on a laptop CPU |
+| Network | Not required at runtime |
+| Platform | Windows, macOS and Linux; the MCP server forces UTF-8 on stdio |
+
+---
+
+## Results
+
+Same code, same default configuration. Both libraries are reported side by side because the teaching library alone would be misleading.
+
+**Built-in teaching library — 21 equations × 3 noise levels (≈6 s):**
+
+| Noise | Exact recovery | Structurally correct | Passes both gates |
+|---|---|---|---|
+| 0% | **20 / 21 (95.2%)** | 20 / 21 | **20 / 21 (95.2%)** |
+| 1% | 0 / 21 | 21 / 21 | **20 / 21 (95.2%)** |
+| 2% | 0 / 21 | 19 / 21 | **20 / 21 (95.2%)** |
+
+**Official Feynman benchmark — 100 equations × 3 noise levels (≈2 min):**
+
+| Noise | Exact recovery | Structurally correct | Passes both gates |
+|---|---|---|---|
+| 0% | **36 / 100** | 58 / 100 | **54 / 100** |
 | 1% | 0 / 100 | 61 / 100 | **54 / 100** |
 | 2% | 0 / 100 | 59 / 100 | **57 / 100** |
 
-量纲剪枝在官方基准上的力度：**候选全集 2,492,610 项 → 剪枝后 22,368 项，砍掉 99.1%**。
+Exact recovery is only meaningful without noise: coefficients cannot be reproduced exactly from noisy data, which is why the field measures symbolic recovery on clean data and robustness on noisy data.
 
-> **可复现性说明（重要）**：上表是修复一处排序非确定性之后的口径。
-> 修复前的症状是同一份代码、同一批种子，全量成绩在 53/53/56、52/52/55、52/52/56
-> 之间漂移。根因：候选「量纲核」的去重容器是 set，排序键 (项数, 幂次绝对值之和)
-> 存在大量并列，并列项的相对顺序落回 set 的迭代序——而字符串哈希跨进程是随机的
-> （`PYTHONHASHSEED`），于是「截断保留最简的 250 项」时不同进程挑中了不同的候选。
-> 修法是给排序加表达式字符串当决胜项，保证全序（`features.py` 内有完整注释）。
-> 修完后用三个不同哈希种子复跑逐题比对，公式逐字节一致。
-> 这件事本身是个好故事：**「可复现」不是写出来的，是被自己的对照实验跑出来的**——
-> 剪枝消融实验要求重跑全量基准，第一次重跑就和提交过的成绩对不上，问题才暴露。
+**Same-category comparison — gplearn on the full 1% noise slice (100 equations):**
 
-### 剪枝消融实验：量纲剪枝到底带来了什么
-
-「量纲剪枝砍掉 99.1% 候选」一直是我们宣称的核心收益，但没做过对照实验。
-现在补上了：加 `SCIFORMULA_NO_PRUNE=1` 开关（`features.py`），关掉量纲过滤、
-其余流程（去重/截断/回归/判定）完全不变，跑同一套官方基准：
-
-| 方案 | 无噪声精确恢复 | 结构判定通过（0/1/2%） | 通过双重检验（0/1/2%） | 全量耗时<sup>注</sup> |
+| Method | Structurally correct | Extrapolation nRMSE | Passes both gates | Time per problem |
 |---|---|---|---|---|
-| **有剪枝（默认）** | **36 / 100** | 58 / 61 / 59 | **54 / 54 / 57** | 129.5 s |
-| 无剪枝（消融对照） | 20 / 100 | 36 / 38 / 37 | 29 / 29 / 29 | 145.7 s |
+| **SciFormula** | **61 / 85** | **0.0439** | **58 / 85 (68%)** | **0.14 s** |
+| gplearn (default function set) | 28 / 97 | 0.3518 | 25 / 97 (26%) | 5.46 s |
+| gplearn (+ sin/cos/tan/exp/tanh) | 17 / 97 | 0.4520 | 13 / 97 (13%) | 6.38 s |
 
-> <sup>注</sup> 耗时是**开发机上的参考量级**，随 CPU 与负载浮动（外部复核者在另一台机器上实测
-> 为 161 s / 161 s，比值仍是 1.12 左右）。**比例（约 12%）才是结论，绝对秒数不是。**
+One counter-intuitive finding is kept because it supports the design: **enlarging gplearn's function set made it worse** (28/97 → 17/97) under a fixed search budget. A bigger space dilutes exploration; spending the budget after pruning is more effective than spending it on a richer dictionary.
 
-两个结论，第二个比第一个重要：
+**Unit inference — 12 problem cards, no units given:**
 
-1. **剪枝确实大幅提升了效果**——不是「不变」，是把双重检验从 29 提到 54+。
-   机制很直观：不放量纲过滤时候选多出近两倍（63,036 vs 22,368），
-   OMP 在高度共线的候选堆里更容易挑错项、加废项，无噪声精确恢复直接从 36 掉到 20，
-   带噪声时过拟合更严重（三档双重检验齐刷刷 29）。
-   **量纲先验在这里的角色是「正则化器」，物理知识把搜索空间约束在了有意义的地方。**
-2. **加速只是副产品**——全量耗时只从 145.7 s 降到 129.5 s（约 12%），
-   因为大头耗在候选表达式的生成与求值上，不在矩阵回归上。
-   之前想当然地以为「剪枝=数量级加速」，实验数据纠正了这个说法。
-
-复现命令（各约 2 分钟）：
-
-```bash
-SCIFORMULA_LIBRARY=feynman python experiment.py                       # 有剪枝（默认）
-SCIFORMULA_LIBRARY=feynman SCIFORMULA_NO_PRUNE=1 python experiment.py # 无剪枝对照
-```
-
-怎么读这些数字：
-
-- 15 题是「候选库无解」——真值需要求和、复合分式等特征库表达不了的结构，
-  属如实声明的能力边界，不是程序故障。
-  （注意与 P19 区分：P19 是**库里有近似项、拟合出训练 R²=1.0 的解后被外推检验拦下**，
-  属于检验机制生效；这里 15 题是候选库真的没有可用的项。）
-- 约 20 题是「错误」——回归出了拟合良好但结构不对的公式，
-  噪声档下外推门槛拦住了其中大部分（所以"通过双重检验"比"结构判定通过"少）。
-- 官方基准比迷你库难得多是预期的：迷你库是我们自己出的题，
-  官方库里大量方程含 6~9 个变量、嵌套分式与超越函数。
-  **把两套成绩都摆出来，就是为了不让"迷你库 95.2%"造成误导。**
-
-### 对照实验 A：单位「已知」vs「需推断」
-
-我们的核心主张之一是**不提供单位**、由模型从变量名与物理语境推断（报名方向 B1 的落点）。
-那么代价是多少？同一批题、同一批数据、同一个 `run_one`，唯一变量是单位来源：
-
-| 臂 | 噪声档 | 可跑题数 | 结构恢复 | 双检通过 |
-|---|---|---|---|---|
-| oracle（给真值单位）| 0 / 1% / 2% | 12/12 | 4、5、4 / 12 | 4 / 12 |
-| inferred（用模型推断的单位）| 0 / 1% / 2% | **8/12** | 2、3、2 / 8 | 2 / 8 |
-
-**结论（如实说，包括对我们不利的部分）**：
-
-1. **代价主要不是"成绩变差"，而是"一部分题直接做不下去"**：12 题里有 4 题的目标量或
-   关键变量被模型标为「无法判断」，这一步就断了（占 33%）。
-2. **在两臂都能跑的 8 题上，判定逐题完全一致**——本样本里模型的单位错误没有改变任何一题
-   的结论（它的错集中在本来就解不出的题上，那些题 oracle 臂同样失败）。
-3. 所以本实验**不能**用来宣称"单位推断错误不影响成绩"：样本只有 12 题，
-   而且这 12 题是为「单位推断覆盖度」抽的，不是为「可解性」抽的
-   （其中 5 题连 oracle 臂都拿不到双检）。
-4. 它真正说明的是：**单位这一步是闸门**——标不出来就整题作废。这正是闭环里
-   "候选归零 → 重推单位"那个纠错环节存在的理由；要量化闭环版收益，
-   需要让模型带着反馈重推（对照实验 C/D 的范围）。
-
-> 交叉核对：oracle 臂在这 12 题上的逐题判定与正式基准 `results/detailed_feynman.csv`
-> **完全一致**，说明这个对照实验没有引入第二套算法路径。
-> 详细报告：`results/units_ab_report.md`（重跑：`SCIFORMULA_LIBRARY=feynman python exp_units_ab.py`）。
-
-### 对照实验 B：验收环节消融（假阳性率 / 假阴性率）
-
-生产环境没有真值，智能体唯一能用的验收手段就是验证反馈。本实验用四个逐级加严的口径
-判定**同一条公式**，再与真值对账（官方基准 255 条有公式可验收的结果）：
-
-| 口径 | 放行 | 其中结构错 | 假阳性率 | 误杀正确 |
-|---|---|---|---|---|
-| G0 只看训练拟合分（R² ≥ 0.99，多数 SR 论文报的那个数）| 195 | **5** | **2.6%** | 0 / 178 |
-| G1 区间内**重采样**对比参考解 | 172 | 0 | **0.0%** | 9 / 178 |
-| G2 G1 + 外推 30% | 171 | 0 | 0.0% | 10 / 178 |
-| G3 G2 + 符号合理性 | 169 | 0 | 0.0% | 12 / 178 |
-
-**结论**：
-
-1. **真正危险的错公式是"训练 R²≈0.9999 的错公式"**：G0 放行的那 5 条训练 R² 达
-   0.9997~1.0，但换成新采样点一比，区间内归一化 RMSE 高达 0.145~1.19。
-   这是"拟合优度不是验收标准"的量化版本，也是第三个坑（负动能公式）在正式基准上的同类复现。
-2. **加一道重采样就把假阳性从 5 条降到 0**，代价是误杀 9/178（5.1%）——本项目明确选
-   「宁可错杀」：放行一条错公式的代价远大于退回一条正确公式（智能体还能再试一轮）。
-3. **外推与符号检查是廉价保险**：相对 G1 各多拦 1~2 条、多误杀 1~2 条，
-   但在关键个案上是决定性的。
-4. **一次被数据推翻的预期也照实记录了**：动手前以为"只看区间内会放行一大批错公式"，
-   实测 G1 假阳性就是 0——原因是第一版口径写错了（把"重采样"当成了"信训练分"），
-   补上真正的 G0 才看出差异。这条弯路写在 `results/verify_ab_report.md` 里。
-
-> 报告：`results/verify_ab_report.md`（重跑：`SCIFORMULA_LIBRARY=feynman python exp_verify_ab.py`）
-
-### 对照实验：黑箱拟合基线 vs 本项目
-
-同一批数据（官方基准 **300 组**＝100 题 × 3 档噪声）、同一套判分口径
-（区间内 ≤ 0.05、外推 ≤ 0.20，就是 `verify_formula` 的默认阈值）：
-
-| 方法 | 训练 R²（中位）| 区间内 nRMSE（中位）| 外推 nRMSE（中位）| **双口径通过率** | 单组耗时 | 输出公式 |
-|---|---|---|---|---|---|---|
-| **本项目（量纲剪枝 + OMP）** | 1.000 | **0.0041** | **0.0356** | **171/300（57%）** | 0.13s | **是** |
-| 梯度提升（scikit-learn）| 0.999 | 0.3277 | 0.5461 | 3/291（1%）| 0.03s | 否 |
-| 随机森林（scikit-learn）| 0.979 | 0.3912 | 0.6128 | 3/291（1%）| 0.12s | 否 |
-
-**这张表最想说的是**：三个方法的**训练 R² 几乎一样**（1.000 / 0.999 / 0.979），
-但双口径通过率是 **57% vs 1% vs 1%**——差距全部来自"能不能外推"，
-而不是"拟不拟合得上"。这与实验 B（G0 只看训练拟合分的假阳性）互相印证，
-是同一个论点的两次独立验证。
-
-三点必须说清的话：
-
-1. **这不是"算法更弱"，而是"方法类别不同"**：随机森林与梯度提升本质是**插值式**拟合器，
-   区间外会退化成常数或线性；本项目给出**闭式公式**，本身就能延伸到没数据的地方。
-2. **这不是稻草人**：同一份协议的 gplearn（遗传规划符号回归）是同类方法，
-   冒烟测试里它在 I.39.22 上外推 R² 拿到 **1.0**——真正的同类对手要单独比（下一步）。
-3. **分母与配对都摆在明处**：本项目按全部 300 组算（没产出公式的 45 组计未通过）；
-   基线剔除 9 组真值为常数的（归一化误差无定义）；"同题配对"一列只统计本项目也出了公式
-   的那些组，用来排除"题目难度不同"这一解释。
-
-> 报告与明细：`results/baseline_report.md`、`results/baseline_scores.csv`。
-> 数据边界靠文件分离强制：基线只拿得到 `*_train.npz` / `*_query.npz`，
-> 真值在 `*_truth.npz` 里、只有评分脚本读——**和"评分器不进工具集"是同一条纪律**。
-
-### 同类方法对比：gplearn（遗传规划符号回归）
-
-黑箱基线只能说明"插值式方法不会外推"；要跟**同类方法**比，得找一个也输出闭式公式的开源库。
-gplearn 是成熟选择（BSD-3-Clause）。它比本项目慢约 40 倍，所以取 **1% 噪声档的全部 100 题**
-作为比较切片（整档取，不挑题；本项目这一列也**只取同一片**）。
-
-| 方法 | 结构对 | 区间内 nRMSE | 外推 nRMSE | **双口径通过** | 单题耗时 | 给出公式 |
-|---|---|---|---|---|---|---|
-| **本项目（量纲剪枝 + OMP）** | **61/85** | **0.0022** | **0.0439** | **58/85（68%）**／计入未出公式题 58/100（58%）| **0.14s** | 是 |
-| gplearn（默认函数集）| 28/97 | 0.2064 | 0.3518 | 25/97（26%）| 5.46s | 是 |
-| gplearn（+sin/cos/tan/exp/tanh）| 17/97 | 0.2809 | 0.4520 | 13/97（13%）| 6.38s | 是 |
-| 梯度提升 | — | 0.3299 | 0.5461 | 1/97（1%）| 0.03s | 否 |
-| 随机森林 | — | 0.3891 | 0.6128 | 1/97（1%）| 0.12s | 否 |
-
-**三点结论**：
-
-1. **本项目在同类方法上也是领先的**：结构判定 61/85、双口径通过 58/85，
-   而 gplearn 最好只有 28/97、25/97；外推误差差一个数量级。
-2. **一个反直觉的实测结果：函数字典变大，gplearn 反而更差**（28/97 → 17/97）。
-   搜索预算固定（population=1000 × 20 代）时，候选空间变大等于稀释每代的探索效率。
-   这**从反面印证了本项目的设计主张**——先用物理约束（量纲）把空间砍掉 99%，
-   再把省下的预算用在搜索上，比堆函数字典有效。
-3. **速度差就是先验的价值**：0.14 秒 vs 5.5 秒（约 40 倍），而且我们的答案还更准。
-   注意本项目那 15 道没产出公式的题**计入了 58/100 这个分母**，没有藏起来。
-
-> 报告与明细：`results/baseline_gp_report.md`、`results/baseline_gp_scores.csv`、
-> `results/baseline_timing.csv`（逐条耗时与公式原文）。
-> 复现：`.venv-baseline/Scripts/python.exe scripts/run_baseline.py --methods gp,gpx --noise 0.01`
-> → `python scripts/score_gp.py`
-
-
-### 数据来自文件（对应竞赛规则「由 AGH 连接数据」）
-
-观测数据不只是进程内合成的——它们被物化成磁盘文件 `data/observations/<题目编号>.csv`
-（100 份，每份 200 行，列为各变量 + 目标量；**不含真值公式、不含单位**）。
-智能体通过 AGH 的 MCP 工具 `list_datasets` / `load_dataset` 去读这些文件：
-
-```
-智能体 →（AGH / MCP）→ list_datasets → load_dataset → check_units
-       → build_candidate_library → fit_sparse → verify_formula
-```
-
-**为什么这不只是"合规"**：数据文件是**可替换的**。把同格式的真实测量数据
-（实验记录、公开数据集）丢进 `data/observations/`，同一套流程照跑，算法一行都不用改。
-
-一条如实声明的边界：`verify_formula` 需要在**新采样点**上与参考解比对，
-所以它只对「官方题库数据集」可用（题目名与题库一致时自动附带参考解）。
-完全外部的数据没有参考解，工具会**明确报错**并提示改用留出法——
-这只是插值能力的检验，不是外推能力。工具提示里就写着这句话。
-
-### 数值仿真实验台（对应竞赛规则「由 AGH 连接…仿真环境」）
-
-规程要求 AGH 连接「数据、专业软件、仿真环境或设备接口」。继「连接数据文件」之后，
-本项目又加了一台**可驱动的数值仿真实验台** `simulator.py`（纯 numpy，无新依赖）：
-
-    智能体 →（MCP）→ list_simulations → run_sweep（驱动仿真跑一批实验、落盘成数据集）
-           → load_dataset → check_units → build_candidate_library → fit_sparse
-           → verify_formula（**换一组参数当场重跑仿真**，用真实读数当独立 oracle）
-
-| 场景 | 可调参数 | 仪器读数 | 闭式解（仅内部对照用） | 测量方法 |
-|---|---|---|---|---|
-| `spring_period` | m, k, A | 振动周期 T | 2π√(m/k) | 过零检测 + 线性插值 |
-| `damped_decay` | m, k, c, A | 包络衰减常数 γ | c/(2m) | 峰值包络对数线性回归 |
-| `rc_discharge` | R, C, V0 | 时间常数 τ | R·C | ln V 对 t 线性回归 |
-| `kepler_speed` | M, a, G | 比动能 ε | G·M/(2a) | 比动能的全轨迹平均 |
-
-（`A` 与 `V0` 是"看着有关、其实无关"的干扰项——它们由实验者设定，但不影响读数。
-这类变量在真实实验里很常见，留在场景里是有意为之。）
-
-**为什么这比"再读一批 CSV"更有分量**
-
-1. 观测值来自**四阶龙格-库塔数值积分**，再由轨迹后处理得出读数，
-   **不是把闭式解直接代进去**。自检会打印"测量值 vs 闭式解"的相对误差：
-   12 个参数点上**最大相对误差 1.5e-12**（`python simulator.py --selftest`）。
-2. **验证不再依赖任何存储的真值**：对仿真数据集，`verify_formula` 会换一组**留出的参数**，
-   **当场重新跑一次仿真**、拿测得的读数与提交的公式逐点比对。
-   这是"独立验证"最干净的形式——参考事实是当场做出来的实验，不是我们写下的答案。
-3. 实验台可调、可重复：同一组参数永远给同样的读数（除非显式加噪）。
-
-**四个场景的端到端实测**（全程经 `agh_tools.run_tool`，也就是智能体能调到的那条路径）：
-
-| 场景 | 拟合结果 | 真值 | 判定 |
-|---|---|---|---|
-| `rc_discharge` | `1.0015*(C*R)` | R·C | passed |
-| `spring_period` | `6.2805*(Abs(k)**(-1/2)*sqrt(Abs(m)))` | 2π√(m/k)（2π = 6.2832）| passed |
-| `damped_decay` | `0.5018*(c*1/m)`（另带 1 个极小项）| c/(2m) | passed |
-| `kepler_speed` | `0.4997*(G*M*1/a)` | G·M/(2a) | passed |
-
-复现：`python scripts/_e2e_sim.py`（需要先设 `SCIFORMULA_LIBRARY=feynman` 之外的默认环境即可，
-它自己走默认题库；单场景可用 `python simulator.py --sweep rc_discharge --n 60`）。
-
-**两个必须如实说清的边界**
-
-- 仿真里的定律是**我们写在 ODE 里**的。本项目**不宣称"发现了新物理"**。
-  它的价值在于：AGH 能驱动一台可测量、可重复的实验台，而且**验证环节真的在做实验**
-  （留出参数、当场重跑、拿读数比对）。
-- 搭这台仿真台时撞到两条"闸门"。它们都**不是单位推错**，而是系统自身的表达能力与数值约束，
-  已如实记录、并据此改进了诊断提示：
-  1. **候选库的幂次集合**：三变量及以上的乘积只允许整数幂，所以 `√(G·M/a)` 这种
-     "三个变量都是半整数幂"的形式**表达不出来**（实测 `cand_kept = 0`）；
-     改成等价的整数幂目标（比动能 `G·M/(2a)`）即可通过。
-  2. **特征矩阵的数值净化上限** `max_abs = 1e8`：读数量级过大时，唯一的候选项会被整列丢掉
-     （实测 `G·M/a` 在天体量级下达到 1.5e9）。把场景参数改到小天体尺度即可。
-  → `build_candidate_library` 在 `cand_kept = 0` 时的提示已补上这两种可能，
-  不再一律归因于"单位推错"。
-
-### 会话级后验评分：一条必须画清的边界
-
-`posthoc_eval.py` 给跑完的 AGH 会话打评分卡（公式判定 / 单位准确率 / 过程指标 /
-诚实性与完整性核对），产物在 `results/posthoc/`。
-
-**它刻意不进 MCP 工具集、智能体也看不到它**——因为它要读真值公式与真值单位。
-真值一旦进入会话，"从数据里发现定律"就退化成"照着答案凑公式"。
-同理，项目里的 `score_prediction` 能力**存在但在 discovery 模式（智能体跑的模式）下
-直接拒绝工作**。要评价就用事后评分，不要在会话内给答案。
-
----
-
-## 五、已知边界与失败案例
-
-**不写这一节，前面所有数字的可靠性都要打折。** 以下都是本项目真实存在的限制。
-
-### 失败案例：P19 相对论因子 —— 一个「被正确拦下」的失败
-
-真值 `γ = 1/sqrt(1-v²/c²)`。这一题在 0/1/2% 三档噪声下都没恢复，判定分别为
-`错误` / `差一个常数因子` / `差一个常数因子`。**但它失败的方式值得细看**：
-
-候选库里**并不是没有近似的基函数**——量纲剪枝后保留的 80 项里就包含
-`1/(1+(v/c_light)**2)`，与真值 `(1-u²)^(-1/2)` 结构极近（只差一层 `sqrt` 与平方项的符号）。
-算法确实用上了它：无噪声档拼出一个 9 项组合，**训练集 R² 达到 1.00000**（逐位精确）。
-如果只看拟合优度，这条公式「完美」；但它的**结构是错的**，
-在 `results/detailed.csv` 里能看到外推检验给出的 **R² = -5.20476**——
-在训练区间之外完全崩掉，于是被判定拦下。
-
-所以这里的真实机制是：**库够用 → 拟合出一个训练集上完美的过拟合解 → 外推检验把它拦住了**，
-而不是「候选库拼不出这种形式」。两者含义完全不同：
-
-- 「库表达不出来」是**能力短板**；
-- 「拟合得很好但被外推检验拦下」是**检验机制生效**——这恰恰是本项目要证明的那件事。
-
-诚实的说法是：本方法找不到 P19 在**训练区间之外仍然成立**的表达；
-而它没有把这个过拟合解当成成功报出来，正是双重检验在起作用。
-
-### 五条必须声明的边界
-
-1. **是数值等价判定，不是形式化证明。** 它保证的是"在测试点覆盖范围内一致"，
-   覆盖不到的地方不作保证。想做成真正的证明需要 Lean 这类证明助手——
-   那是另一条技术路线，我们评估过并主动放弃了。
-2. **量纲剪枝的前提是公式里没有隐藏的标度常数。** 如果真值是 `x/t0` 这种带一个
-   未标注常数 t0 的形式，剪枝会连正确的项一起砍掉。
-3. **候选特征库是有限的。** 像 P19 这种需要库外形式的题目必然失败。
-4. **官方 Feynman 基准已接入，但成绩远低于迷你库（54~57% vs 95.2%）。**
-   两套数字都在第四节摆着；官方基准上的失败明细见 `results/report_feynman.html`。
-5. **`verify_formula` 需要参考解。** 它在全新采样点上把公式与**内置方程库的真值**逐点对比，
-   参考解**不返回给智能体**，但确实被用到了。所以它检验的是"通用化能力"，
-   **不是"完全无真值的自洽检验"**——这一条我们主动写清楚，
-   因为把它说成"不需要真值的独立验证"是不准确的。
-   真正的无真值版本要靠**留出数据**（把一部分观测留着不给智能体），这是下一步计划。
-
-### 一个需要记住的坑：近常数"退化列"
-
-量纲剪枝会放过一批**代数上恒等于常数**的项，例如：
-
-```
-Abs(t)**(-1/2) * sqrt(Abs(tau)) * sqrt(Abs(t/tau))   ≡ 1
-```
-
-它量纲合法（总指数为 0），但没有任何信息量，而且会让回归矩阵严重病态——
-实测里它把系数推到了 1e16。`features.py` 的 `make_matrix()` 用三道净化把它挡掉了。
-
-### 第二个坑：被自己绕过去的验证门槛
-
-这个坑更微妙，值得单独写下来，因为它是**评价指标本身**出的问题：
-
-我们给"恢复成功"定了一个门槛——结构判定要过，**而且**外推 R² ≥ 0.99。
-但门槛最初只加在「近似恢复」这一类判定上，因为当时触发假阳性的那道题正好被判成这一类。
-后来我们发现结构判定的阈值设得过严（要求系数比值恒定到 1e-6，而带噪声时系数必然有偏差，
-导致 1% 噪声下 21 道题全被低估成"近似恢复"），把它放宽到合理的 5%。
-
-**结果那道题顺着新路径又溜了回来**：它从"近似恢复"升级成"差一个常数因子"，
-而这一类原本是直接放行的，于是绕开了外推门槛，重新变成假阳性。
-
-教训不是"阈值调得不对"，而是：**在同一个判定体系里，不能有的类别要过两道门槛、有的只过一道。**
-现在所有判定一视同仁。这类问题在自造评测流程时很常见——
-每加一个类别、每调一次阈值，都要回头检查**门槛之间的松紧关系**是否还成立。
-
-### 第三个坑：唯一绕过量纲检查的那个参数（最重要的一个）
-
-**这个坑是 AGH 里的智能体替我们踩出来的。** 它在 P03（动能）上跑出这样一条公式：
-
-```
-E = 0.5017 · m·v²  −  1.204
-```
-
-看起来没问题——系数 0.5017 ≈ 0.5，结构对了，拟合 R² = 0.998，
-`verify_formula` 判定 **passed**，归一化 RMSE 只有 0.0034。
-智能体自己也这么解释的：「−1.204 的截距在 5% 噪声下属于可忽略的小量」。
-
-**但这个公式是错的**，而且错得很严重：
-
-| 真值 E | 预测 E | 相对误差 |
-|---|---|---|
-| 0.14 | **−1.07** | **880%** |
-| 0.30 | −0.90 | 403% |
-| 1900 | 1904 | 0.28% |
-
-它预测出了**负的动能**——物理上不可能。可归一化 RMSE 只有 0.0034，因为
-**整体 RMSE 由大量级点主导**，小量级处的灾难性误差在平均值里被淹没了。
-
-根因不是算法不稳定，是**设计上漏了一个口子**：
-
-> 候选库里的每一项都经过量纲检查，只有**截距**没有。
-> 它是个自由参数，随手就能加进模型——量纲上完全不同步。
-
-这直接违背了本项目自己的核心主张。修法也是从主张本身推出来的，一句话：
-
-> **加性常数只有在目标量本身无量纲时才合法。**
-> 目标量有量纲（例如能量 J）时，`0.5·m·v² + 常数` 里的常数没有任何物理含义，
-> 必须强令截距为 0。
-
-对应改动：`sparse.py` 的三个拟合函数都加了 `allow_intercept` 开关，
-由 `pipeline.fit_sparse` 依据候选库规格里的 `target_unit` 决定是否放行。
-
-**修的过程中还带出第四个坑**：把截距强制为 0 之后，P01 反而从"精确恢复"退化成
-9 项乱拟合。原因是不再减均值后，各列的**均值**主导了内积，
-OMP 的贪心判据 `|Aᵀr|` 变成了"谁的均值更接近残差均值"，
-k=1 的验证残差高达 89（带截距时是 1e-29 这种量级）。
-正确做法是无截距回归要按**列范数**归一化（`_column_norm`），而不是按标准差。
-改对之后 P01 恢复成 `1*(f_n*mu)`，1 项。
-
-**同时补了一道安全网**：`verify_formula` 增加**符号合理性检查**——
-观测值在整段区间上同号时，预测值不应在区间内反号；
-并把"真值最小那 5% 区间内的最大相对误差"（`max_rel_err_small`）单独报出来。
-现在把上面那条错误公式喂进去，返回的是：
-
-```
-判定: implausible
-理由: 区间内违反符号合理性：观测值在整段区间上同号，而公式预测出了相反的符号
-      （预测最小值 -0.8962，观测最小值 0.3068）……
-```
-
-**为什么把这个坑写在最前面**：它同时是三样东西——
-一次真实的失败记录（提交要求的「失败类测试样例」）、
-一次由验证流程自身发现的设计缺陷（「验证严谨性」的直接证据）、
-以及一条从核心主张推导出来的修复（说明那套主张是真在用的，不是口号）。
-
-### 第五个坑：单位「写法」的左结合歧义（AGH 里的智能体第二次踩出来的）
-
-同样是在 AGH 的真实会话里暴露的（`results/agh-trace-demo.md`）：
-
-在官方题 I.34.8（回旋频率）上，智能体**物理判断是对的**（q=C、B=T、v=m/s、p=动量、
-目标 1/s），但它把动量写成了 `kg/m/s`。这个写法按左结合解析是 **kg·m⁻¹·s⁻¹**，
-不是动量；正确写法是 `kg*m/s`。后果是：
-
-- `check_units` 照旧返回"写法合法"（它只查语法，这是**设计如此**、也在文档里写明了）；
-- 量纲剪枝于是只保留了 1 个"自洽但物理上错误"的候选 `p·v/(B·q)`；
-- 拟合 R² = **-1.116**（比直接用均值预测还差）；
-- `verify_formula` 判定 **underfit** —— **错误公式被拦住了，没有蒙混过关**。
-
-智能体随后在"改单位"上绕了十几轮（试过 p=kg、q 无量纲、目标写 1 等），
-最后靠数值证据自己纠正、拿到正确的 `B·q·v/p`。修复做了三件事（都是**只解释写法语义、
-不泄漏物理答案**）：
-
-1. `check_units` 每个单位都回显**无歧义的指数形式**（`kg/m/s → kg^1*m^-1*s^-1`），
-   并新增 `warnings`：多斜杠又没乘号时，明确提示左结合语义；
-2. `build_candidate_library` 在候选异常少时的诊断里，补上"顺带核对写法"的提醒；
-3. `fit_sparse` 在 R² ≤ 0 时，直接指出"优先怀疑单位推断，包括写法歧义"。
-
-这个坑的价值和第三个坑一样：**它是闭环跑出来的，不是坐在桌前想出来的**；
-而且它把我们那句核心主张（模型做推断、确定性工具守边界、验证环节兜底）
-从"设计意图"变成了"实测有效的分工"。
-
----
-
-## 六、下一步
-
-按优先级（前两项已完成）：
-
-1. ~~改成官方 Feynman 符号回归基准数据集~~ **已完成**：见第四节成绩表与第七节接入说明；
-   MCP 工具也已支持双库（`list_problems` 传 `library="feynman"` 直接列官方 100 题，
-   官方题编号可跨库解析，AGH 拉起的进程不需要环境变量）。
-2. ~~把各环节包装成 AGH 工具插件~~ **已完成**：原子能力经 MCP 接入 AGH
-   （现共 **13 个工具**：8 个原子能力 + 2 个数据文件接入 + 3 个仿真实验台），
-   迷你库会话见 `results/agh-session.html` 与 `results/agh-trace-summary.md`；
-   官方题库闭环会话见 `results/agh-session-feynman.html` 与
-   `results/agh-trace-feynman.md`（含候选归零→自主诊断→换题的纠错链）。
-3. ~~量纲自动推断的量化评测~~ **已完成**：`unit_infer_eval.py`——
-   从官方基准抽 12 题（1~6 变量）出「无单位题目卡」，在 AGH 里让模型推断
-   每个变量与目标量的单位，回填答案后按量纲等价自动打分。
-   首跑结果：**变量级 45/54（83%）、题目级 6/12（50%）**，
-   报告 `results/unit_infer_report.md`，作答会话导出
-   `results/agh-session-unitinfer.html`。
-   有明确物理语境的题全对（含 G=N·m²/kg² 这类冷门单位）；错判集中在
-   变量名歧义（sigma/Nn），印证「冷推断难在歧义，闭环靠剪枝反馈纠错」的叙事。
-4. **测试样例文档**：`docs/test-cases.md`（正常/边界/失败三类，含逐条复现命令），
-   对应提交要求的必填项。
-5. ~~补一个第三方对照基线~~ **已完成**：gplearn（同类符号回归开源库）与
-   随机森林 / 梯度提升两个黑箱基线都已跑通，见第四节两张对照表，
-   明细在 `results/baseline_gp_report.md` 与 `results/baseline_report.md`。
-6. **真正的无真值验证**（未做，方案已想清）：`verify_formula` 目前依赖内置方程库的真值
-   （不返回给智能体，但确实用到了）。最干净的自洽版本是**数值仿真环境**：
-   观测数据来自 RK4 数值积分、而不是我们写下的闭式方程；验证时**换一组参数当场重跑仿真**
-   当独立 oracle——比对的是"仿真真正跑出来的读数"，而不是任何存储的真值。
-   这是把"验证"从"对答案"变成"做实验"的唯一办法。
-
----
-
-## 七、环境与安装
-
-依赖只有两个库：`numpy`、`sympy`。
-
-> **国内网络的坑（实测）**：本机 `pip` 直连镜像会报
-> `Could not find a version that satisfies the requirement ...`，
-> 但 `curl` 访问清华镜像正常。
-> **可用解法**：用 `curl` 把 wheel 下到本地，再用 pip 从本地文件安装：
->
-> ```bash
-> pip install numpy                    # 若已装可跳过
-> # sympy 需要先下 mpmath 作为依赖
-> curl -sL -o mpmath.whl "https://pypi.tuna.tsinghua.edu.cn/packages/.../mpmath-1.4.1-py3-none-any.whl"
-> curl -sL -o sympy.whl  "https://pypi.tuna.tsinghua.edu.cn/packages/.../sympy-1.14.0-py3-none-any.whl"
-> pip install mpmath.whl sympy.whl --no-deps --no-index
-> ```
->
-> 具体下载链接会变，可以在 `https://pypi.tuna.tsinghua.edu.cn/simple/sympy/` 页面上
-> 找最新的 wheel 链接。
-
-### 官方 Feynman 数据集（已接入）
-
-`data/FeynmanEquations.csv` 是官方 Feynman 符号回归基准的 100 条方程
-（来源与许可见 `data/README.md`）。接入方式是**环境变量切换**，默认仍是手写迷你库：
-
-```bash
-# 跑官方 Feynman 基准（100 题）
-SCIFORMULA_LIBRARY=feynman python experiment.py
-
-# 不带环境变量 = 跑内置迷你库（21 题）
-python experiment.py
-```
-
-相关文件：
-
-- `feynman.py`——把官方 CSV 解析成与 `EQUATIONS` 相同的字典结构（公式 + 变量 + 采样区间）
-- `feynman_units.py`——按变量名给出量纲表（93 个变量名，含逐方程覆盖项）
-- 产物文件名会带上库名：`results/detailed_feynman.csv`、`results/report_feynman.html`
-
-一点说明：早期担心官方库"约 6.5GB、需要联网下载"，真正接入后发现那是
-AI Feynman 的**预采样数据**体积；方程本身只有一张小 CSV，采样由我们自己的
-`sample_data()` 完成——所以接入成本比预想低得多。
-
-### 提交前的证据校验：两类文件，两种严格度
-
-提交材料里的「运行证据」要能证明**没被人改过**，所以项目带一份哈希清单。
-但「用哈希管起来」这件事本身有个容易被忽略的坑：**清单管的是哪一类文件**。
-
-```bash
-python verify_evidence.py          # 提交前必跑；全部通过才打包
-python verify_evidence.py -v       # 顺带列出每个文件
-python verify_evidence.py --strict # 连换行符差异也不容忍
-```
-
-| 类别 | 清单 | 严格度 | 为什么 |
-|---|---|---|---|
-| **不可变证据** | `results/EVIDENCE.sha256` | 逐字节一致 | AGH 官方导出、会话轨迹摘要、评分卡、测试样例，以及**评分卡的判定输入固定副本**（`results/posthoc/data/*.npz`）——生成后就不该再变 |
-| **生成快照** | `results/SNAPSHOTS.sha256` | 按**规范形式**比对 | `detailed*.csv` 含每条耗时列、`report*.html` 页脚含生成时间，**任何人重跑都会不同**；把这两处抹掉再比，数字与结论仍逐字节受保护 |
-
-四条如实说明：
-
-1. **换行符差异不算异常**（但会显式打印成 `OK(换行)`，不掩盖）。
-   仓库根目录的 `.gitattributes` 已把文本文件统一成 LF，AGH 官方导出按非文本处理、
-   git 不做任何转换。这两条都是为了让「仓库里的字节 = 你克隆下来的字节 = 清单记录的字节」。
-   加 `.gitattributes` 之前就遇到过：干净克隆后跑校验会立刻报「15 处文件被改动」，
-   而实测 15 处全是 LF ↔ CRLF 差异，**没有一处是内容被改**——
-   想证明的东西，被证明方式本身毁掉了。
-2. **换行符容错只对文本生效。** 二进制文件（前 8 KB 含 NUL 字节）一律逐字节比对，
-   不兜底。评分器的判定输入 `results/posthoc/data/*.npz` 就是二进制——
-   zip 容器里出现 `0D 0A` 是正常的，若还拿换行符容错兜底，等于给篡改开后门。
-3. **两个基准明细 CSV 带 UTF-8 BOM**（`EF BB BF`）。
-   这是为了让 Excel 双击打开时中文列不出现乱码；用 Python 读请加 `encoding="utf-8-sig"`
-   （本项目所有读 CSV 的地方都这么写）。
-4. **官方导出里有开发机的绝对路径，我们刻意不改。**
-   `results/agh-session*.html` 是 AGH 写出来时的原件，里面记录着当时工具返回值里的
-   `D:\projects\SciFormula\...`。工具侧早已改成返回相对项目根的路径（新会话不会再出现），
-   但**落库的原件保持原样**——改它就破坏了「原件未被任何编辑器或工具改动」这个前提，
-   而那份清单要证明的正是这件事。宁可如实说明，不去动证据。
-   同理，这些 HTML **只能用浏览器打开**：用文档/富文本编辑器保存会注入
-   `data-page-node-id` 之类的属性（内容肉眼不变，但字节已不是原件）。
-
-### 运行模型溯源：能不能核对「用了什么模型」（2026-10-07 发现缺口 → 10-08 补齐）
-
-外部审计提了一条硬性要求：**必须留有 trace，以便核对运行记录是否使用了 AGH /
-Agnes 系列模型进行开发**。这条要求分两半，现在**两半都成立**：
-
-| 要求 | 结论 | 依据 |
-|---|---|---|
-| 有没有 trace 留存 | ✅ **符合** | 7 份 AGH 官方会话导出全部入库，受 `EVIDENCE.sha256` 逐字节保护；含工具调用链、人工批准卡片与被拒记录 |
-| 能不能核对所用模型 | ✅ **符合**（2026-10-08 补上） | 7 份 **JSONL 事件原件**入库，并由 `results/agh-model-provenance.md` 给出可自行复算的登账表 |
-
-#### 这条要求当初为什么差点没满足（这段教训比结论值钱）
-
-2026-10-07 首次核查的结论是「前半句符合、后半句不符合」，原因很反直觉：
-
-1. **7 份 AGH 官方 HTML 导出里不含任何模型字段**——逐份 grep `agnes` 零命中。
-   HTML 导出能证明「运行受 AGH 管辖」，但自证不了「跑的是哪个模型」。
-2. 模型名实际只存在于 **JSONL 事件原件**的 `session/start`
-   （`modelSettings[*].model`），而当时仓库里 JSONL 数为 **0**。
-3. 于是 `agnes-3.0-flash` 只是散落在几份文档里的**二手转述**。
-
-> **教训：受哈希保护的文件 ≠ 要证明的那件事。**
-> 清单很严密，但被保护的文件里可能压根不含待验证的字段。
-> 更隐蔽的是：文档里写满了 `agnes-3.0-flash`，若先 grep 关键词就会以为证据充分 ——
-> 正确顺序是**先定位「待证字段唯一所在的那份文件」，再看它在不在库里**。
-> 能被引证 ≠ 能被核对，转述只满足前者。
-
-#### 现在怎么核对（三份材料构成完整链条）
-
-| 文件 | 作用 |
+| Metric | Result |
 |---|---|
-| `results/agh-event/*.jsonl`（7 份，约 1.5 MB） | AGH 事件原件，模型名的**唯一**来源；受 `EVIDENCE.sha256` 逐字节保护 |
-| `results/agh-model-provenance.md` | 由原件算出的登账表。**刻意不设人工标注区**——一旦允许手改，它就退化成又一份转述 |
-| `results/agh-trace-*.md` | 会话轨迹摘要（回答「干了什么」；「用了什么模型」一律以登账表为准） |
+| Variable-level accuracy | **45 / 54 (83%)** |
+| Problem-level accuracy | 6 / 12 (50%) |
+| Unanswered (explicitly declared) | 4 |
 
-```bash
-python agh_provenance.py            # 从原件重算登账表（任何人可复算）
-python agh_provenance.py --check    # 核对现有登账表与原件是否一致
-python agh_provenance.py --selftest # 工具自检
-```
-
-登账表逐会话给出模型、AGH 版本、预设、事件数、工具调用与人工批准次数。
-其中「人工批准」一列不为零，说明运行是在 AGH 里**逐次受管辖**地发生的，
-而不是本地脚本一次性跑完再补一份记录。
-
-四条如实说明：
-
-1. 登账表里 `AGH 版本` 显示「（导出未提供）」而非 `0.0.0`——AGH 导出没填版本号时
-   会原样输出 0.0.0，照抄会让复核者去查一个不存在的版本，所以显式标注。
-2. `modelSettings` 里每个会话有 5 个配置项、但都是同一模型，登账表已**去重**
-   （不去重会写成 `xxx, xxx, xxx, xxx, xxx`，反而看不清事实）。
-3. 工具**缺件时明确报缺件并以非 0 退出**，不自造数据、不打印「全部通过」。
-   一个「没数据也全绿」的核查工具，比没有工具更糟。
-4. `results/agh-event/*.jsonl` 由 `scripts/resign_evidence.py` **自动登记**进
-   `EVIDENCE.sha256`，并在 `.gitattributes` 里标 `-text`——与 HTML 导出同规则：
-   **官方导出原件一律不做换行符转换**，存进仓库的字节就是导出时的字节。
-
-顺带修了 `trace_summary.py` 两处取证缺陷：模型只读 `modelSettings[0]`
-（多模型会话会被静默记成单模型），以及 `AGH 版本 0.0.0` 被原样照抄。
-
-**如果将来还要补导别的会话**，步骤是：
-
-```bash
-# 1) 列出会话，拿到 ID
-#    注意命令是 sessions --json —— 没有 `agh sessions list` 这个子命令，
-#    也没有 `sessions show`，写错会导致命令失败（本项目开发时实测）。
-agh sessions --json
-
-# 2) 逐个导出事件原件（文件名必须就是会话 ID，脚本按文件名与内容双向核对）
-agh export SESSION_ID --format agnes -o results/agh-event/SESSION_ID.jsonl
-
-# 3) 生成一手登账表（也可由任何人复算）
-python agh_provenance.py            # → results/agh-model-provenance.md
-python agh_provenance.py --selftest # 工具自检
-```
-
-7 份已入库官方导出的原始会话 ID（一一对应，可逐个导出）：
-
-| 官方导出 | 会话 ID |
-|---|---|
-| `agh-session.html` | `161ea3fb-7f17-4a89-9ba7-d6c70d46c6be` |
-| `agh-session-demo.html` | `438d81fd-c1b5-4efc-b739-d238864a3d3a` |
-| `agh-session-feynman.html` | `39d31a09-7e75-42d0-934e-911e92cf6e74` |
-| `agh-session-data.html` | `6501b3a2-515a-4ce2-bce6-6dc59d6a954a` |
-| `agh-session-data2.html` | `9d469c46-1842-49b0-8dc3-21a9f04c6888` |
-| `agh-session-sim.html` | `6ea6a59e-2c25-47f8-96b9-e000383a5a93` |
-| `agh-session-unitinfer.html` | `06df62f6-f32f-41dc-a78b-81c5eb4531be` |
-
-批量导出可以直接跑 `scripts/export_agh_events.ps1`（里面已内置这 7 个 ID，不必手抄）。
-导出后重跑 `python agh_provenance.py` 与
-`python scripts/resign_evidence.py --reason "..."` 即可，清单会自动把新原件登记进去。
-
-### 一条曾经存在过的断链（2026-10-06 修，值得记下来）
-
-评分卡里的「公式判定」要用**拟合时那张设计矩阵 `X`** 才能撒点比对。它原本只存在于
-运行期目录 `.agh_runs/`（被 `.gitignore` 排除），于是出现过一个很难察觉的后果：
-
-> 干净克隆后重跑评分器，**同一条会话得到不同的结论**——6 份评分卡全部从
-> `up_to_constant` / `wrong` / `approx` 静默翻转成 `no_formula`。
-
-更糟的是 `no_formula` 当时同时承担两件事：「智能体没给出公式」和「评分器拿不到数据」。
-两者混用，会让"评分不可复现"伪装成"智能体没作答"，而且方向固定是
-**把成功恢复改写成未恢复**——它降低的是项目自己的成绩。
-
-两条修法都做了：
-
-1. 把评分卡依赖的判定输入**固定副本**提交进仓库（`results/posthoc/data/`，
-   7 份 `.npz` + 7 份 `.meta.json`，单份 2~10 KB），并纳入 `EVIDENCE.sha256`。
-   判定结果从此不依赖"你有没有在本地跑过那一场"。该目录的 `README.md`
-   记录了每份的来历、参数与重建方式。
-2. `posthoc_eval.py` 把「无法判定」单列成 `unscorable` 并显著标注，
-   **不计入公式恢复率的分母**：评不了的原因在工具这一侧，不该记成模型的失败。
-
-验收方式（这一步才是关键）：**把运行目录移走**再跑一遍，7 份评分卡与提交版
-逐字节一致。"本地能过"和"别人克隆下来能过"是两回事。
+The failures concentrate on ambiguous variable names (`sigma`, `Nn`) rather than on exotic units: variables with clear physical context, including `G` in N·m²/kg², are inferred correctly. Where the model cannot decide, it says so instead of inventing a unit.
 
 ---
 
-## 八、这个项目最想证明的一件事
+## Quick start
 
-**结果可复现、可审计、可质疑。**
+```bash
+git clone https://github.com/Arcticfox-star/SciFormula.git
+cd SciFormula
+pip install numpy sympy
 
-- 全流程是确定性的：固定随机种子，同样的输入永远给同样的输出，没有模型随机性
-- 每一步的中间结果都落盘（`results/detailed.csv`），任何一行数字都能回溯
-- 失败案例和踩过的坑都在报告里如实记录，并非只呈现成功结果
-- 代码量摆在明面上、可现场核验：`wc -l *.py scripts/*.py` = **9549 行**
-  （`*.py` 22 个 + `scripts/*.py` 12 个；剔除空行与纯注释行后 7698 行）。没有隐藏环节
+python scripts/run_all.py        # 9 self-checks + evidence verification
+python verify_evidence.py        # evidence only (46 immutable + 4 snapshots)
+```
 
-这也是为什么这个项目不需要 GPU、不需要训练、几秒钟就能跑完——
-它要证明的不是"AI 有多强"，而是**"AI 做出的发现，人能不能看懂、能不能验证"**。
+To run the official benchmark instead of the teaching library:
+
+```bash
+SCIFORMULA_LIBRARY=feynman python experiment.py           # with dimensional pruning
+SCIFORMULA_LIBRARY=feynman SCIFORMULA_NO_PRUNE=1 python experiment.py   # ablation
+```
+
+> **If you see `ModuleNotFoundError: No module named 'numpy'`**, the wrong interpreter is being used — the dependencies are installed elsewhere (typically `.venv`). This is not a broken project. Use `.venv\Scripts\python.exe` (Windows) or `.venv/bin/python`. The two entry scripts, `scripts/run_all.py` and `scripts/show_test_cases.py`, detect and switch to `.venv` automatically.
+
+To drive it from an agent, register the MCP server as shown in [Integration standards](#registering-with-agh). The single-file check that the wiring is correct, without AGH installed:
+
+```bash
+python mcp_server.py --selftest     # protocol, tool list, a bad call, a real call
+```
+
+---
+
+## Repository layout
+
+```
+SciFormula/
+├── dims.py                  # dimension algebra: 7-exponent vectors, fractional powers
+├── equations.py             # 21-equation teaching library + observation generator
+├── features.py              # candidate library construction and dimensional pruning
+├── sparse.py                # OMP / STLSQ, with and without intercept
+├── equivalence.py           # numerical equivalence verdict
+├── pipeline.py              # atomic capability layer (8 capabilities)
+├── agh_tools.py             # tool registry: 13 tools, validation, logging
+├── mcp_server.py            # MCP server over stdio, zero dependencies
+├── simulator.py             # RK4 bench: 4 scenarios, 12 readings per sweep
+├── datasets.py              # disk-backed observation datasets
+├── experiment.py            # batch benchmark and HTML report
+├── verify_evidence.py       # manifest verification (two strictness levels)
+├── agh_provenance.py        # model provenance ledger, recomputable from raw events
+├── posthoc_eval.py          # session scorecards (deliberately not a tool)
+├── data/
+│   ├── FeynmanEquations.csv # official 100-equation benchmark
+│   └── observations/        # 100 observation CSVs (no units, no formulas)
+├── docs/
+│   ├── technical-notes.zh-CN.md  # deep technical write-up (Chinese)
+│   ├── model-declaration.md      # which model, where, how it is called
+│   ├── tech-info-declaration.md  # data / code / solver / interfaces
+│   └── test-cases.md             # normal, boundary and failure cases with commands
+├── results/                 # AGH exports, traces, scorecards, manifests
+└── scripts/                 # run_all, evidence re-signing, baseline runners
+```
+
+9,562 lines of Python across 34 files (7,701 excluding blanks and comments), 240 tracked files.
+
+---
+
+## Evidence and reproducibility
+
+Every number in this README is regenerable, and the evidence has three independent layers:
+
+| Layer | What it proves | How to check |
+|---|---|---|
+| Deterministic pipeline | The result does not depend on the machine | `python scripts/run_all.py`; identical seeds, no wall-clock in results |
+| Immutable evidence | The artefacts were not edited after generation | `python verify_evidence.py` — 46 byte-exact + 4 canonical |
+| Model provenance | Which model actually ran, and that a human approved each call | `python agh_provenance.py --check`, recomputed from raw AGH event logs |
+
+Seven AGH sessions are archived as exported HTML plus raw JSONL event streams: 2,085 events, 92 tool calls, 68 human approvals, 4 rejections. The model name exists only in the raw event logs, not in the HTML exports — so the ledger is computed from the logs and can be recomputed by anyone.
+
+<details>
+<summary>The seven archived AGH sessions</summary>
+
+| Session | What happened | Tool calls | Approvals (rejected) |
+|---|---|---|---|
+| `6ea6a59e-2c25-47f8-96b9-e000383a5a93` | RC discharge bench, the run shown in the demo — passes first time | 7 | 7 (0) |
+| `6501b3a2-515a-4ce2-bce6-6dc59d6a954a` | Ideal gas law — last three verifications time out; reports failure instead of inventing a result | 10 | 10 (0) |
+| `9d469c46-1842-49b0-8dc3-21a9f04c6888` | The same task after the fix — passes | 6 | 6 (0) |
+| `39d31a09-7e75-42d0-934e-911e92cf6e74` | Candidate library prunes to zero; switches problem; two `overfit` verdicts | 19 | 14 (3) |
+| `438d81fd-c1b5-4efc-b739-d238864a3d3a` | Ideal gas equation — unit-notation boundary, then recovers | 25 | 6 (0) |
+| `161ea3fb-7f17-4a89-9ba7-d6c70d46c6be` | A human rejects an approval mid-task; the agent reports where it stopped | 24 | 24 (1) |
+| `06df62f6-f32f-41dc-a78b-81c5eb4531be` | Unit inference across 12 problem cards | 1 | 1 (0) |
+
+Session titles above are summaries; the AGH-generated titles are Chinese. Raw events live in `results/agh-event/`.
+
+</details>
+
+Two failure modes are documented rather than hidden, because both were found by verification rather than by inspection:
+
+- **Randomized ordering** once made published benchmark numbers unreproducible across processes.
+- **A scoring input outside version control** once flipped six session scorecards from "recovered" to "no formula" on a clean clone. The scoring inputs are now committed and pinned, and "cannot be scored" is reported as `unscorable` instead of being counted as a model failure.
+
+---
+
+## Known limitations
+
+1. **Numerical equivalence is not proof.** It guarantees agreement where test points reach, nothing beyond.
+2. **Pruning assumes no hidden scale constants.** A law of the form `x/t0` with an unlabelled `t0` will lose its correct term.
+3. **The candidate library is finite.** 15 of 100 official equations need structures it cannot express.
+4. **Verification needs a reference.** For benchmark datasets it compares against built-in ground truth (never returned to the agent); for simulator datasets it re-runs the simulation. A fully reference-free version would require holding out data from the agent.
+5. **Agent-path and benchmark-path results differ in framing.** The benchmark is a regression test, not the agent's route; both call the same capabilities, but only the agent path involves unit inference and retries.
+
+---
+
+## Status
+
+Research prototype, developed for the Agnes AI hackathon (2026) as an entry in the mathematical AI and formal reasoning track. The repository remains public and the evidence chain remains verifiable; interfaces may still change.
+
+The project's own claim is narrow, and worth stating plainly: **it is not trying to show how strong AI is. It is trying to show that a discovery made by AI can be read, checked and argued with by a person.**
+
+---
+
+## FAQ
+
+**Can I run this without AGH?**
+Yes. Every capability the agent calls is also a plain Python function: `python scripts/run_all.py` runs the full pipeline and verifies the evidence. AGH is needed only for the agent path — planning, tool selection, and the approval trail.
+
+**Why not just use gplearn, or a neural network?**
+A neural network cannot hand you a formula. gplearn can, which is why it is the fair comparison: on the same slice it passes 26% against 58%, at roughly 40× the runtime. The difference is not the regressor — it is pruning the space with a physical constraint first.
+
+**Is 95.2% the headline number?**
+No. That is the built-in 21-equation teaching library. The official Feynman benchmark gives 54–57%, and both are published side by side. Quoting only the former would be misleading.
+
+**Does a `passed` verdict mean the formula is correct?**
+No. It means the formula matches an external reference at fresh points inside the range and 30% beyond it, and passes a sign check. Whether it is the *same function* is decided by numerical equivalence, not by proof.
+
+**What does it need to run?**
+Python 3.10+, `numpy`, `sympy`. No GPU, no network, no API key. The full official benchmark takes about two minutes on a laptop CPU.
+
+---
+
+## License
+
+[MIT](LICENSE) © 2026 Arcticfox-star.
+
+The bundled Feynman benchmark data retains its original terms; see [`data/README.md`](data/README.md). Third-party baselines (scikit-learn, gplearn, scipy) are used only for comparison and are not vendored.
+
+## Acknowledgements
+
+Built on [Agnes Harness](https://github.com/AgnesAI-Labs/agnes-harness) as the agent runtime; the Feynman symbolic regression benchmark provides the public evaluation set.

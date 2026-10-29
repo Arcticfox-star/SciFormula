@@ -295,7 +295,7 @@ def make_truth_expr(eq):
 
     注意：当前**没有任何地方调用它**。本项目判定"候选公式是不是真值公式"用的是
     equivalence.classify —— 那是**数值等价判定**（撒点比对），不是符号等价证明。
-    这条边界写在 equivalence.py 的模块说明与 README「关于「形式化」」一节里。
+    这条边界写在 equivalence.py 的模块说明与 `docs/technical-notes.zh-CN.md` 第三节「关于「形式化」」里。
     """
     import sympy as sp
     names = varnames(eq)

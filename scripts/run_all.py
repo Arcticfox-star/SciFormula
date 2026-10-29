@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""run_all.py —— 一键复现入口：按 README 第一节的顺序跑完全流程。
+"""run_all.py —— 一键复现入口：按 `docs/technical-notes.zh-CN.md` 第一节的顺序跑完全流程。
 
 【为什么需要它】
-README 第一节给了编号 1→10 的顺跑清单，但"一键复现"总得逐条复制粘贴。
+`docs/technical-notes.zh-CN.md` 第一节给了编号 1→10 的顺跑清单，但"一键复现"总得逐条复制粘贴。
 这个脚本把那 10 条按**完全相同的顺序**串起来，跑完给一张汇总表。
 放在 scripts/ 下，不引入任何新依赖（只用标准库 subprocess）。
 
@@ -96,7 +96,7 @@ def preflight(py):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="按 README 第一节顺序一键复现")
+    ap = argparse.ArgumentParser(description="按 `docs/technical-notes.zh-CN.md` 第一节顺序一键复现")
     ap.add_argument("--fast", action="store_true", help="跳过全量实验（最耗时的一步）")
     ap.add_argument("--list", action="store_true", help="只列步骤，不执行")
     a = ap.parse_args(argv)

@@ -488,7 +488,7 @@ small{color:var(--tx3)}
              '如果真值是 <code>x/t0</code> 这种带一个未标注常数 t0 的形式，剪枝会连正确的项一起砍掉。<br>'
              '③ 候选特征库是有限的：像 <code>(1-u²)^(-1/2)</code> 这类复合形式不在库里，'
              '对应题目就会失败（见上表 P19）。<br>'
-             '④ 题目库是手写的迷你库，不是官方 Feynman 完整数据集，替换方式见 README。</div>')
+             '④ 题目库是手写的迷你库，不是官方 Feynman 完整数据集，替换方式见 `docs/technical-notes.zh-CN.md` 第七节。</div>')
 
     H.append('<p class="sub" style="margin-top:28px">生成时间：%s　|　'
              '随机种子：%d　|　训练样本：%d　外推样本：%d</p>'

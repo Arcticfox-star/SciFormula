@@ -14,7 +14,7 @@
 > 而且是**静默**翻转，不报错、不提示。
 > 方向固定是把「智能体成功恢复了公式」写成「智能体没给出公式」。
 
-这与 README 第八节承诺的「结果可复现、可审计、任何一行数字都能回溯」直接冲突。
+这与 `docs/technical-notes.zh-CN.md` 第八节承诺的「结果可复现、可审计、任何一行数字都能回溯」直接冲突。
 根因不是判定逻辑错，而是**判定所依赖的输入没有随证据一起提交**。
 
 所以：把评分卡实际依赖的那几份输入**固定副本**放进本目录，随仓库一起提交。
@@ -74,6 +74,6 @@
 ## 相关文件
 
 - `posthoc_eval.py` 的 `resolve_npz()`：先查本目录，再查 `.agh_runs/`；
-  两处都找不到时判 `unscorable`（详见该文件顶部与 `README.md` 第八节）
+  两处都找不到时判 `unscorable`（详见该文件顶部与 `docs/technical-notes.zh-CN.md` 第八节）
 - `scripts/resign_evidence.py`：重签清单（本目录的 14 个文件都在 `EVIDENCE.sha256` 里）
 - `verify_evidence.py`：核对（二进制文件不做换行符容错）

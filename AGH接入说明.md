@@ -477,7 +477,7 @@ python agh_provenance.py --check # 核对登账表与原件是否一致
 登账表给出每场会话的模型（`agnes-3.0-flash`）、事件数、工具调用与人工批准次数。
 `agh_provenance.py` 在缺件时明确报缺件并以非 0 退出（不假装通过）。
 要补导新会话时可跑 `scripts/export_agh_events.ps1`（已内置 7 个 ID）。
-来龙去脉详见 README 第七节。
+来龙去脉详见 `docs/technical-notes.zh-CN.md` 第七节。
 
 ### ② AGH 连接数据
 
@@ -512,7 +512,7 @@ python agh_provenance.py --check # 核对登账表与原件是否一致
 | 三个仿真工具 | `list_simulations` / `run_simulation` / `run_sweep`（13 个工具中的 3 个）|
 | 落盘数据 | `data/simulations/*.sim.json`（4 个场景）|
 | 会话证据 | `results/agh-session-sim.html`（会话 `6ea6a59e`，7 次调用、全部 completed、零失败）、`results/agh-trace-sim.md` |
-| 详细说明 | README「数值仿真实验台」一节 |
+| 详细说明 | `docs/technical-notes.zh-CN.md` 第四节「数值仿真实验台」 |
 
 这正是规程 3.1「经 AGH 完成至少三个连续步骤」中"能力调用"的一条完整闭环：
 模型选实验台 → 驱动 60 次数值积分 → 换一组参数重跑仿真 → 用真实读数当独立 oracle。
